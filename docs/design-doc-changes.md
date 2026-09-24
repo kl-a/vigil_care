@@ -70,3 +70,12 @@ Decisions from the design-grilling sessions. Terms follow [CONTEXT.md](../CONTEX
 ## Quality
 - **Add the Reference Set and the gates** in [quality-gates.md](quality-gates.md).
 - **Hardware options** are in [hardware-options.md](hardware-options.md).
+
+## v1.3 (2026-09-25): general Core + Specialty Modules
+- **Plugin architecture** ([ADR 0004](adr/0004-general-core-with-specialty-modules.md)): a Specialty Module contract, a registry, a Strategy per extension point, per-Practice activation by developer admins, and a Builder for each Practice's configuration. Oncology is the only module in the MVP.
+- **Core `condition`** replaces `diagnosis`; **Oncology `cancer_diagnosis`** extends it. **Comorbidity** is a view. `comorbidity` table removed.
+- **Oncology extension tables:** `cancer_diagnosis`, `recurrence`, `biomarker`, `oncology_course_detail` (Line of Therapy, protocol, best response), `response_assessment`, `performance_status`, `cns_status`, `cancer_type`, `treatment_protocol`, `protocol_drug`.
+- **Match Runs target a Condition**; criterion scope becomes `target_condition` / `whole_person`; each module supplies its trial vocabulary.
+- **New tables:** `specialty_module`, `practice_module`.
+- **Portability rule:** each concept is a self-contained unit, so it can move between modules or into the Core.
+- **Frontend:** module-registered sections (a section registry); Settings has module toggles.

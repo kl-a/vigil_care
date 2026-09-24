@@ -1,6 +1,6 @@
 # Vigil
 
-Clinical decision support for oncologists. Start with [docs/Vigil_Design_Document.md](docs/Vigil_Design_Document.md) (v1.2) and the glossary in [CONTEXT.md](CONTEXT.md). Frontend work follows [docs/frontend-design.md](docs/frontend-design.md).
+Clinical decision support for oncologists. Start with [docs/Vigil_Design_Document.md](docs/Vigil_Design_Document.md) (v1.3) and the glossary in [CONTEXT.md](CONTEXT.md). Frontend work follows [docs/frontend-design.md](docs/frontend-design.md).
 
 ## Agent skills
 

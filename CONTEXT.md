@@ -1,8 +1,18 @@
 # Vigil
 
-A local-first clinical decision support tool for a single oncology practice. It turns patient documents into a structured clinical record and surfaces standard-of-care treatments, PBS drug information and clinical trials for the clinician to review. The clinician decides.
+A local-first clinical decision support tool for medical practices, starting with oncology. It turns patient documents into a structured clinical record and surfaces standard-of-care treatments, PBS drug information and clinical trials for the clinician to review. The clinician decides.
 
 ## Language
+
+### Product structure
+
+**Core**:
+The parts of Vigil that apply to any specialty: Patients, Documents, the ingestion and de-identification pipeline, Verification, Conditions, Medications, labs, imaging, the Patient Summary, trial matching and exports.
+_Avoid_: Platform, base product
+
+**Specialty Module**:
+A pluggable package that adds one specialty's concepts to the Core (e.g. Oncology: Stage, Biomarkers, Line of Therapy, eviQ Treatment Options). Activated per Practice.
+_Avoid_: Plugin (in domain language), department, add-on, section
 
 ### Patients & privacy
 
@@ -45,7 +55,7 @@ The Providers involved with one Patient, each in a role (treating oncologist, re
 _Avoid_: Patient providers, contacts
 
 **Verification**:
-A User's sign-off that a value is correct, recorded with their name, Job Title and time. Only a human can verify; some values (Diagnosis, Stage, Recurrence attribution, Response Assessment overrides) need a clinician.
+A User's sign-off that a value is correct, recorded with their name, Job Title and time. Only a human can verify; some values (e.g. Cancer Diagnosis, Stage, Recurrence attribution, Response Assessment overrides) need a clinician.
 _Avoid_: Validation, approval, adversarial check
 
 ### Documents & extraction
@@ -96,40 +106,20 @@ _Avoid_: Report (unqualified), referral pack
 A report or file with Patient Identity removed and labelled with the Pseudonym (e.g. a trial-portal submission), signed off by the User who sends it.
 _Avoid_: Redacted report, anonymised export
 
-### Disease
+### Conditions
 
-**Diagnosis**:
-One primary cancer in a Patient. A Patient may have several.
-_Avoid_: Condition, disease (unqualified)
-
-**Recurrence**:
-A return of an existing Diagnosis's cancer at a recorded site (local, regional or distant), attributed to that Diagnosis by a clinician, usually on the strength of a biopsy report. Until attributed it is a Suspected Recurrence; if the biopsy shows a different cancer, it is a new Diagnosis instead.
-_Avoid_: Relapse (as a separate record)
-
-**Stage**:
-The formal staging of a Diagnosis at the time of diagnosis. Never changes afterwards.
-_Avoid_: Current stage
-
-**Disease Extent**:
-Where a Diagnosis stands now: localised, locally advanced or metastatic. Changes with Recurrences and Response Assessments.
-_Avoid_: Current stage, status
-
-**Cancer Type**:
-The site-and-histology category of a Diagnosis (e.g. breast, NSCLC, melanoma). Carries no molecular subtype.
-_Avoid_: Tumour type, subtype
-
-**Biomarker**:
-A molecular, genomic or IHC result for a Diagnosis, tied to its specimen and date (e.g. EGFR exon 19 deletion, HER2 3+, PD-L1 TPS 60%). Every result is kept; the most recent is current, and disagreements between results are surfaced, never silently resolved. Subtypes are derived from Biomarkers.
-_Avoid_: Molecular result, marker, mutation (as the general term)
+**Condition**:
+Any diagnosed condition a Patient has or has had (e.g. type 2 diabetes, COPD, breast cancer), marked active or resolved. A Specialty Module may extend a Condition, as Oncology does with a Cancer Diagnosis.
+_Avoid_: Diagnosis (unqualified), problem, disease (unqualified)
 
 **Comorbidity**:
-Any non-cancer condition a Patient has or has had, marked active or resolved. Includes past procedures only when clinically relevant.
-_Avoid_: PMHx, past medical history (as a record name), condition (unqualified)
+A view, not a record: the Patient's Conditions other than the one currently in focus. For the oncologist, diabetes is a Comorbidity; for a rheumatologist, the breast cancer is.
+_Avoid_: PMHx, past medical history (as a record name), non-cancer condition
 
 ### Treatment
 
 **Treatment Course**:
-Any course of systemic, surgical or radiation treatment given for a Diagnosis.
+Any course of treatment given for a Condition: systemic, surgical, radiation or other.
 _Avoid_: Therapy line (as the umbrella term), treatment episode
 
 **Regimen**:
@@ -140,14 +130,6 @@ _Avoid_: Protocol (unless meaning an eviQ Treatment Protocol)
 One drug a Patient takes or has taken, from any source. A cancer drug's Medication points to its Treatment Course; stopping one drug changes the Medication, not the Course.
 _Avoid_: Drug (for the patient-specific record), prescription
 
-**Treatment Protocol**:
-A standard-of-care protocol published by eviQ, with its intent, line, drugs and Biomarker requirements, and the eviQ version it was taken from.
-_Avoid_: Regimen (for the published protocol), guideline
-
-**Treatment Option**:
-A Treatment Protocol that matches a Diagnosis on Cancer Type, Disease Extent and intent, next Line of Therapy, and Biomarkers. Shown for the clinician to consider, never as a recommendation.
-_Avoid_: Recommendation, suggested treatment
-
 **Management Plan**:
 The treating clinician's stated plan for a Patient, quoted verbatim from the most recent letter with a link to its source. Vigil never rewrites it.
 _Avoid_: Care plan, treatment plan
@@ -156,9 +138,9 @@ _Avoid_: Care plan, treatment plan
 A dated item a User adds alongside the Management Plan (e.g. re-scan date, MDT date, trial window). Feeds Open Items.
 _Avoid_: Task, action item
 
-**Line of Therapy**:
-The ordinal given only to systemic Treatment Courses in the advanced or metastatic setting. Adjuvant and neoadjuvant courses, surgery and radiation get no line number.
-_Avoid_: Surgical line, radiation line
+**PBS Listing**:
+A drug's PBS status for a specific indication: Unrestricted, Restricted, Authority Required or Not Listed.
+_Avoid_: PBS-listed (without an indication), PBS status
 
 ### Imaging
 
@@ -166,22 +148,10 @@ _Avoid_: Surgical line, radiation line
 One observation reported in a single imaging study, including PET and bone scans (e.g. "segment VI liver lesion, 23 mm", "SUVmax 8.2 right hilum"). Not linked across studies.
 _Avoid_: Lesion (as a tracked entity), target lesion, Observation
 
-**Response Assessment**:
-The stated direction of a Diagnosis at a point in time: responding, stable or progressing. Taken from the radiology impression by default; a clinician may record or override it. Not attributed when the source doesn't say which Diagnosis it concerns.
-_Avoid_: Trend, status
-
-**PBS Listing**:
-A drug's PBS status for a specific indication: Unrestricted, Restricted, Authority Required or Not Listed.
-_Avoid_: PBS-listed (without an indication), PBS status
-
-**PBS Coverage**:
-How much of a Treatment Option the PBS subsidises: Fully Covered, Partially Covered (naming the drugs that aren't) or Not Covered.
-_Avoid_: PBS-covered (unqualified)
-
 ### Trial matching
 
 **Match Run**:
-One evaluation of a Patient against the current trial data for a chosen target Diagnosis, as a snapshot that never changes once made. Criteria about "the cancer" use the target Diagnosis; whole-person criteria (other cancers, Comorbidities, ECOG, organ function) use the whole Clinical Record.
+One evaluation of a Patient against the current trial data for a chosen target Condition, as a snapshot that never changes once made. Criteria about the Condition under study use the target Condition; whole-person criteria (other cancers, Comorbidities, ECOG, organ function) use the whole Clinical Record.
 _Avoid_: Match, search
 
 **Stale**:
@@ -219,6 +189,52 @@ _Avoid_: Verbal consent, implied consent
 **Combined View**:
 One view of a Patient across all Practices that hold records about them, where every item shows its Holding Practice and is read-only to the others. Conflicting items are shown side by side, never merged silently.
 _Avoid_: Merged record, master record, shared profile
+
+### Oncology module
+
+**Cancer Diagnosis**:
+Oncology's extension of a Condition that is a primary cancer, carrying its Cancer Type, Stage, Disease Extent, Recurrences and Biomarkers. A Patient may have several.
+_Avoid_: Diagnosis (unqualified), primary (as a noun)
+
+**Cancer Type**:
+The site-and-histology category of a Cancer Diagnosis (e.g. breast, NSCLC, melanoma). Carries no molecular subtype.
+_Avoid_: Tumour type, subtype
+
+**Stage**:
+The formal staging of a Cancer Diagnosis at the time of diagnosis. Never changes afterwards.
+_Avoid_: Current stage
+
+**Disease Extent**:
+Where a Cancer Diagnosis stands now: localised, locally advanced or metastatic. Changes with Recurrences and Response Assessments.
+_Avoid_: Current stage, status
+
+**Recurrence**:
+A return of an existing Cancer Diagnosis's cancer at a recorded site (local, regional or distant), attributed to that Cancer Diagnosis by a clinician, usually on the strength of a biopsy report. Until attributed it is a Suspected Recurrence; if the biopsy shows a different cancer, it is a new Cancer Diagnosis instead.
+_Avoid_: Relapse (as a separate record)
+
+**Biomarker**:
+A molecular, genomic or IHC result for a Cancer Diagnosis, tied to its specimen and date (e.g. EGFR exon 19 deletion, HER2 3+, PD-L1 TPS 60%). Every result is kept; the most recent is current, and disagreements between results are surfaced, never silently resolved. Subtypes are derived from Biomarkers.
+_Avoid_: Molecular result, marker, mutation (as the general term)
+
+**Line of Therapy**:
+The ordinal given only to systemic Treatment Courses in the advanced or metastatic setting. Adjuvant and neoadjuvant courses, surgery and radiation get no line number.
+_Avoid_: Surgical line, radiation line
+
+**Response Assessment**:
+The stated direction of a Cancer Diagnosis at a point in time: responding, stable or progressing. Taken from the radiology impression by default; a clinician may record or override it. Not attributed when the source doesn't say which Cancer Diagnosis it concerns.
+_Avoid_: Trend, status
+
+**Treatment Protocol**:
+A standard-of-care protocol published by eviQ, with its intent, line, drugs and Biomarker requirements, and the eviQ version it was taken from.
+_Avoid_: Regimen (for the published protocol), guideline
+
+**Treatment Option**:
+A Treatment Protocol that matches a Cancer Diagnosis on Cancer Type, Disease Extent and intent, next Line of Therapy, and Biomarkers. Shown for the clinician to consider, never as a recommendation.
+_Avoid_: Recommendation, suggested treatment
+
+**PBS Coverage**:
+How much of a Treatment Option the PBS subsidises: Fully Covered, Partially Covered (naming the drugs that aren't) or Not Covered.
+_Avoid_: PBS-covered (unqualified)
 
 ### Quality
 

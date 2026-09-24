@@ -1,6 +1,6 @@
 # Vigil
 
-**Clinical decision support for oncologists.** Vigil turns patient documents (scanned letters, faxes, phone photos, PDFs) into a verified, structured clinical record. It then shows the clinician standard-of-care treatment options, PBS drug information and matching clinical trials to review. The clinician decides; Vigil only informs.
+**Clinical decision support for medical practices, starting with oncology.** Vigil turns patient documents (scanned letters, faxes, phone photos, PDFs) into a verified, structured clinical record. It then shows the clinician standard-of-care treatment options, PBS drug information and matching clinical trials to review. The clinician decides; Vigil only informs.
 
 > **Status: design complete, build starting.** There's no application code yet. The MVP runs locally on synthetic data only, and nothing here is ready for real patient data.
 
@@ -23,7 +23,7 @@
 
 | Doc | What it's for |
 |---|---|
-| [docs/Vigil_Design_Document.md](docs/Vigil_Design_Document.md) | The full technical design (v1.2): architecture, data model, pipeline, API, build order |
+| [docs/Vigil_Design_Document.md](docs/Vigil_Design_Document.md) | The full technical design (v1.3): architecture, data model, pipeline, API, build order |
 | [CONTEXT.md](CONTEXT.md) | Glossary. All code, UI and issues use these terms. |
 | [docs/frontend-design.md](docs/frontend-design.md) | Frontend brief: tokens, app shell, components, screen specs |
 | [docs/adr/](docs/adr/) | Architecture decisions |

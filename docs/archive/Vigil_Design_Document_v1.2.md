@@ -1,5 +1,5 @@
 # Vigil — Clinical Decision Support Platform
-### Technical Design Document v1.3
+### Technical Design Document v1.2
 
 > **Working name:** *Vigil*. A clinical decision support tool for oncologists. It ingests patient documents, turns them into a structured clinical record, matches patients against standard-of-care treatments and clinical trials, and surfaces PBS drug information. Identifiable patient data never leaves the practice.
 >
@@ -9,32 +9,27 @@
 
 ---
 
-## What changed in v1.3
-
-**v1.3 (2026-09-25): general Core + Specialty Modules** ([ADR 0004](adr/0004-general-core-with-specialty-modules.md)). Vigil is structured as a specialty-agnostic **Core** with pluggable **Specialty Modules**; **Oncology** is the first and only module in the MVP (§4.1). The general **Condition** replaces the cancer-only Diagnosis in the Core; Oncology extends it into a **Cancer Diagnosis**. **Comorbidity** is now a view, not a table. Match Runs target a Condition. Oncology-only concepts (Stage, Disease Extent, Recurrence, Biomarker, Line of Therapy, Response Assessment, ECOG, CNS status, eviQ Treatment Options) move into the Oncology module. Previous version: [archive/Vigil_Design_Document_v1.2.md](archive/Vigil_Design_Document_v1.2.md).
-
-### v1.2
+## What changed in v1.2
 
 v1.2 incorporates the outcomes of the design-grilling sessions of 2026-09-24. The companion files are part of this spec:
 
 | File | Role |
 |------|------|
 | [CONTEXT.md](../CONTEXT.md) | **The glossary. All domain terms in this doc follow it.** Where this doc and CONTEXT.md disagree, CONTEXT.md wins. |
-| [adr/](adr/) | Architecture decisions: 0001 de-identify before anything leaves the Practice Boundary; 0002 no AGPL PDF libraries; 0003 local MVP with cloud seams; 0004 general Core with Specialty Modules. |
+| [adr/](adr/) | Architecture decisions: 0001 de-identify before anything leaves the Practice Boundary; 0002 no AGPL PDF libraries; 0003 local MVP with cloud seams. |
 | [quality-gates.md](quality-gates.md) | Reference Set, deployment gates, masking leak tests, go-live checklist. |
 | [hardware-options.md](hardware-options.md) | Where the OCR and VLM models can run. |
 | [revisit-later.md](revisit-later.md) | Provisional decisions and deferred scope. |
-| [frontend-design.md](frontend-design.md) | Frontend brief for Claude Design. |
-| [archive/](archive/) | Previous versions (v1.1, v1.2). |
+| [archive/Vigil_Design_Document_v1.1.md](archive/Vigil_Design_Document_v1.1.md) | Previous version. |
 
 Headline changes from v1.1:
 - **Privacy pipeline reversed.** Local OCR first, then PII masking. Only masked or pseudonymised content ever leaves the **Practice Boundary**. v1.1 sent raw images to Claude vision first ([ADR 0001](adr/0001-deidentify-before-leaving-practice.md)).
 - **Review is per Extracted Fact**, and **Verification is human-only**, with rights set by Job Title.
 - **Clinical model rebuilt:**
-  - Diagnosis now owns Recurrences, Biomarkers (full history), Stage and Disease Extent *(v1.3: now the Oncology module's Cancer Diagnosis)*.
+  - Diagnosis now owns Recurrences, Biomarkers (full history), Stage and Disease Extent.
   - Treatment Course replaces therapy lines.
   - Finding and Response Assessment replace Lesion tracking.
-- **Match states renamed** to Potentially Eligible / Needs Information / Excluded. Each Match Run now targets one Diagnosis *(v1.3: one Condition)*.
+- **Match states renamed** to Potentially Eligible / Needs Information / Excluded. Each Match Run now targets one Diagnosis.
 - **User is separate from Provider.** Logins are individual, with 2FA. Every record belongs to a Practice.
 - **Scope:**
   - Schema induction, letter drafting, Access Grants and multi-practice are out of the MVP.
@@ -75,7 +70,7 @@ The application stack runs via `docker compose up`. Host prerequisites: Docker, 
 |---|------|-------------|
 | G1 | **Clinical decision support, not clinical decision making.** The tool surfaces information; the clinician decides. | All outputs are framed as information for review. No autonomous recommendations. No language suggesting the tool has made a clinical determination: hence "Potentially Eligible", "Treatment Option", never "Eligible" or "Recommended". Maintains the TGA CDSS exemption. |
 | G2 | **Identifiable data never leaves the Practice Boundary.** The boundary is infrastructure the practice controls: its own machines today, its own Azure tenant (Australian region) later. | Local OCR and local VLMs may read unmasked pages. Anything sent to a third party (Claude or any cloud model) is masked or pseudonymised first, tagged with a one-off request ID. Public data (PBS, eviQ, trials) flows in freely. See [ADR 0001](adr/0001-deidentify-before-leaving-practice.md). |
-| G3 | **General Core, specialty modules.** The Core is specialty-agnostic; each specialty is a Specialty Module activated per Practice (§4.1, ADR 0004). **Oncology is the first module** and supports all malignancies, common and rare. Launches with breast, lung, colorectal and melanoma; expands to all cancer types including rare tumours (e.g. Merkel cell, sarcomas), where the tool adds the most value because information and trials are hardest to find. | Clinical logic is registry/config-driven, not hardcoded to any specialty or diagnosis. New specialties are added one at a time, after research and requirements gathering with a clinician from that specialty ([revisit-later.md](revisit-later.md) #17). Adding a Cancer Type requires only data (eviQ protocols + PBS cross-references), not code. |
+| G3 | **Multi-patient, cancer-agnostic architecture.** Supports all malignancies, common and rare. Launches with breast, lung, colorectal and melanoma; expands to all cancer types including rare tumours (e.g. Merkel cell, sarcomas), where the tool adds the most value because information and trials are hardest to find. | Clinical logic is registry/config-driven, not hardcoded to any diagnosis. Adding a Cancer Type requires only data (eviQ protocols + PBS cross-references), not code. |
 | G4 | **Structured source of truth.** Free-text clinical documents become typed, queryable, longitudinal data: the Clinical Record. | Postgres relational core. Only accepted, human-verified Extracted Facts enter the Clinical Record. |
 | G5 | **Traceable.** Every extracted value and every match decision cites its source. | Source location (page + box) on every Extracted Fact; evidence refs on every Criterion Result; every Verification records User, Job Title and time. |
 | G6 | **Paper-ready.** Handles the worst-case input: phone photos of printouts, faxes, scanned PDFs, and native digital PDFs. | Local OCR (PP-OCRv5 + docTR) for text and word positions; local VLM (PaddleOCR-VL-1.6) for hard pages and tables; cloud VLM only as a last resort, on masked pages. |
@@ -106,18 +101,18 @@ The foundation. Handles Document upload in any format (scanned PDF, digital PDF,
 
 ### Tier 2: Treatment & Clinical Trial Matching
 Built on the Clinical Record. Three sub-components:
-- **Standard-of-care Treatment Options.** Treatment Protocols from eviQ (Cancer Institute NSW), matched to a Cancer Diagnosis on Cancer Type, Disease Extent and intent, next Line of Therapy, and Biomarkers. Deterministic.
+- **Standard-of-care Treatment Options.** Treatment Protocols from eviQ (Cancer Institute NSW), matched to a Diagnosis on Cancer Type, Disease Extent and intent, next Line of Therapy, and Biomarkers. Deterministic.
 - **PBS drug information.** From the PBS Schedule API, refreshed monthly. Shows PBS Listing per drug for the indication, PBS Coverage per Treatment Option, and patient co-payments.
-- **Clinical trial matching.** From ClinicalTrials.gov API v2 and ANZCTR. A **Match Run** evaluates a Patient against trials for a chosen target Condition. Each criterion gets a **Criterion Result** (Met / Not Met / Unknown) and each trial a **Match State** (Potentially Eligible / Needs Information / Excluded), with per-criterion evidence.
+- **Clinical trial matching.** From ClinicalTrials.gov API v2 and ANZCTR. A **Match Run** evaluates a Patient against trials for a chosen target Diagnosis. Each criterion gets a **Criterion Result** (Met / Not Met / Unknown) and each trial a **Match State** (Potentially Eligible / Needs Information / Excluded), with per-criterion evidence.
 
 ### Tier 3: Patient Summary ("At a Glance")
 The clinical payoff screen: a single view with the most current picture of a Patient before a consultation, built from the Clinical Record. It contains:
 - Patient Identity.
-- Each Condition in focus; for oncology, each Cancer Diagnosis with its Stage, Disease Extent, Biomarkers (with discordance flags) and Recurrences.
+- Each Diagnosis with its Stage, Disease Extent, Biomarkers (with discordance flags) and Recurrences.
 - Latest scans with their Response Assessment, and most recent bloods with anything flagged.
 - Current Treatment Course and Line of Therapy, with best response.
 - ECOG.
-- Comorbidities (the other Conditions) and Medications.
+- Comorbidities and Medications.
 - The Management Plan (verbatim) with Next Steps.
 - **Open Items.**
 
@@ -215,7 +210,7 @@ flowchart TB
 
         subgraph MATCH_TOOL["Treatment & Trial Match Tool"]
             TX[Treatment Matcher: eviQ + PBS]
-            TRIAL[Trial Matcher: Match Runs per target Condition]
+            TRIAL[Trial Matcher: Match Runs per target Diagnosis]
             SUMMARY[Patient Summary + Open Items]
         end
 
@@ -256,41 +251,6 @@ flowchart TB
 6. **Nothing enters the Clinical Record without human Verification.** Extracted Facts are candidates until a User with the right Job Title accepts them.
 7. **Infrastructure sits behind seams.** Storage, database, VLM worker, job queue, keys and login are accessed only through their interfaces (ADR 0003).
 
-### 4.1 Core and Specialty Modules
-
-Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** that plug in at fixed points ([ADR 0004](adr/0004-general-core-with-specialty-modules.md)). The pattern is a **plugin architecture**:
-
-1. **Specialty Module contract.** Every module implements one interface declaring its contributions at each extension point:
-
-| Extension point | What a module contributes | Oncology example |
-|---|---|---|
-| Clinical Record | Extension tables (via ordinary migrations; **no runtime DDL**) and fact kinds with Pydantic schemas | `cancer_diagnosis`, `biomarker`, `recurrence` |
-| Condition extension | Which Conditions it extends, and how | A Condition that is a cancer → Cancer Diagnosis |
-| Document Types | Document Types, classification hints, extraction prompts | `pathology_molecular` |
-| Verification rights | Rows added to §6.4 for its fact kinds | Stage: clinician only |
-| Patient Summary & Clinical Data | UI sections and tabs | Diagnosis block, Biomarkers tab |
-| Trial matching | Its criteria attribute vocabulary and evaluators | `required_biomarker`, `prior_systemic_lines` |
-| Treatment Options (optional) | A Treatment Option source | eviQ + PBS |
-| Open Items | Extra Open Item types | Biomarker discordance |
-
-2. **Module registry.** The Core discovers modules only through the registry and **never imports a module**. Modules may import the Core's public service interfaces, never another module.
-3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers.
-4. **Per-Practice activation.** A Practice may have several modules active. Only a **developer admin** switches modules on or off, in Settings, and each change is recorded as a Verification. Deactivating a module hides its sections and stops its extraction, but its **data is kept and never deleted**. A Document whose Document Type belongs to an inactive module becomes a **Held Document**. Users aren't restricted by module in the MVP. A **Builder** assembles each Practice's active configuration (extension points, sections, vocabularies) from its enabled modules at startup.
-5. **Portability rule.** Each concept (e.g. Line of Therapy, Response Assessment) is implemented as **one self-contained unit** (its tables, schemas, extraction prompt, rules, evaluators and UI section), reached only through its own interface. That way, moving a concept from Oncology to the Core, or to another module, is a mechanical move, not a rewrite. Tests target the unit's interface so they move with it.
-
-**Where today's concepts live:**
-
-| Core | Oncology module |
-|---|---|
-| Patient, Practice, User, Provider, Care Team, Verification | Cancer Diagnosis (Cancer Type, histology, Stage, Disease Extent) |
-| Document, Extraction, Extracted Fact, Held Document, Redaction Job | Recurrence, Biomarker |
-| **Condition** (and the Comorbidity view) | Line of Therapy (oncology extension of Treatment Course) |
-| Treatment Course, Regimen, Medication | Response Assessment |
-| Imaging Study, Finding, Lab Result, Clinical Note | Performance status (ECOG), CNS status |
-| Management Plan, Next Step, Open Item | Treatment Protocol, Treatment Option (eviQ), PBS Coverage per option |
-| Trial matching engine, Match Run, Match State, Criterion Result | Oncology trial-criteria vocabulary |
-| PBS lookup and PBS Listing, exports, Patient Summary shell | Oncology Patient Summary sections |
-
 ---
 
 ## 5. Screen Inventory (for Claude Design)
@@ -302,18 +262,18 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | 1 | **Login** | Individual sign-in | Username + password, TOTP 2FA prompt, 2FA enrolment (QR code) on first login. In dev only, a clearly badged **"Dev login"** button. Inactivity lock after 10 minutes returns here with the session preserved. |
 | 2 | **Dashboard** | Practice overview | Practice-wide **Open Items** queue, filterable by type (Held Documents, Extracted Facts awaiting review, Needs Information criteria, Next Steps due, Stale Match Runs, Biomarker discordance) and by who can act (e.g. clinician-only Verifications). Recent activity, next refresh dates (PBS/eviQ/trials), VLM worker status, environment badge (DEV/TEST). |
 | 3 | **Patient List** | Browse/search/create Patients | Table: name, Cancer Type(s), Disease Extent, #Documents, #Open Items, last updated. "New patient" button. Search/filter by Cancer Type. |
-| 4 | **Patient Overview** | Clinical profile for one Patient | Conditions list; sections from active Specialty Modules. Oncology: header per Cancer Diagnosis (Cancer Type, Stage, Disease Extent, Biomarker chips), Treatment Course timeline with Line of Therapy markers, ECOG badge, CNS status panel (if applicable), key lab trends, Open Items. Tabs: Clinical Data / Documents / Treatment Options / Trials / Exports. |
+| 4 | **Patient Overview** | Clinical profile for one Patient | Header per Diagnosis (Cancer Type, Stage, Disease Extent, Biomarker chips), Treatment Course timeline with Line of Therapy markers, ECOG badge, CNS status panel (if applicable), key lab trends, Open Items. Tabs: Clinical Data / Documents / Treatment Options / Trials / Exports. |
 | 5 | **Document Upload** | Ingest Documents | Drag-drop zone + camera/scanner input. Per-Document status stepper: uploaded → OCR → PII masked → classified → extracted → in review, or **Held** (with reason). Document Type badge. Batch upload. "Hold this document" action (User chooses to file it as a scan only). "Enhance with cloud" button on low-confidence pages, which opens the pre-flight view first. |
 | 6 | **Extraction Review** | Review Extracted Facts one by one | Split view: the page (left) with the **shared box viewer** highlighting each fact's source location ↔ list of Extracted Facts (right) with confidence band. Accept / edit / reject **per fact**. Facts whose VLM and classic-OCR numbers disagree are flagged "numbers disagree" and forced to low confidence. Facts the current User's Job Title can't verify are shown read-only, with "needs clinician". |
 | 7 | **Redaction QA** | Review and correct PII masking | Shared box viewer over the page: proposed boxes coloured by entity type (Name, DOB, Medicare, MRN, Address, Phone, Provider), each marked auto or manual. Draw rectangle, remove false positive, restore, relabel; select OCR words to box them. "Burn in" produces the masked output and runs the leak check (pass/fail shown). **Pre-flight tab:** exactly what would leave the Practice Boundary for a cloud request (masked image and/or pseudonymised text, and the request ID). |
 | 8 | **Redaction Jobs** | Standalone de-identification for trial portals and referrals | New job: upload one or many files, optionally link a Patient. Each file goes through the same masking and review as screen 7. Download redacted PDFs. Job list with an **"Unlinked" filter** for jobs awaiting filing to a Patient. Originals and outputs are kept. |
-| 9 | **Clinical Data Viewer** | Longitudinal Clinical Record | Core tabs: Conditions / Labs / Imaging & Findings / Treatment Courses. Oncology module tabs: Response Assessments / Biomarkers / Performance Status / CNS. Time-series tables, lab trend charts with reference ranges. Biomarkers show full history by specimen and date, with discordance flags. Each row links to its source Document and Verification (who, Job Title, when). |
-| 10 | **Medication Manager** | Medication list with reconciliation | As v1.1, plus: a cancer drug's Medication links to its Treatment Course; the verified badge shows who verified and their Job Title; the reconciliation queue covers Medications (brand/generic) and **Conditions** ("Is 'T2DM' the same as 'type 2 diabetes'?"). Change log. Print view. |
-| 11 | **Treatment Options** | Standard-of-care options for one Condition (Oncology module: eviQ) | Condition selector (Cancer Diagnoses in the MVP). Treatment Options matched on Cancer Type + Disease Extent/intent + next Line of Therapy + Biomarkers. Each shows: protocol name, intent, line, drugs, **PBS Listing per drug** (Unrestricted / Restricted / Authority Required / Not Listed for this indication), **PBS Coverage** badge (Fully / Partially / Not Covered, naming the gap), co-payment, eviQ link and "as of <eviQ version date>". Stale-data warning if the eviQ refresh failed. |
+| 9 | **Clinical Data Viewer** | Longitudinal Clinical Record | Tabs: Labs / Imaging & Findings / Response Assessments / Biomarkers / Treatment Courses / Performance Status / Comorbidities / CNS. Time-series tables, lab trend charts with reference ranges. Biomarkers show full history by specimen and date, with discordance flags. Each row links to its source Document and Verification (who, Job Title, when). |
+| 10 | **Medication Manager** | Medication list with reconciliation | As v1.1, plus: a cancer drug's Medication links to its Treatment Course; the verified badge shows who verified and their Job Title; the reconciliation queue covers Medications (brand/generic) and **Comorbidities** ("Is 'T2DM' the same as 'type 2 diabetes'?"). Change log. Print view. |
+| 11 | **Treatment Options** | Standard-of-care options for one Diagnosis | Diagnosis selector. Treatment Options matched on Cancer Type + Disease Extent/intent + next Line of Therapy + Biomarkers. Each shows: protocol name, intent, line, drugs, **PBS Listing per drug** (Unrestricted / Restricted / Authority Required / Not Listed for this indication), **PBS Coverage** badge (Fully / Partially / Not Covered, naming the gap), co-payment, eviQ link and "as of <eviQ version date>". Stale-data warning if the eviQ refresh failed. |
 | 12 | **Trial Browser** | Explore the local trial database | Filter by phase/status/site/condition/drug. Trial detail: parsed criteria (each marked "about the target cancer" or "whole person"), sites with distance from the practice, registry link, last refreshed. |
-| 13 | **Match Board** | Patient vs trials | **Target Condition selector** (preselected when the Patient has one active Condition in the relevant module). "Run match". Three columns: **Potentially Eligible / Needs Information / Excluded**. Each trial card expands to per-criterion evidence (**Met / Not Met / Unknown**, with rationale and source data). **Stale banner** (Clinical Record changed, trial data refreshed, or run over a month old) with a Re-run button; stale runs remain viewable. Diff vs the previous run. |
+| 13 | **Match Board** | Patient vs trials | **Target Diagnosis selector** (preselected when the Patient has one active Diagnosis). "Run match". Three columns: **Potentially Eligible / Needs Information / Excluded**. Each trial card expands to per-criterion evidence (**Met / Not Met / Unknown**, with rationale and source data). **Stale banner** (Clinical Record changed, trial data refreshed, or run over a month old) with a Re-run button; stale runs remain viewable. Diff vs the previous run. |
 | 14 | **PBS Drug Lookup** | Quick drug reference | Search by drug name or active ingredient. PBS item code, PBS Listing per indication, co-payment (general + concessional), prescribing conditions, Safety Net info, schedule date. |
-| 15 | **Patient Summary** | "At a Glance" consultation page (Tier 3) | **Registration:** name, DOB, age, Medicare number, address, contact details, mobile. **Diagnosis** (Oncology section; one block per Cancer Diagnosis): Cancer Type, histology, Stage (at diagnosis), Disease Extent (now), Biomarker chips (latest, with discordance flag), Recurrences (site, date, confirmed/suspected). **Most Recent Results:** latest bloods (flagged values, sparklines), latest scans with Response Assessment (responding/stable/progressing) and key Findings. **Recent Treatment:** Treatment Courses in the last 6 months, current Regimen, Line of Therapy, best response. **Clinical Notes:** most recent note, most recent letter to referrer. **Management:** Management Plan quoted verbatim with source link, plus **Next Steps**. **Medical History:** Comorbidities (active/resolved), current Medications. **Open Items.** Each section shows "last updated" linking to its source. Print-friendly layout. |
+| 15 | **Patient Summary** | "At a Glance" consultation page (Tier 3) | **Registration:** name, DOB, age, Medicare number, address, contact details, mobile. **Diagnosis** (one block per Diagnosis): Cancer Type, histology, Stage (at diagnosis), Disease Extent (now), Biomarker chips (latest, with discordance flag), Recurrences (site, date, confirmed/suspected). **Most Recent Results:** latest bloods (flagged values, sparklines), latest scans with Response Assessment (responding/stable/progressing) and key Findings. **Recent Treatment:** Treatment Courses in the last 6 months, current Regimen, Line of Therapy, best response. **Clinical Notes:** most recent note, most recent letter to referrer. **Management:** Management Plan quoted verbatim with source link, plus **Next Steps**. **Medical History:** Comorbidities (active/resolved), current Medications. **Open Items.** Each section shows "last updated" linking to its source. Print-friendly layout. |
 | 16 | **Exports** | Generate and sign off reports | Template picker (treatment summary, trial matching report, Patient Summary snapshot, combined). **Kind selector, no default: Identified Export or De-identified Export** (the latter labelled with the Pseudonym and masked). Live preview. **Sign-off step:** the User confirms and signs off (recorded with name, Job Title, time, recipient). Export to PDF/DOCX. Vigil never sends the file; the User sends or prints it. Export history. |
 | 17 | **Provider Management** | Manage the Practice's provider directory | Internal and external Providers: title, name, provider number, specialty, contact details. Link to Patients with **Care Team** roles (treating oncologist, referring GP, referring specialist, surgeon, radiation oncologist, trial-site contact). |
 | 18 | **User Management** | Manage who can log in (clinicians, secretaries and developer admins only) | Users with Job Title (clinician / trial coordinator / secretary / developer admin), optional link to their own Provider record, 2FA status, active/inactive, last login. Reset password / reset 2FA. |
@@ -325,7 +285,7 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 
 ## 6. Data Model
 
-> **Terms follow [CONTEXT.md](../CONTEXT.md).** Table names are the snake_case form of glossary terms. **Every table belongs to either the Core or one Specialty Module** (§4.1). Module tables are marked *(Oncology)* below. A module table may reference Core tables; a Core table must never reference a module table. Where v1.1 used a different word (e.g. `therapy_line`, `molecular_result`, `lesion`, `observation`), that word is retired. Don't reintroduce it.
+> **Terms follow [CONTEXT.md](../CONTEXT.md).** Table names are the snake_case form of glossary terms. Where v1.1 used a different word (e.g. `therapy_line`, `molecular_result`, `lesion`, `observation`), that word is retired. Don't reintroduce it.
 
 ### 6.1 Entity Relationships
 
@@ -347,20 +307,19 @@ erDiagram
     EXTRACTION ||--o{ EXTRACTED_FACT : proposes
     EXTRACTED_FACT ||--o{ VERIFICATION : signed_off_by
 
-    PATIENT ||--o{ CONDITION : has
-    CONDITION ||--o| CANCER_DIAGNOSIS : "extended by (Oncology)"
-    CANCER_DIAGNOSIS }o--|| CANCER_TYPE : is_a
-    CANCER_DIAGNOSIS ||--o{ RECURRENCE : has
-    CANCER_DIAGNOSIS ||--o{ BIOMARKER : has
-    CONDITION ||--o{ TREATMENT_COURSE : treated_by
-    TREATMENT_COURSE ||--o| ONCOLOGY_COURSE_DETAIL : "extended by (Oncology)"
-    CANCER_DIAGNOSIS ||--o{ RESPONSE_ASSESSMENT : assessed_by
+    PATIENT ||--o{ DIAGNOSIS : has
+    DIAGNOSIS }o--|| CANCER_TYPE : is_a
+    DIAGNOSIS ||--o{ RECURRENCE : has
+    DIAGNOSIS ||--o{ BIOMARKER : has
+    DIAGNOSIS ||--o{ TREATMENT_COURSE : treated_by
+    DIAGNOSIS ||--o{ RESPONSE_ASSESSMENT : assessed_by
     PATIENT ||--o{ IMAGING_STUDY : has
     IMAGING_STUDY ||--o{ FINDING : reports
-    FINDING }o--o| CONDITION : attributed_to
+    FINDING }o--o| DIAGNOSIS : attributed_to
     PATIENT ||--o{ LAB_RESULT : has
     PATIENT ||--o{ PERFORMANCE_STATUS : has
     PATIENT ||--o{ CNS_STATUS : has
+    PATIENT ||--o{ COMORBIDITY : has
     PATIENT ||--o{ MEDICATION : takes
     MEDICATION }o--o| TREATMENT_COURSE : part_of
     MEDICATION }o--o| DRUG_REFERENCE : resolved_to
@@ -373,14 +332,12 @@ erDiagram
     CANCER_TYPE ||--o{ TREATMENT_PROTOCOL : for
     TREATMENT_PROTOCOL ||--o{ PROTOCOL_DRUG : includes
     PROTOCOL_DRUG }o--o| PBS_ITEM : listed_as
-    ONCOLOGY_COURSE_DETAIL }o--o| TREATMENT_PROTOCOL : follows
+    TREATMENT_COURSE }o--o| TREATMENT_PROTOCOL : follows
 
     TRIAL ||--o{ TRIAL_SITE : at
     TRIAL ||--o{ TRIAL_CRITERION : defines
     PATIENT ||--o{ MATCH_RUN : evaluated_in
-    MATCH_RUN }o--|| CONDITION : targets
-    PRACTICE ||--o{ PRACTICE_MODULE : activates
-    SPECIALTY_MODULE ||--o{ PRACTICE_MODULE : activated_in
+    MATCH_RUN }o--|| DIAGNOSIS : targets
     MATCH_RUN ||--o{ MATCH_RESULT : contains
     MATCH_RESULT }o--|| TRIAL : for
     MATCH_RESULT ||--o{ CRITERION_EVALUATION : details
@@ -406,7 +363,7 @@ erDiagram
 - `deleted_at`, `deleted_by_user_id`, `deleted_reason`: soft delete. All queries filter `WHERE deleted_at IS NULL` by default via SQLAlchemy query hooks. **Users never hard-delete anything.** A soft delete requires a reason and also writes a `verification` row with `action = 'delete'`.
 - `practice_id`: `NOT NULL` FK → `practice` on every Practice-scoped table (patient, user, provider, document, redaction_job, export and everything under them). There's only one Practice in the MVP, but every query is scoped by `practice_id` from day one.
 
-**Provenance convention for Clinical Record tables** (condition, cancer_diagnosis, recurrence, biomarker, treatment_course, oncology_course_detail, imaging_study, finding, response_assessment, lab_result, performance_status, cns_status, medication, management_plan, clinical_note):
+**Provenance convention for Clinical Record tables** (diagnosis, recurrence, biomarker, treatment_course, imaging_study, finding, response_assessment, lab_result, performance_status, cns_status, comorbidity, medication, management_plan, clinical_note):
 - `source_fact_id`: FK → `extracted_fact`, nullable. Null means the value was entered directly by a User.
 - `source_document_id`: FK → `document`, nullable.
 - `entered_by_user_id`: FK → `user`, nullable. Set when entered directly.
@@ -426,22 +383,22 @@ erDiagram
 - `care_team_member.role IN ('treating_oncologist', 'referring_gp', 'referring_specialist', 'surgeon', 'radiation_oncologist', 'trial_site_contact')`
 - `document.status IN ('uploaded', 'ocr', 'masking', 'redaction_review', 'classifying', 'extracting', 'in_review', 'complete', 'held', 'failed')`
 - `extracted_fact.review_status IN ('pending', 'accepted', 'edited', 'rejected', 'withdrawn')`
-- `condition.status IN ('active', 'resolved')`
-- `cancer_diagnosis.disease_extent IN ('localised', 'locally_advanced', 'metastatic', 'unknown')`
-- `cancer_diagnosis.cancer_status IN ('active', 'no_evidence_of_disease', 'unknown')`
+- `diagnosis.disease_extent IN ('localised', 'locally_advanced', 'metastatic', 'unknown')`
+- `diagnosis.status IN ('active', 'no_evidence_of_disease', 'unknown')`
 - `recurrence.status IN ('suspected', 'confirmed', 'reclassified_as_new_primary')`
 - `recurrence.extent IN ('local', 'regional', 'distant')`
 - `treatment_course.modality IN ('systemic', 'surgery', 'radiation')`
 - `treatment_course.intent IN ('curative', 'neoadjuvant', 'adjuvant', 'palliative')`
-- **Line of Therapy rule (Oncology):** `oncology_course_detail.line_of_therapy` may be set only when its Treatment Course is systemic with palliative intent. It spans two tables, so it's enforced by a constraint trigger, not a CHECK. Only advanced/metastatic systemic courses get a line number.
+- **Line of Therapy rule:** `CHECK (line_of_therapy IS NULL OR (modality = 'systemic' AND intent = 'palliative'))`. Only advanced/metastatic systemic courses get a line number.
 - `response_assessment.direction IN ('responding', 'stable', 'progressing')`
 - `response_assessment.source IN ('radiology_report', 'clinician')`
+- `comorbidity.status IN ('active', 'resolved')`
 - `match_result.match_state IN ('POTENTIALLY_ELIGIBLE', 'NEEDS_INFORMATION', 'EXCLUDED')`
 - `criterion_evaluation.result IN ('MET', 'NOT_MET', 'UNKNOWN')`
-- `trial_criterion.scope IN ('target_condition', 'whole_person')`
+- `trial_criterion.scope IN ('target_diagnosis', 'whole_person')`
 - `export.kind IN ('identified', 'deidentified')`
 - `verification.action IN ('accept', 'edit', 'reject', 'override', 'attribute', 'sign_off_export', 'delete', 'move', 'hold')`
-- Numeric bounds: `performance_status.value >= 0`, `finding.size_mm > 0`, `oncology_course_detail.line_of_therapy >= 1`.
+- Numeric bounds: `performance_status.value >= 0`, `finding.size_mm > 0`, `treatment_course.line_of_therapy >= 1`.
 
 **Unique constraints:**
 - `patient_identity.patient_id`: one identity row per Patient.
@@ -457,15 +414,13 @@ erDiagram
 - `patient`: partial index on `deleted_at IS NULL`.
 - `lab_result`: `(patient_id, analyte, collected_at DESC)`.
 - `imaging_study`: `(patient_id, modality, study_date DESC)`.
-- `biomarker`: `(cancer_diagnosis_id, name, collected_on DESC)`, for the latest result and discordance checks.
-- `treatment_course`: `(condition_id, start_date)`.
-- `condition`: `(patient_id, status)`.
+- `biomarker`: `(diagnosis_id, name, collected_on DESC)`, for the latest result and discordance checks.
+- `treatment_course`: `(diagnosis_id, start_date)`.
 - `document`: `(patient_id, doc_date DESC)`; partial index on `status = 'held'`.
 - `extracted_fact`: `(review_status, required_job_title)`, for the review queue.
 - `trial`: GIN index on `conditions` (JSONB).
 - `trial_site`: `(country, city)`.
-- `match_run`: `(patient_id, target_condition_id, created_at DESC)`.
-- `practice_module`: unique `(practice_id, module_key)`.
+- `match_run`: `(patient_id, target_diagnosis_id, created_at DESC)`.
 - `llm_cache`: `cache_key`.
 
 **JSONB validation:** JSONB columns with a defined shape (`extracted_fact.payload`, `ocr_page.words`, `treatment_course.details`, etc.) are validated by Pydantic before write. `document_type.json_schema` holds the JSON Schema for each Document Type's extraction.
@@ -488,8 +443,6 @@ erDiagram
 | `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`), `sex`, `created_at`. No real identity here. |
 | `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
 | `care_team_member` | A Provider's role in one Patient's care | `patient_id`, `provider_id`, `role`, `is_primary`, `start_date`, `end_date` (null = current), `notes` |
-| `specialty_module` | Registry of installed Specialty Modules | `key` (e.g. `oncology`), `display_name`, `version` |
-| `practice_module` | Which modules are active for a Practice | `practice_id`, `module_key`, `is_active`, `changed_by_user_id` (developer admin; each change also writes a Verification) |
 
 **Documents, OCR & Extraction**
 
@@ -499,27 +452,25 @@ erDiagram
 | `document_type` | Registry of known Document Types | `key` (e.g. `radiology_ct`), `display_name`, `json_schema` (JSONB), `extraction_prompt_ref`, `version`, `is_active`. Developer-maintained only; no proposed types in the MVP. |
 | `ocr_page` | Classic-OCR output for one page of the Working Copy | `document_id` (or `redaction_job_file_id`), `page_number`, `engine` (ppocr_v5/doctr), `engine_version`, `words` (JSONB: `[{text, bbox_pt, confidence}]`), `mean_confidence`, `rotation_deg` |
 | `extraction` | One run of the extractor over a Document | `document_id`, `document_type_id`, `pipeline_run_id`, `reader` (text_layer/classic_ocr/local_vlm/cloud_vlm), `model_id`, `prompt_version`, `created_at` |
-| `extracted_fact` | One candidate clinical statement: **the unit of review** | `extraction_id`, `patient_id`, `fact_kind` (condition/cancer_diagnosis/recurrence/biomarker/lab_result/imaging_study/finding/response_assessment/treatment_course/medication/performance_status/cns_status/management_plan/clinical_note), `module_key` (null = Core), `payload` (JSONB, validated against the fact kind's Pydantic model, which the owning module registers), `source_locations` (JSONB: `[{page, bbox_pt, text}]`), `confidence` (0–1), `confidence_band` (high/medium/low), `numeric_crosscheck` (agree/disagree/not_applicable), `required_job_title` (the minimum Job Title that may verify it, from §6.4), `review_status`, `accepted_record_table`, `accepted_record_id` (set on accept) |
+| `extracted_fact` | One candidate clinical statement: **the unit of review** | `extraction_id`, `patient_id`, `fact_kind` (diagnosis/recurrence/biomarker/lab_result/imaging_study/finding/response_assessment/treatment_course/medication/comorbidity/performance_status/cns_status/management_plan/clinical_note), `payload` (JSONB, validated against the fact kind's Pydantic model), `source_locations` (JSONB: `[{page, bbox_pt, text}]`), `confidence` (0–1), `confidence_band` (high/medium/low), `numeric_crosscheck` (agree/disagree/not_applicable), `required_job_title` (the minimum Job Title that may verify it, from §6.4), `review_status`, `accepted_record_table`, `accepted_record_id` (set on accept) |
 | `verification` | A User's sign-off on anything: **the audit spine** | `subject_table`, `subject_id`, `user_id`, `job_title_at_time`, `action`, `reason` (nullable), `before` (JSONB, nullable), `after` (JSONB, nullable), `reauthenticated` (bool: true for clinician-only actions), `created_at` |
 
-**Clinical Record: Conditions (Core) and Cancer (Oncology)**
+**Clinical Record: Disease**
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `cancer_type` *(Oncology)* | Registry of Cancer Types (site + histology only, **no subtypes**) | `key` (e.g. `breast`, `nsclc`, `colorectal`, `melanoma`), `display_name`, `icd10_codes` (JSONB), `staging_systems` (JSONB), `is_active` |
-| `condition` | Any diagnosed condition of a Patient (**Core**). Comorbidities are a view over this table: the Conditions other than the one in focus. | `patient_id`, `name`, `code_system` (nullable; SNOMED CT-AU or ICD-10-AM, TBD per [revisit-later.md](revisit-later.md) #6), `code` (nullable), `status` (active/resolved), `onset_date` (nullable), `extended_by_module` (nullable module key, e.g. `oncology`), `notes`, + provenance |
-| `cancer_diagnosis` *(Oncology)* | Oncology's extension of a Condition that is a primary cancer: one per primary | `condition_id` (unique FK), `cancer_type_id`, `histology`, `primary_site`, `laterality`, `dx_date`, `stage_system` (TNM/FIGO/Ann Arbor/…), `stage` (**at diagnosis, never updated**), `disease_extent`, `disease_extent_as_of`, `cancer_status`, + provenance |
-| `recurrence` *(Oncology)* | A return of a Cancer Diagnosis's cancer | `cancer_diagnosis_id`, `status`, `detected_on`, `extent` (local/regional/distant), `sites` (JSONB), `evidence_document_id` (biopsy/pathology report), `attributed_by_user_id` (clinician), `attributed_at`, `new_cancer_diagnosis_id` (set when reclassified as a new primary), + provenance |
-| `biomarker` *(Oncology)* | One molecular/genomic/IHC result, **never overwritten** | `cancer_diagnosis_id`, `name` (e.g. EGFR, HER2, ER, PD-L1), `variant` (nullable, e.g. exon 19 del, T790M), `result` (positive/negative/equivocal/low/…), `value_num` (nullable, e.g. TPS 60), `value_unit`, `method` (NGS/FISH/IHC/PCR/ctDNA), `specimen_site`, `specimen_kind` (primary/metastasis/liquid_biopsy), `collected_on`, `reported_on`, + provenance. "Current" = latest `collected_on` per `name`. A disagreement with an earlier result raises an Open Item. |
+| `cancer_type` | Registry of Cancer Types (site + histology only, **no subtypes**) | `key` (e.g. `breast`, `nsclc`, `colorectal`, `melanoma`), `display_name`, `icd10_codes` (JSONB), `staging_systems` (JSONB), `is_active` |
+| `diagnosis` | One primary cancer in a Patient | `patient_id`, `cancer_type_id`, `histology`, `primary_site`, `laterality`, `dx_date`, `stage_system` (TNM/FIGO/Ann Arbor/…), `stage` (**at diagnosis, never updated**), `disease_extent`, `disease_extent_as_of`, `status`, + provenance |
+| `recurrence` | A return of a Diagnosis's cancer | `diagnosis_id`, `status`, `detected_on`, `extent` (local/regional/distant), `sites` (JSONB), `evidence_document_id` (biopsy/pathology report), `attributed_by_user_id` (clinician), `attributed_at`, `new_diagnosis_id` (set when reclassified as a new primary), + provenance |
+| `biomarker` | One molecular/genomic/IHC result, **never overwritten** | `diagnosis_id`, `name` (e.g. EGFR, HER2, ER, PD-L1), `variant` (nullable, e.g. exon 19 del, T790M), `result` (positive/negative/equivocal/low/…), `value_num` (nullable, e.g. TPS 60), `value_unit`, `method` (NGS/FISH/IHC/PCR/ctDNA), `specimen_site`, `specimen_kind` (primary/metastasis/liquid_biopsy), `collected_on`, `reported_on`, + provenance. "Current" = latest `collected_on` per `name`. A disagreement with an earlier result raises an Open Item. |
 
 **Clinical Record: Treatment**
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `treatment_course` | Any course of treatment for a Condition (**Core**): systemic, procedure/surgery, radiation or other | `condition_id`, `modality` (systemic/surgery/radiation; modules may add values), `intent`, `regimen_name` (systemic only), `regimen_planned` (JSONB: planned drugs and doses), `start_date`, `end_date` (null = ongoing; set only when a User records that the course ended), `reason_stopped`, `details` (JSONB: surgery = procedure, margins; radiation = site, dose, fractions), + provenance |
-| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (PK/FK), `line_of_therapy` (nullable; see the Line of Therapy rule), `treatment_protocol_id` (nullable), `best_response` (CR/PR/SD/PD/NE, nullable) |
+| `treatment_course` | Any systemic, surgical or radiation treatment for a Diagnosis | `diagnosis_id`, `modality`, `intent`, `line_of_therapy` (nullable; see the CHECK rule), `regimen_name` (systemic only), `regimen_planned` (JSONB: planned drugs and doses), `treatment_protocol_id` (nullable), `start_date`, `end_date` (null = ongoing; set only when a User records that the course ended), `best_response` (CR/PR/SD/PD/NE, nullable), `reason_stopped`, `details` (JSONB: surgery = procedure, margins; radiation = site, dose, fractions), + provenance |
 | `drug_reference` | Canonical drug lookup | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_id`, `common_doses`, `common_routes` |
-| `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set when the drug belongs to a Treatment Course); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
+| `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set for cancer drugs); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
 | `medication_change_log` | Audit trail of Medication changes | As v1.1, with `changed_by_user_id` (replaces `changed_by` → provider) |
 
 **Clinical Record: Imaging, Labs, Status**
@@ -527,11 +478,12 @@ erDiagram
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `imaging_study` | One imaging examination | `patient_id`, `modality` (CT/MRI/PET/PET-CT/bone/ultrasound/X-ray), `body_region`, `study_date`, `impression` (verbatim), `comparison_date`, + provenance |
-| `finding` | One observation in a single study (**not linked across studies**) | `imaging_study_id`, `patient_id`, `condition_id` (nullable: attributed only when the report says so), `site`, `laterality`, `description`, `size_mm` (nullable), `suv_max` (nullable), `is_new` (nullable), `is_measurable` (nullable: ≥10 mm on CT, for trial criteria), + provenance |
-| `response_assessment` *(Oncology)* | Stated direction of a Cancer Diagnosis at a point in time | `patient_id`, `cancer_diagnosis_id` (nullable = unattributed; unattributed rows show as Needs Information), `assessed_on`, `direction`, `source`, `imaging_study_id` (nullable), `overrides_id` (nullable: a clinician override of an earlier row), + provenance |
+| `finding` | One observation in a single study (**not linked across studies**) | `imaging_study_id`, `patient_id`, `diagnosis_id` (nullable: attributed only when the report says so), `site`, `laterality`, `description`, `size_mm` (nullable), `suv_max` (nullable), `is_new` (nullable), `is_measurable` (nullable: ≥10 mm on CT, for trial criteria), + provenance |
+| `response_assessment` | Stated direction of a Diagnosis at a point in time | `patient_id`, `diagnosis_id` (nullable = unattributed; unattributed rows show as Needs Information), `assessed_on`, `direction`, `source`, `imaging_study_id` (nullable), `overrides_id` (nullable: a clinician override of an earlier row), + provenance |
 | `lab_result` | One lab value | As v1.1 + provenance |
-| `performance_status` *(Oncology)* | ECOG or KPS at a point in time | As v1.1 + provenance |
-| `cns_status` *(Oncology)* | CNS disease status (first-class because it gates most trials) | As v1.1 + provenance |
+| `performance_status` | ECOG or KPS at a point in time | As v1.1 + provenance |
+| `cns_status` | CNS disease status (first-class because it gates most trials) | As v1.1 + provenance |
+| `comorbidity` | Any non-cancer condition, current or past | `patient_id`, `condition_name`, `code_system` (nullable; SNOMED CT-AU or ICD-10-AM, TBD per [revisit-later.md](revisit-later.md) #6), `code` (nullable), `status` (active/resolved), `diagnosed_date` (nullable), `notes`, + provenance |
 
 **Clinical Record: Plan & Notes**
 
@@ -545,9 +497,9 @@ erDiagram
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `treatment_protocol` *(Oncology)* | An eviQ standard-of-care protocol | `cancer_type_id`, `protocol_name`, `intent`, `line_of_therapy` (nullable), `disease_extent_required` (JSONB), `biomarker_requirements` (JSONB, e.g. `{"HER2": "positive"}`), `eviq_id`, `eviq_url`, `eviq_version`, `eviq_updated_on`, `last_checked_at`, `evidence_level`, `raw_data` (JSONB) |
-| `protocol_drug` *(Oncology)* | One drug in a protocol | As v1.1 |
-| `pbs_item` | PBS Schedule entry | As v1.1. `indications` (JSONB) holds per-indication restriction levels, from which PBS Listing is derived per Condition (by the owning module). |
+| `treatment_protocol` | An eviQ standard-of-care protocol | `cancer_type_id`, `protocol_name`, `intent`, `line_of_therapy` (nullable), `disease_extent_required` (JSONB), `biomarker_requirements` (JSONB, e.g. `{"HER2": "positive"}`), `eviq_id`, `eviq_url`, `eviq_version`, `eviq_updated_on`, `last_checked_at`, `evidence_level`, `raw_data` (JSONB) |
+| `protocol_drug` | One drug in a protocol | As v1.1 |
+| `pbs_item` | PBS Schedule entry | As v1.1. `indications` (JSONB) holds per-indication restriction levels, from which PBS Listing is derived per Diagnosis. |
 | `pbs_refresh_log`, `eviq_refresh_log` | Refresh history | `refreshed_at`, `item_count`, `status`, `error_detail`. A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
 
 **Trials & Matching**
@@ -555,8 +507,8 @@ erDiagram
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `trial`, `trial_site`, `trial_snapshot` | Registry records, sites, immutable snapshots | As v1.1 |
-| `trial_criterion` | One parsed eligibility criterion | As v1.1 + `scope` (target_condition/whole_person), `attribute` from the owning module's vocabulary |
-| `match_run` | One evaluation of a Patient against trials for a **target Condition**. Never changes once made. | `patient_id`, `target_condition_id`, `snapshot_id`, `clinical_record_as_of` (timestamp of the latest Clinical Record change used), `ruleset_version`, `model_version`, `run_by_user_id`, `created_at`. **Stale** is computed, not stored: a newer Clinical Record change, a newer trial snapshot, or `created_at` older than 30 days. |
+| `trial_criterion` | One parsed eligibility criterion | As v1.1 + `scope` (target_diagnosis/whole_person) |
+| `match_run` | One evaluation of a Patient against trials for a **target Diagnosis**. Never changes once made. | `patient_id`, `target_diagnosis_id`, `snapshot_id`, `clinical_record_as_of` (timestamp of the latest Clinical Record change used), `ruleset_version`, `model_version`, `run_by_user_id`, `created_at`. **Stale** is computed, not stored: a newer Clinical Record change, a newer trial snapshot, or `created_at` older than 30 days. |
 | `match_result` | One Patient × one trial | `match_run_id`, `trial_id`, `match_state`, `score` |
 | `criterion_evaluation` | One Criterion Result | `match_result_id`, `trial_criterion_id`, `result`, `rationale`, `evidence_ref` (JSONB: Clinical Record row + criterion text) |
 
@@ -580,26 +532,23 @@ erDiagram
 | `llm_call_log` | Every model call, local or cloud | As v1.1 + `endpoint` (local_vlm/cloud), `cloud_request_id` (nullable) |
 | `llm_cache` | Content-addressed response cache | As v1.1 |
 
-> **Retired from v1.1:** `therapy_line` (→ `treatment_course`), `molecular_result` (→ `biomarker`), `lesion` / `lesion_measurement` (→ `finding` + `response_assessment`), `diagnosis` (→ Core `condition` + Oncology `cancer_diagnosis`, v1.3), `comorbidity` (→ a view over `condition`, v1.3), `observation` (PET/bone → `finding`; surgery/radiation → `treatment_course.details`; anything else → the Document is Held), `patient.display_name` (→ real name from `patient_identity`; `pseudonym` only for exports), `patient.is_synthetic` (synthetic data lives only in dev/test), `patient_provider` (→ `care_team_member`), and the `document_type.status = proposed` flow.
+> **Retired from v1.1:** `therapy_line` (→ `treatment_course`), `molecular_result` (→ `biomarker`), `lesion` / `lesion_measurement` (→ `finding` + `response_assessment`), `observation` (PET/bone → `finding`; surgery/radiation → `treatment_course.details`; anything else → the Document is Held), `patient.display_name` (→ real name from `patient_identity`; `pseudonym` only for exports), `patient.is_synthetic` (synthetic data lives only in dev/test), `patient_provider` (→ `care_team_member`), and the `document_type.status = proposed` flow.
 
 **Open Items are derived, not stored.** A `summary/open_items` query builds them from: Held Documents, `extracted_fact` rows with `review_status = 'pending'`, Criterion Results of `UNKNOWN` in non-Stale Match Runs, `next_step` rows that are due, Stale Match Runs, Biomarker discordance, unattributed Response Assessments and Findings, suspected Recurrences, and unlinked Redaction Jobs.
 
 ### 6.4 Verification Rights
-
-Specialty Modules add rows for their own fact kinds; rows marked *(Oncology)* come from the Oncology module.
 
 Who may verify each kind of value. `extracted_fact.required_job_title` is set from this table when the fact is created.
 
 | Value | Clinician | Trial coordinator | Secretary | Developer admin |
 |---|---|---|---|---|
 | Patient Identity, Care Team, Document Type, redaction review, holding a Document | ✅ | ✅ | ✅ | ❌ |
-| Lab results, Medications, Conditions (non-cancer), Imaging studies, Findings, *(Oncology)* Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
-| Treatment Courses, *(Oncology)* Biomarkers | ✅ | ✅ | ❌ | ❌ |
-| *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution, Response Assessment overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
+| Lab results, Medications, Comorbidities, Imaging studies, Findings, Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
+| Biomarkers, Treatment Courses | ✅ | ✅ | ❌ | ❌ |
+| Diagnosis, Stage, Disease Extent, Recurrence attribution, Response Assessment overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
 | **Manage Users** (create, deactivate, reset password/2FA, change Job Title) | ✅ | ❌ | ✅ | ✅ |
-| **Activate / deactivate Specialty Modules** for the Practice | ❌ | ❌ | ❌ | ✅ |
 | Change Settings | ✅ | ❌ | ❌ | ✅ |
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
 | **Support views** (health, pipeline-run status and errors, the cloud request ledger's metadata, job queue, refresh logs, VLM worker status, audit counts) | ✅ | ✅ | ✅ | ✅ |
@@ -659,33 +608,31 @@ flowchart TB
 
 ### 7.1 Supported Document Types (launch set)
 
-General Document Types (labs, letters, medication lists, radiology, surgical reports) are **Core**. Each Core type's extraction prompt pulls Core facts plus the facts of every **active** Specialty Module that extends it (e.g. the Oncology module adds Biomarkers and Recurrences to `clinical_letter`). `pathology_molecular` belongs to the **Oncology** module.
-
 | Type key | Source documents | Proposes Extracted Facts of kind |
 |----------|-----------------|----------------------------------|
 | `radiology_ct` | CT (chest/abdo/pelvis/brain) | `imaging_study`, `finding`, `response_assessment` |
 | `radiology_mri` | MRI (brain, liver, spine) | `imaging_study`, `finding`, `response_assessment`, `cns_status` |
 | `radiology_pet_ct` | PET/CT | `imaging_study`, `finding` (incl. SUVmax, avid sites), `response_assessment` |
 | `radiology_bone_scan` | Bone scan | `imaging_study`, `finding`, `response_assessment` |
-| `pathology_histology` | Histopathology reports | `condition` + `cancer_diagnosis`, `biomarker` (IHC: ER/PR/HER2/Ki67; TTF1/p40), `recurrence` (when a biopsy confirms a recurrence) |
+| `pathology_histology` | Histopathology reports | `diagnosis`, `biomarker` (IHC: ER/PR/HER2/Ki67; TTF1/p40), `recurrence` (when a biopsy confirms a recurrence) |
 | `pathology_molecular` | NGS / molecular addendum | `biomarker` (EGFR, ALK, ROS1, BRAF, KRAS, PD-L1 TPS, HER2, PIK3CA, BRCA1/2, MSI, …) with specimen and date |
 | `labs_haematology` | FBC | `lab_result` |
 | `labs_chemistry` | U&E/LFT/renal/bone profile | `lab_result` |
 | `labs_tumour_markers` | CEA, CA15-3, CA125, PSA, AFP, etc. | `lab_result` (panel = tumour_markers) |
-| `clinical_letter` | Oncologist letters, discharge summaries, GP referrals | `condition` (+ `cancer_diagnosis` for cancers), `recurrence`, `treatment_course`, `performance_status`, `medication`, `management_plan` (verbatim), `clinical_note`, `response_assessment` |
+| `clinical_letter` | Oncologist letters, discharge summaries, GP referrals | `diagnosis`, `recurrence`, `treatment_course`, `performance_status`, `comorbidity`, `medication`, `management_plan` (verbatim), `clinical_note`, `response_assessment` |
 | `medication_list` | Printed lists, pharmacy printouts, patient lists, pill-bottle photos | `medication` (one per drug; source `patient_reported` or `pharmacy_list`) |
 | `surgical_report` | Operative notes | `treatment_course` (modality surgery; details: procedure, margins), `finding` |
 | `radiation_report` | Radiation oncology summaries | `treatment_course` (modality radiation; details: site, dose, fractions) |
 
 > **Claude Code notes on Document Types:**
 > - Each fact kind has a Pydantic model in `backend/app/modules/extraction/schemas/`. It constrains the model's structured output **and** validates the result. Extraction prompts live in `prompts/extraction/` as versioned templates.
-> - **Medication and Condition extraction from clinical letters is important.** GP referral letters almost always contain both lists. Extract each drug or condition as a separate fact (the name is mandatory; everything else is best effort), then reconcile ([§7.2](#72-reconciliation-medications-and-comorbidities)).
+> - **Medication and Comorbidity extraction from clinical letters is important.** GP referral letters almost always contain both lists. Extract each drug or condition as a separate fact (the name is mandatory; everything else is best effort), then reconcile ([§7.2](#72-reconciliation-medications-and-comorbidities)).
 > - **Management Plans are extracted verbatim.** The prompt must copy the plan text exactly, never summarise it.
 > - **Line of Therapy** is proposed only for palliative-intent systemic courses (the DB CHECK enforces this).
 
-### 7.2 Reconciliation (Medications and Conditions)
+### 7.2 Reconciliation (Medications and Comorbidities)
 
-Medication and Condition facts from a new Document go through reconciliation before they're accepted:
+Medication and Comorbidity facts from a new Document go through reconciliation before they're accepted:
 
 ```
 Extracted Medication fact (e.g. "Norvasc 5mg daily")
@@ -711,7 +658,7 @@ User (clinician or trial coordinator) confirms new / marks duplicate / updates e
 Write to medication (source = 'document_extracted') + verification row
 ```
 
-**Conditions** follow the same shape, with string/synonym matching ("T2DM" ↔ "type 2 diabetes") in place of `drug_reference`. Whether to match against a standard terminology (SNOMED CT-AU / ICD-10-AM) is open ([revisit-later.md](revisit-later.md) #6).
+**Comorbidities** follow the same shape, with string/synonym matching ("T2DM" ↔ "type 2 diabetes") in place of `drug_reference`. Whether to match against a standard terminology (SNOMED CT-AU / ICD-10-AM) is open ([revisit-later.md](revisit-later.md) #6).
 
 ### 7.3 Drug Reference Table Seeding
 
@@ -822,9 +769,7 @@ The synthetic import accepts a directory of files plus a JSON manifest with the 
 
 ---
 
-## 10. Treatment Options: Standard of Care (Oncology module: eviQ + PBS)
-
-Treatment Options are an **optional Specialty Module extension point** (§4.1). The Oncology module supplies them from eviQ. Other specialties may have no free guideline source (most rely on licensed Therapeutic Guidelines), so their modules may omit this.
+## 10. Treatment Options: Standard of Care (eviQ + PBS)
 
 ### 10.1 eviQ Adapter
 
@@ -846,17 +791,17 @@ The adapter:
 Unchanged from v1.1. The adapter pulls the oncology-relevant PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug`.
 
 PBS is presented at two levels:
-- **PBS Listing** (per drug, **for this indication**): Unrestricted / Restricted / Authority Required / Not Listed. Derived from `pbs_item.indications` against the Cancer Diagnosis's Cancer Type, Disease Extent and Biomarkers. "PBS-listed" is never shown without an indication.
+- **PBS Listing** (per drug, **for this indication**): Unrestricted / Restricted / Authority Required / Not Listed. Derived from `pbs_item.indications` against the Diagnosis's Cancer Type, Disease Extent and Biomarkers. "PBS-listed" is never shown without an indication.
 - **PBS Coverage** (per Treatment Option): Fully Covered / Partially Covered (naming the drugs that aren't) / Not Covered.
 
 Other fields surfaced: prescribing conditions, general and concessional co-payments, Safety Net thresholds, schedule date.
 
 ### 10.3 Treatment Matching Logic
 
-**Deterministic, not LLM-driven.** Runs per **Cancer Diagnosis**.
+**Deterministic, not LLM-driven.** Runs per **Diagnosis**.
 
 ```
-For a given Cancer Diagnosis D:
+For a given Diagnosis D:
 1. Cancer Type = D.cancer_type
 2. Setting from D.disease_extent:
      localised / locally_advanced → intents {curative, neoadjuvant, adjuvant}
@@ -898,21 +843,19 @@ Unchanged from v1.1:
 
 Eligibility free text becomes an array of structured criteria, using the controlled **attribute vocabulary**:
 
-`age`, `ecog`, `prior_systemic_lines`, `required_biomarker` (EGFR, ALK, ROS1, BRAF, KRAS, HER2, BRCA, …), `pd_l1_tps`, `brain_mets_status`, `leptomeningeal_disease`, `measurable_disease`, `organ_function` (creatinine clearance, liver function, ANC, platelets), `prior_immunotherapy`, `prior_targeted_therapy`, `hormone_receptor_status`, `her2_status`, `disease_extent_required`, `stage_at_diagnosis`, `histology_required`, `other_malignancy_within_years`, `condition_exclusion`
-
-Attributes come from the owning Specialty Module's vocabulary. The list above is the **Oncology** vocabulary; the Core supplies the whole-person basics (`age`, `organ_function`, `condition_exclusion`, `other_malignancy_within_years`).
+`age`, `ecog`, `prior_systemic_lines`, `required_biomarker` (EGFR, ALK, ROS1, BRAF, KRAS, HER2, BRCA, …), `pd_l1_tps`, `brain_mets_status`, `leptomeningeal_disease`, `measurable_disease`, `organ_function` (creatinine clearance, liver function, ANC, platelets), `prior_immunotherapy`, `prior_targeted_therapy`, `hormone_receptor_status`, `her2_status`, `disease_extent_required`, `stage_at_diagnosis`, `histology_required`, `other_malignancy_within_years`, `comorbidity_exclusion`
 
 Each criterion also gets a **scope**:
-- `target_condition`: about the Condition under study (for oncology, "the cancer") (Biomarkers, Line of Therapy, histology, Disease Extent, Stage).
-- `whole_person`: about the Patient as a whole (age, ECOG, organ function, other Conditions, **other malignancies**, CNS status).
+- `target_diagnosis`: about "the cancer" under study (Biomarkers, Line of Therapy, histology, Disease Extent, Stage).
+- `whole_person`: about the Patient as a whole (age, ECOG, organ function, Comorbidities, **other malignancies**, CNS status).
 
 Criteria parsing runs on **public trial text only**, so it may call the cloud LLM without on-click.
 
 ### 11.3 Evaluation
 
-A **Match Run** evaluates a Patient against the trial snapshot for one **target Condition** (a Cancer Diagnosis in the MVP):
-- `target_condition` criteria are checked against the target Condition and its module extension (for oncology): its current Biomarkers, its Treatment Courses (for lines), its Disease Extent and Stage.
-- `whole_person` criteria are checked against the whole Clinical Record. **Other Cancer Diagnoses count as "other malignancies".** Example: a Patient with active NSCLC and melanoma treated 3 years ago, matched with the NSCLC as target, is **Excluded** from a trial with a 5-year other-malignancy exclusion, and the melanoma Diagnosis is cited as evidence.
+A **Match Run** evaluates a Patient against the trial snapshot for one **target Diagnosis**:
+- `target_diagnosis` criteria are checked against the target Diagnosis: its current Biomarkers, its Treatment Courses (for lines), its Disease Extent and Stage.
+- `whole_person` criteria are checked against the whole Clinical Record. **Other Diagnoses count as "other malignancies".** Example: a Patient with active NSCLC and melanoma treated 3 years ago, matched with the NSCLC as target, is **Excluded** from a trial with a 5-year other-malignancy exclusion, and the melanoma Diagnosis is cited as evidence.
 - `measurable_disease` is evaluated from Findings (`is_measurable`, `size_mm`).
 
 How each criterion is evaluated:
@@ -970,7 +913,7 @@ GET    /patients/{id}/care-team
 # Patients
 POST   /patients                            Create Patient (+ Patient Identity)
 GET    /patients                            List (filter by Cancer Type, Disease Extent)
-GET    /patients/{id}                       Patient + identity + Conditions overview
+GET    /patients/{id}                       Patient + identity + Diagnoses overview
 PATCH  /patients/{id}
 PATCH  /patients/{id}/identity              Update Patient Identity (verification row)
 
@@ -1008,12 +951,11 @@ POST   /redaction-jobs/{id}/files/{fid}/burn-in
 GET    /redaction-jobs/{id}/files/{fid}/download   Signed-off De-identified Export
 
 # Clinical Record
-GET    /patients/{id}/conditions            Conditions (Core); ?view=comorbidities&focus={condition_id}
-POST   /patients/{id}/conditions            Direct entry
-GET    /conditions/{id}/cancer-diagnosis    (Oncology) Stage, Disease Extent, Biomarkers, Recurrences
-PUT    /conditions/{id}/cancer-diagnosis    (Oncology) Create/update: clinician, reauth
+GET    /patients/{id}/diagnoses             Diagnoses with Stage, Disease Extent, Biomarkers, Recurrences
+POST   /patients/{id}/diagnoses             Direct entry (clinician)
+PATCH  /diagnoses/{id}                      Update Disease Extent etc. (clinician, reauth)
 POST   /recurrences/{id}/attribute          Confirm / reclassify as new primary (clinician, reauth)
-GET    /cancer-diagnoses/{id}/biomarkers    (Oncology) Full history + discordance flags
+GET    /diagnoses/{id}/biomarkers           Full history + discordance flags
 GET    /patients/{id}/treatment-courses
 GET    /patients/{id}/imaging               Imaging studies + Findings
 GET    /patients/{id}/response-assessments
@@ -1021,8 +963,9 @@ POST   /response-assessments                Clinician override
 GET    /patients/{id}/labs
 GET    /patients/{id}/performance-status
 GET    /patients/{id}/cns-status
-GET    /patients/{id}/conditions/reconcile
-POST   /patients/{id}/conditions/reconcile
+GET    /patients/{id}/comorbidities
+GET    /patients/{id}/comorbidities/reconcile
+POST   /patients/{id}/comorbidities/reconcile
 GET    /patients/{id}/management-plan
 GET    /patients/{id}/next-steps
 POST   /patients/{id}/next-steps
@@ -1046,7 +989,7 @@ GET    /drug-reference/{id}
 GET    /treatment-protocols                 Browse (filter by Cancer Type, intent, line)
 GET    /treatment-protocols/{id}            Detail + PBS Listing per drug
 POST   /treatment-protocols/refresh         eviQ refresh
-GET    /conditions/{id}/treatment-options   Treatment Options from the owning module (Oncology: eviQ + PBS Coverage)
+GET    /diagnoses/{id}/treatment-options    Treatment Options for one Diagnosis (+ PBS Coverage)
 
 # PBS
 GET    /pbs/drugs
@@ -1059,7 +1002,7 @@ GET    /trials
 GET    /trials/{id}                         Detail + parsed criteria (with scope) + sites
 
 # Matching
-POST   /patients/{id}/match                 Body: {target_condition_id} → Match Run
+POST   /patients/{id}/match                 Body: {target_diagnosis_id} → Match Run
 GET    /patients/{id}/match-runs            Runs with computed Stale flag + reasons
 GET    /match-runs/{id}                     Results + Criterion Results
 GET    /match-runs/{id}/diff?vs={other_id}
@@ -1074,10 +1017,6 @@ POST   /patients/{id}/reports               Generate report (type + template)
 GET    /reports/{id}                        Preview
 POST   /reports/{id}/export                 Body: {kind: identified|deidentified, recipient} → sign-off → file
 GET    /exports                             Export history
-
-# Specialty Modules
-GET    /modules                             Installed modules + active flag for this Practice
-PATCH  /modules/{key}                       Activate/deactivate (developer admin; Verification)
 
 # System
 GET    /pipeline-runs
@@ -1114,7 +1053,7 @@ Every mutating pipeline endpoint returns a `pipeline_run_id`. The frontend polls
 
 Each backend domain module is **self-contained**: it owns its models, Pydantic schemas, service layer and API router. Modules communicate only through service interfaces. The orchestrator coordinates cross-module workflows. **Infrastructure is reached only through `core/seams/`** (ADR 0003).
 
-> **Claude Code note: module boundary rule.** A module may import from `core/` (including `core/seams/`) and `llm/`. A module must NOT import another module's internals. **Specialty Modules** (under `specialties/`) may call Core module services but never each other, and the **Core never imports a Specialty Module**: it reaches them only through the module registry (§4.1). If module A needs data from module B, it calls B's service interface. Only the orchestrator imports multiple module services to compose workflows.
+> **Claude Code note: module boundary rule.** A module may import from `core/` (including `core/seams/`) and `llm/`. A module must NOT import another module's internals. If module A needs data from module B, it calls B's service interface. Only the orchestrator imports multiple module services to compose workflows.
 
 ```
 vigil/
@@ -1208,19 +1147,13 @@ vigil/
 │   │   │   │   ├── extract.py
 │   │   │   │   ├── crosscheck.py
 │   │   │   │   └── review.py        # accept/edit/reject → Clinical Record + verification
-│   │   │   ├── clinical/            # Core Clinical Record: Condition, Treatment Course, imaging, labs, notes, plans
-│   │   │   ├── medications/         # + Condition reconciliation
-│   │   │   ├── pbs/                 # PBS adapter + PBS Listing (Core)
-│   │   │   ├── modules/             # Specialty Module contract, registry, per-Practice activation, config builder
+│   │   │   ├── clinical/            # Clinical Record tables (Diagnosis … Next Step)
+│   │   │   ├── medications/         # + Comorbidity reconciliation
+│   │   │   ├── treatments/          # eviQ, PBS, Treatment Options
 │   │   │   ├── trials/
 │   │   │   ├── matching/            # Match Runs, scope, aggregation, staleness
 │   │   │   ├── summary/             # Patient Summary + Open Items (derived)
 │   │   │   └── reports/             # Reports + Exports (sign-off)
-│   │   │
-│   │   ├── specialties/             # ─── Specialty Modules (import Core services only; never each other) ───
-│   │   │   └── oncology/            # cancer_diagnosis, recurrence, biomarker, course detail, response, ECOG, CNS,
-│   │   │                            # eviQ Treatment Options, oncology trial vocabulary, UI section manifests
-│   │   │                            # (one self-contained unit per concept: portability rule, §4.1)
 │   │   │
 │   │   ├── audit/                   # pipeline_run, llm_call_log, llm_cache, verification
 │   │   └── main.py
@@ -1281,7 +1214,7 @@ flowchart LR
     P1 --> P2[Phase 2: OCR + De-identification + Redaction]
     P2 --> P3[Phase 3: Document pipeline + VLM + cloud ledger]
     P3 --> P4[Phase 4: Extraction + Review + Clinical Record]
-    P4 --> P5[Phase 5: Medications + Conditions]
+    P4 --> P5[Phase 5: Medications + Comorbidities]
     P4 --> P6[Phase 6: PBS]
     P6 --> P7[Phase 7: eviQ + Treatment Options]
     P1 --> P8[Phase 8: Trial data + criteria parsing]
@@ -1386,24 +1319,24 @@ flowchart LR
 
 **What:**
 - `extraction/`: Pydantic models per fact kind, extraction prompts, **Extracted Facts**, **numeric cross-check**, per-fact review with Job Title enforcement and clinician re-authentication.
-- `clinical/` (Core: Condition, Treatment Course, Imaging Study + Finding, labs, notes, Management Plan, Next Step) and `specialties/oncology/` (Cancer Diagnosis with Stage/Disease Extent, Recurrence with attribution, Biomarker history with discordance, Treatment Course with the Line of Therapy rule, Imaging Study + Finding, Response Assessment with override, labs, ECOG, CNS, Comorbidity, Management Plan verbatim, Next Step, Clinical Note), with provenance and soft delete.
+- `clinical/`: all Clinical Record tables (Diagnosis with Stage/Disease Extent, Recurrence with attribution, Biomarker history with discordance, Treatment Course with the Line of Therapy rule, Imaging Study + Finding, Response Assessment with override, labs, ECOG, CNS, Comorbidity, Management Plan verbatim, Next Step, Clinical Note), with provenance and soft delete.
 - Frontend: Extraction Review (shared page viewer highlighting source locations, "numbers disagree" and "needs clinician" badges), Clinical Data Viewer.
 - Gate: **extraction accuracy** (no regression per category plus a numeric floor).
 
 **Exit criteria:**
 - A Clinical Record can be built from synthetic Documents, and every value links to its source and its Verification.
-- Secretaries can't accept clinical facts; trial coordinators can't accept a Cancer Diagnosis or Stage; clinicians must re-authenticate for those.
+- Secretaries can't accept clinical facts; trial coordinators can't accept Diagnosis or Stage; clinicians must re-authenticate for those.
 - The extraction gate passes.
 
 **Depends on:** Phase 3. *Consider splitting it: labs + imaging first, then pathology + letters.*
 
 ---
 
-### Phase 5: Medications & Condition Reconciliation
+### Phase 5: Medications & Comorbidity Reconciliation
 
-**What:** Drug reference seeding; Medication CRUD; quick-add; reconciliation (§7.2) for Medications **and Conditions**; change log with `changed_by_user_id`; cancer-drug Medications linked to Treatment Courses. Frontend: Medication Manager.
+**What:** Drug reference seeding; Medication CRUD; quick-add; reconciliation (§7.2) for Medications **and Comorbidities**; change log with `changed_by_user_id`; cancer-drug Medications linked to Treatment Courses. Frontend: Medication Manager.
 
-**Exit criteria:** Manual and extracted Medications reconcile; stopping one drug of a Regimen leaves the Treatment Course running; Condition duplicates are flagged.
+**Exit criteria:** Manual and extracted Medications reconcile; stopping one drug of a Regimen leaves the Treatment Course running; Comorbidity duplicates are flagged.
 
 **Depends on:** Phase 4.
 
@@ -1425,7 +1358,7 @@ flowchart LR
 
 **What:** eviQ indexer for the four launch Cancer Types (with version, Disease Extent and Biomarker requirements); the §10.3 matching logic; PBS Coverage; stale-data warning. Frontend: Treatment Options.
 
-**Exit criteria:** For a synthetic Cancer Diagnosis, the right Treatment Options appear with PBS Listing and Coverage. Dr De Souza's walkthrough cases ([revisit-later.md](revisit-later.md) #10) are encoded as tests.
+**Exit criteria:** For a synthetic Diagnosis, the right Treatment Options appear with PBS Listing and Coverage. Dr De Souza's walkthrough cases ([revisit-later.md](revisit-later.md) #10) are encoded as tests.
 
 **Depends on:** Phases 4 and 6.
 
@@ -1433,7 +1366,7 @@ flowchart LR
 
 ### Phase 8: Trial Data & Criteria Parsing
 
-**What:** ClinicalTrials.gov + ANZCTR clients, snapshots, sites with distance, geographic scope, criteria parsing with **scope** (target_condition / whole_person). Frontend: Trial Browser.
+**What:** ClinicalTrials.gov + ANZCTR clients, snapshots, sites with distance, geographic scope, criteria parsing with **scope** (target_diagnosis / whole_person). Frontend: Trial Browser.
 
 **Exit criteria:** The Australian oncology trials are loaded, parsed and browsable.
 
@@ -1443,7 +1376,7 @@ flowchart LR
 
 ### Phase 9: Trial Matching Engine
 
-**What:** Match Runs per **target Condition**; deterministic pre-filters; LLM adjudication on pseudonymised values (authorised by "Run match", logged in the ledger); aggregation into **Potentially Eligible / Needs Information / Excluded**; **staleness** (Clinical Record change, new snapshot, >30 days); diff. Frontend: Match Board.
+**What:** Match Runs per **target Diagnosis**; deterministic pre-filters; LLM adjudication on pseudonymised values (authorised by "Run match", logged in the ledger); aggregation into **Potentially Eligible / Needs Information / Excluded**; **staleness** (Clinical Record change, new snapshot, >30 days); diff. Frontend: Match Board.
 
 **Exit criteria:** The other-malignancy scenario (§11.3) returns Excluded with evidence; Stale runs show a banner and stay viewable; Unknown criteria appear as Open Items.
 
@@ -1490,7 +1423,7 @@ flowchart LR
 
 ---
 
-## 16. Oncology Module: Launch Cancer Types & Expansion Strategy
+## 16. Launch Cancer Types & Expansion Strategy
 
 The architecture is cancer-agnostic by design. **Dr De Souza's stated goal is coverage of all malignancies**, including haematological cancers and especially rare cancers (Merkel cell, sarcomas, etc.), where the tool adds the most value.
 
@@ -1553,7 +1486,7 @@ Revisit at the Azure move ([revisit-later.md](revisit-later.md) #14).
 | 6 | Synthetic patient data | Yes, will provide. | The MVP runs on synthetic data only; it forms the Reference Set. |
 | 7 | Printable reports | Yes, for inter-centre referrals; not for patients. | **Identified Exports** with sign-off (screen 16). |
 
-### From the design-grilling sessions (2026-09-24 and 2026-09-25)
+### From the design-grilling sessions (2026-09-24)
 
 | Topic | Decision | Where |
 |-------|----------|-------|
@@ -1567,9 +1500,9 @@ Revisit at the Azure move ([revisit-later.md](revisit-later.md) #14).
 | Review unit | The Extracted Fact, not the whole extraction. | §6, §7 |
 | Verification | Human only; rights by Job Title; clinician-only items need re-authentication. | §6.4 |
 | Users vs Providers | Separate; the in-house coordinator/secretary is a User; `trial_site_contact` is an external Provider role. | §6 |
-| Clinical model | Diagnosis (v1.3: Oncology Cancer Diagnosis on a Core Condition) per primary; Stage fixed; Disease Extent current; Recurrence attributed by a clinician via biopsy; Biomarker full history; Treatment Course + Line of Therapy rule; Finding + Response Assessment (no Lesion). | §6 |
+| Clinical model | Diagnosis per primary; Stage fixed; Disease Extent current; Recurrence attributed by a clinician via biopsy; Biomarker full history; Treatment Course + Line of Therapy rule; Finding + Response Assessment (no Lesion). | §6 |
 | Match states | Potentially Eligible / Needs Information / Excluded; Met / Not Met / Unknown. | §11 |
-| Match Runs | Per target Condition (v1.3); Stale after a Clinical Record change, a new snapshot, or 30 days. | §11 |
+| Match Runs | Per target Diagnosis; Stale after a Clinical Record change, a new snapshot, or 30 days. | §11 |
 | Treatment Options | Cancer Type + Disease Extent/intent + next Line + Biomarkers. Provisional. | §10.3, revisit #10 |
 | PBS | PBS Listing per drug per indication; PBS Coverage per option. | §10.2 |
 | Originals | Kept encrypted; Working Copy ≤300 dpi for OCR and display. | §7 |
@@ -1579,9 +1512,8 @@ Revisit at the Azure move ([revisit-later.md](revisit-later.md) #14).
 | Environments | dev / test / prod; the MVP is dev + test; synthetic only, full guardrails; dev login in dev only. | Env section |
 | Cloud-readiness | Seams for storage, DB, VLM worker, queue, keys, login; no multi-tenancy yet. | ADR 0003, §14 |
 | Practices | Every Patient/User/Document belongs to a Practice; Access Grants and Combined View deferred. | revisit #13 |
-| Core + Specialty Modules (v1.3) | A specialty-agnostic Core with pluggable Specialty Modules (plugin architecture: contract, registry, Strategy per extension point, per-Practice activation by developer admins); Oncology first. Condition is Core, Cancer Diagnosis is Oncology, Comorbidity is a view. Each concept is a self-contained unit so it can move between modules and the Core. Next specialties: private outpatient specialists, then GP; hospitals are future work. | ADR 0004, §4.1, revisit #17 |
 | Deletion | No hard deletes by Users; misfiled Documents are moved. Retention undecided. | §7.5, revisit #15 |
-| v1.1 §19 open decisions | Comorbidities (v1.3: non-focus Conditions) from all letters (reconciled); Management Plan verbatim + Next Steps; no letter drafting in the MVP; eviQ checked weekly. | §7, §10 |
+| v1.1 §19 open decisions | Comorbidities from all letters (reconciled); Management Plan verbatim + Next Steps; no letter drafting in the MVP; eviQ checked weekly. | §7, §10 |
 
 ---
 
@@ -1644,12 +1576,11 @@ None for the MVP design. Everything deferred or provisional is tracked in [revis
 }
 ```
 
-**C.2 Treatment Option (Oncology; as shown for one Cancer Diagnosis)**
+**C.2 Treatment Option (as shown for one Diagnosis)**
 ```json
 {
   "treatment_protocol_id": "…",
-  "condition_id": "…",
-  "module": "oncology",
+  "diagnosis_id": "…",
   "pbs_coverage": "FULLY_COVERED",
   "drugs": [
     {"name": "Docetaxel", "pbs_listing": "UNRESTRICTED"},
@@ -1696,9 +1627,9 @@ None for the MVP design. Everything deferred or provisional is tracked in [revis
   "trial_criterion_id": "NCT06515990:excl:other_malignancy",
   "scope": "whole_person",
   "result": "NOT_MET",
-  "rationale": "Trial excludes other malignancy within 5 years. Patient has a melanoma Cancer Diagnosis (dx 2023-05-10), within 5 years.",
+  "rationale": "Trial excludes other malignancy within 5 years. Patient has a melanoma Diagnosis (dx 2023-05-10), within 5 years.",
   "evidence_ref": {
-    "patient": {"table": "cancer_diagnosis", "id": "…", "field": "dx_date", "value": "2023-05-10"},
+    "patient": {"table": "diagnosis", "id": "…", "field": "dx_date", "value": "2023-05-10"},
     "criterion": "No other malignancy within 5 years prior to enrolment"
   }
 }
@@ -1722,4 +1653,4 @@ None for the MVP design. Everything deferred or provisional is tracked in [revis
 
 ---
 
-*End of v1.3 (v1.2 + Core/Specialty Modules). Incorporates Dr De Souza's feedback (§18) and the design-grilling decisions of 2026-09-24. Terms follow [CONTEXT.md](../CONTEXT.md). Ready for Claude Design mockups (§5) and Claude Code implementation (§3, §6, §12, §14, §15).*
+*End of v1.2. Incorporates Dr De Souza's feedback (§18) and the design-grilling decisions of 2026-09-24. Terms follow [CONTEXT.md](../CONTEXT.md). Ready for Claude Design mockups (§5) and Claude Code implementation (§3, §6, §12, §14, §15).*
