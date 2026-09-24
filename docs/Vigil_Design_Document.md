@@ -548,8 +548,12 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
 | **Manage Users** (create, deactivate, reset password/2FA, change Job Title) | ✅ | ❌ | ✅ | ✅ |
 | Change Settings | ✅ | ❌ | ❌ | ✅ |
+| **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
+| **Support views** (health, pipeline-run status and errors, the cloud request ledger's metadata, job queue, refresh logs, VLM worker status, audit counts) | ✅ | ✅ | ✅ | ✅ |
 
-**Developer admin** is for technical administration. The role can't verify any value, and granting it is recorded as a Verification. Its access to Patient data in prod is undecided ([revisit-later.md](revisit-later.md) #16). In the MVP all data is synthetic.
+**Developer admins** configure and support Vigil, and **can never access Patient data, in any environment**. Every Patient-data endpoint returns 403 for them, and the frontend hides those screens. Their Dashboard shows system status instead of Open Items. Troubleshooting that would need Patient data is done by a clinician, secretary or trial coordinator. Granting or removing the developer admin Job Title is recorded as a Verification.
+
+> **Claude Code note: support data must contain no Patient data.** Logs, `pipeline_run.inputs` and `error_detail`, job payloads, health output and ledger metadata use **IDs only** (UUIDs, request IDs, Document Type keys, counts, timings). They never contain names, identifiers, document text, extracted values or file contents. This is what makes the developer admin's support views safe. Add a test that seeds a synthetic Patient with a distinctive name and asserts the name never appears in any support endpoint's output or in the application logs.
 
 > **Claude Code note:** Enforce this in the service layer (a single `can_verify(user, fact_kind)` function), not in the UI alone. The UI shows facts a User can't verify as read-only with a "needs clinician" badge. Clinician-only actions require re-entering the password or TOTP code within the last 5 minutes, recorded as `verification.reauthenticated = true`.
 

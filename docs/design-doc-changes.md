@@ -27,7 +27,7 @@ Decisions from the design-grilling sessions. Terms follow [CONTEXT.md](../CONTEX
 | Biomarkers, Treatment Courses | ✅ | ✅ | ❌ |
 | Diagnosis, Stage, Recurrence attribution, Response Assessment overrides | ✅ | ❌ | ❌ |
 
-- **Developer admin** Job Title added after v1.2 (2026-09-24). Developer admins can manage Users and Settings but can't verify anything. User management is open to clinicians, secretaries and developer admins (design doc §6.4).
+- **Developer admin** Job Title added after v1.2 (2026-09-24). Developer admins can manage Users and Settings and use support views, but can't verify anything and can **never access Patient data**. Support data (logs, pipeline runs, health) must therefore contain IDs only. User management is open to clinicians, secretaries and developer admins (design doc §6.4).
 - **Separate User from Provider.** Add a `user` table with Job Title (fixed list in v1), optionally linked to a Provider record. Replace the `trial_coordinator` Care Team role with a "trial-site contact" role (an external Provider).
 - **Numeric facts read by a VLM** are cross-checked against the classic OCR text for the same region. If they disagree, the fact is forced to low confidence.
 

@@ -33,7 +33,7 @@ A person who operates Vigil: a clinician, trial coordinator, secretary or develo
 _Avoid_: Account, operator
 
 **Job Title**:
-A User's role: clinician, trial coordinator, secretary or developer admin. Recorded as it stood at the time of every Verification. A developer admin administers Vigil (Users, settings) and cannot verify clinical values.
+A User's role: clinician, trial coordinator, secretary or developer admin. Recorded as it stood at the time of every Verification. A developer admin configures and supports Vigil (Users, settings, troubleshooting) but can never see Patient data or verify anything.
 _Avoid_: Role (reserved for Care Team roles), permission level
 
 **Provider**:
