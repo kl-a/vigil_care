@@ -255,6 +255,8 @@ flowchart TB
 
 ## 5. Screen Inventory (for Claude Design)
 
+> The full frontend brief (tokens, app shell, navigation by Job Title, component inventory, per-screen specs, scaffold requirements, synthetic sample data) is in **[frontend-design.md](frontend-design.md)**. This table is the summary.
+
 | # | Screen | Purpose | Key elements |
 |---|--------|---------|--------------|
 | 1 | **Login** | Individual sign-in | Username + password, TOTP 2FA prompt, 2FA enrolment (QR code) on first login. In dev only, a clearly badged **"Dev login"** button. Inactivity lock after 10 minutes returns here with the session preserved. |
