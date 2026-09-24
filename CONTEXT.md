@@ -29,11 +29,11 @@ _Avoid_: The device, local machine, on-prem, Practice Environment
 ### People
 
 **User**:
-A person who operates Vigil: a clinician, trial coordinator or secretary. Every action in Vigil is attributed to a User.
+A person who operates Vigil: a clinician, trial coordinator, secretary or developer admin. Every action in Vigil is attributed to a User.
 _Avoid_: Account, operator
 
 **Job Title**:
-A User's role at the practice (e.g. medical oncologist, trial coordinator, secretary), recorded as it stood at the time of every Verification.
+A User's role: clinician, trial coordinator, secretary or developer admin. Recorded as it stood at the time of every Verification. A developer admin administers Vigil (Users, settings) and cannot verify clinical values.
 _Avoid_: Role (reserved for Care Team roles), permission level
 
 **Provider**:

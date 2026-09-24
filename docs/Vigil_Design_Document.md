@@ -274,7 +274,7 @@ flowchart TB
 | 15 | **Patient Summary** | "At a Glance" consultation page (Tier 3) | **Registration:** name, DOB, age, Medicare number, address, contact details, mobile. **Diagnosis** (one block per Diagnosis): Cancer Type, histology, Stage (at diagnosis), Disease Extent (now), Biomarker chips (latest, with discordance flag), Recurrences (site, date, confirmed/suspected). **Most Recent Results:** latest bloods (flagged values, sparklines), latest scans with Response Assessment (responding/stable/progressing) and key Findings. **Recent Treatment:** Treatment Courses in the last 6 months, current Regimen, Line of Therapy, best response. **Clinical Notes:** most recent note, most recent letter to referrer. **Management:** Management Plan quoted verbatim with source link, plus **Next Steps**. **Medical History:** Comorbidities (active/resolved), current Medications. **Open Items.** Each section shows "last updated" linking to its source. Print-friendly layout. |
 | 16 | **Exports** | Generate and sign off reports | Template picker (treatment summary, trial matching report, Patient Summary snapshot, combined). **Kind selector, no default: Identified Export or De-identified Export** (the latter labelled with the Pseudonym and masked). Live preview. **Sign-off step:** the User confirms and signs off (recorded with name, Job Title, time, recipient). Export to PDF/DOCX. Vigil never sends the file; the User sends or prints it. Export history. |
 | 17 | **Provider Management** | Manage the Practice's provider directory | Internal and external Providers: title, name, provider number, specialty, contact details. Link to Patients with **Care Team** roles (treating oncologist, referring GP, referring specialist, surgeon, radiation oncologist, trial-site contact). |
-| 18 | **User Management** | Manage who can log in | Users with Job Title (clinician / trial coordinator / secretary), optional link to their own Provider record, 2FA status, active/inactive, last login. Reset password / reset 2FA. |
+| 18 | **User Management** | Manage who can log in (clinicians, secretaries and developer admins only) | Users with Job Title (clinician / trial coordinator / secretary / developer admin), optional link to their own Provider record, 2FA status, active/inactive, last login. Reset password / reset 2FA. |
 | 19 | **Settings** | System configuration | Practice details (name, address, location for trial distances), VLM worker URL + health, cloud escalation mode (**on-click only** in the initial build; the automatic mode is designed but disabled), LLM provider/model/API key, confidence thresholds, refresh schedules (PBS monthly, eviQ weekly, trials weekly/on demand), trial geographic scope (AU only / AU+US+UK+EU / custom), backup status and last successful restore test. |
 
 **Design language:** Clinical-professional. Dense but legible tables. Colour-coded states throughout: green (Potentially Eligible / Met / Fully Covered / Unrestricted), amber (Needs Information / Unknown / Partially Covered / Restricted or Authority Required), red (Excluded / Not Met / Not Covered / Not Listed), grey (context / not assessed). An environment badge is always visible in dev and test. shadcn/ui + Tailwind so it maps cleanly to Claude Code output. No pixel art, no playfulness: this is a clinical tool. Think paycalculator.com.au density with better typography.
@@ -376,7 +376,7 @@ erDiagram
 - Every FK has a corresponding index on the referencing column (Postgres doesn't create these automatically).
 
 **Check constraints** (enum-like columns are enforced in the DB, not only in the application):
-- `user.job_title IN ('clinician', 'trial_coordinator', 'secretary')`
+- `user.job_title IN ('clinician', 'trial_coordinator', 'secretary', 'developer_admin')`
 - `provider.specialty IN ('medical_oncology', 'radiation_oncology', 'surgery', 'general_practice', 'haematology', 'pathology', 'radiology', 'other')`
 - `care_team_member.role IN ('treating_oncologist', 'referring_gp', 'referring_specialist', 'surgeon', 'radiation_oncologist', 'trial_site_contact')`
 - `document.status IN ('uploaded', 'ocr', 'masking', 'redaction_review', 'classifying', 'extracting', 'in_review', 'complete', 'held', 'failed')`
@@ -436,7 +436,7 @@ erDiagram
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `practice` | A Practice using Vigil. One row in the MVP. | `name`, `address`, `phone`, `fax`, `email`, `abn` (nullable), `lat`, `lng` (for trial site distances) |
-| `user` | A person who logs into Vigil | `practice_id`, `username`, `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at`, `job_title` (clinician/trial_coordinator/secretary), `provider_id` (FK, nullable: the User's own Provider record), `is_active`, `last_login_at` |
+| `user` | A person who logs into Vigil | `practice_id`, `username`, `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (FK, nullable: the User's own Provider record), `is_active`, `last_login_at` |
 | `provider` | A clinician in the Practice's directory, internal or external | `practice_id` (whose directory), `title`, `first_name`, `last_name`, `provider_number` (nullable), `specialty`, `is_internal`, `organisation` (for external), `phone`, `email`, `fax`, `notes` |
 | `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`), `sex`, `created_at`. No real identity here. |
 | `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
@@ -538,14 +538,18 @@ erDiagram
 
 Who may verify each kind of value. `extracted_fact.required_job_title` is set from this table when the fact is created.
 
-| Value | Clinician | Trial coordinator | Secretary |
-|---|---|---|---|
-| Patient Identity, Care Team, Document Type, redaction review, holding a Document | ✅ | ✅ | ✅ |
-| Lab results, Medications, Comorbidities, Imaging studies, Findings, Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ |
-| Biomarkers, Treatment Courses | ✅ | ✅ | ❌ |
-| Diagnosis, Stage, Disease Extent, Recurrence attribution, Response Assessment overrides | ✅ (re-authentication required) | ❌ | ❌ |
-| Sign-off on an Identified Export | ✅ | ✅ | ✅ |
-| Sign-off on a De-identified Export | ✅ | ✅ | ✅ |
+| Value | Clinician | Trial coordinator | Secretary | Developer admin |
+|---|---|---|---|---|
+| Patient Identity, Care Team, Document Type, redaction review, holding a Document | ✅ | ✅ | ✅ | ❌ |
+| Lab results, Medications, Comorbidities, Imaging studies, Findings, Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
+| Biomarkers, Treatment Courses | ✅ | ✅ | ❌ | ❌ |
+| Diagnosis, Stage, Disease Extent, Recurrence attribution, Response Assessment overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
+| Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
+| Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
+| **Manage Users** (create, deactivate, reset password/2FA, change Job Title) | ✅ | ❌ | ✅ | ✅ |
+| Change Settings | ✅ | ❌ | ❌ | ✅ |
+
+**Developer admin** is for technical administration. The role can't verify any value, and granting it is recorded as a Verification. Its access to Patient data in prod is undecided ([revisit-later.md](revisit-later.md) #16). In the MVP all data is synthetic.
 
 > **Claude Code note:** Enforce this in the service layer (a single `can_verify(user, fact_kind)` function), not in the UI alone. The UI shows facts a User can't verify as read-only with a "needs clinician" badge. Clinician-only actions require re-entering the password or TOTP code within the last 5 minutes, recorded as `verification.reauthenticated = true`.
 
