@@ -1,3 +1,7 @@
+import { isShipped } from "./stages";
+
+const DASHBOARD_STAGE = 5;
+
 export const JOB_TITLES = ["clinician", "trial_coordinator", "secretary", "developer_admin"] as const;
 export type JobTitle = (typeof JOB_TITLES)[number];
 
@@ -13,6 +17,11 @@ export function seesPatientData(jobTitle: JobTitle): boolean {
   return jobTitle !== "developer_admin";
 }
 
+/** Home: the Dashboard for staff once it ships (Stage 5); until then, and always for developer admins, System status. */
 export function homePath(jobTitle: JobTitle): string {
-  return seesPatientData(jobTitle) ? "/dashboard" : "/system";
+  return seesPatientData(jobTitle) && isShipped(DASHBOARD_STAGE) ? "/dashboard" : "/system";
+}
+
+export function isKnownJobTitle(value: unknown): value is JobTitle {
+  return typeof value === "string" && (JOB_TITLES as readonly string[]).includes(value);
 }

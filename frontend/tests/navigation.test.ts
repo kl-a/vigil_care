@@ -46,8 +46,8 @@ describe("route access", () => {
     expect(["clinician", "trial_coordinator", "secretary"].every((t) => seesPatientData(t as never))).toBe(true);
   });
 
-  it("sends developer admins home to System status and everyone else to the Dashboard", () => {
+  it("sends everyone home to System status until the Dashboard ships in Stage 5", () => {
     expect(homePath("developer_admin")).toBe("/system");
-    expect(homePath("secretary")).toBe("/dashboard");
+    expect(homePath("secretary")).toBe("/system");
   });
 });

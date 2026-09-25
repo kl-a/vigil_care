@@ -26,3 +26,4 @@ def current_user(request: Request, db: Db) -> CurrentUser:
 
 
 SignedIn = Annotated[CurrentUser, Depends(current_user)]
+

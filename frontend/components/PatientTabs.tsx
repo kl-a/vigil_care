@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ACTIVE_MODULES, patientTabsFor } from "@/lib/modules/registry";
+import { isVisible } from "@/lib/stages";
+import { useViewer } from "./shell/ViewerProvider";
 
 export function PatientTabs({ patientId }: { patientId: string }) {
   const pathname = usePathname();
+  const { showUpcoming } = useViewer();
   return (
     <nav aria-label="Patient" className="flex gap-4 overflow-x-auto text-[13px]">
-      {patientTabsFor(ACTIVE_MODULES).map((tab) => {
+      {patientTabsFor(ACTIVE_MODULES).filter((tab) => isVisible(tab.screen, showUpcoming)).map((tab) => {
         const href = `/patients/${patientId}/${tab.segment}`;
         const current = pathname === href;
         return (

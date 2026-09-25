@@ -2,6 +2,8 @@
 
 > **As of 2026-09-25.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
 
+**Showing screens:** a screen appears for everyone once it's marked `built` in `frontend/lib/screens.ts` (or its Patient tab) and its stage has shipped. Raise `SHIPPED_STAGE` in `frontend/lib/stages.ts` when a stage's demo is ready, and mark it here.
+
 **How the build is ordered**
 - Every stage ends with a **stage demo**: a scripted walkthrough in dev, on synthetic data, for stakeholders ([docs/demos/](demos/)).
 - The **Clinical Record is entered by hand first**. The document pipeline fills the same record later.
@@ -33,10 +35,10 @@
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
 | 1 | [#13](https://github.com/kl-a/vigil_care/issues/13) | Dev login as a seeded User, and demo data | #2 | ✅ Done |
-| 2 | [#6](https://github.com/kl-a/vigil_care/issues/6) | Permissions, Verification and User Management basics | #13 | ⏭️ Ready |
+| 2 | [#6](https://github.com/kl-a/vigil_care/issues/6) | Permissions, Verification and User Management basics | #13 | 🔨 Built (`tickets-6-16`) |
 | 3 | [#14](https://github.com/kl-a/vigil_care/issues/14) | Practice details in Settings | #6 | ⏳ Blocked |
 | 3 | [#15](https://github.com/kl-a/vigil_care/issues/15) | Specialty Modules: contract, registry and Settings toggle | #6 | ⏳ Blocked |
-| any | [#16](https://github.com/kl-a/vigil_care/issues/16) | Show only built screens, and System status | none | ⏭️ Ready |
+| any | [#16](https://github.com/kl-a/vigil_care/issues/16) | Show only built screens, and System status | none | 🔨 Built (`tickets-6-16`) |
 
 ### Stage 2 · Patients
 
@@ -101,7 +103,7 @@ flowchart LR
 ```
 
 **Next up:**
-1. Build #6. It unblocks the rest of Stage 1 and all of Stages 2 and 3.
-2. #16 can be done at any point.
+1. Merge #6 and #16.
+2. Then #14 and #15 finish Stage 1, and Stages 2 and 3 can start (#8, #7, #18).
 
 **After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.

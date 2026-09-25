@@ -19,6 +19,10 @@ export interface ScreenInfo {
   number?: number;
   title: string;
   purpose: string;
+  /** The build stage that ships this screen (design doc §15). */
+  stage: number;
+  /** True once the screen is real, not a placeholder. Only built screens of shipped stages are shown. */
+  built?: boolean;
 }
 
 export interface PatientTab {
