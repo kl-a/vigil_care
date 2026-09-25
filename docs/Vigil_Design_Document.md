@@ -13,6 +13,16 @@
 
 **v1.3 (2026-09-25): general Core + Specialty Modules** ([ADR 0004](adr/0004-general-core-with-specialty-modules.md)). Vigil is structured as a specialty-agnostic **Core** with pluggable **Specialty Modules**; **Oncology** is the first and only module in the MVP (§4.1). The general **Condition** replaces the cancer-only Diagnosis in the Core; Oncology extends it into a **Cancer Diagnosis**. **Comorbidity** is now a view, not a table. Match Runs target a Condition. Oncology-only concepts (Stage, Disease Extent, Recurrence, Biomarker, Line of Therapy, Response Assessment, ECOG, CNS status, eviQ Treatment Options) move into the Oncology module. Previous version: [archive/Vigil_Design_Document_v1.2.md](archive/Vigil_Design_Document_v1.2.md).
 
+**v1.3 schema decisions (2026-09-25, for the baseline migration, ticket #2):**
+- Practice scoping extends to child rows, kept consistent by composite foreign keys.
+- Database roles restrict Patient Identity and forbid hard deletes.
+- Audit and immutable tables reject updates.
+- Every written-down value set is a CHECK.
+- Job Kinds and fact kinds are registries that modules add to.
+- The data model is browsable as a generated, clickable diagram ([data-model/](data-model/index.html)).
+
+All of these are in §6.2–§6.3.
+
 ### v1.2
 
 v1.2 incorporates the outcomes of the design-grilling sessions of 2026-09-24. The companion files are part of this spec:
@@ -143,7 +153,7 @@ Not a tier but a foundational module with its own UI:
 | Backend | **Python 3.12 + FastAPI**, Pydantic v2 | Async REST + WebSocket for pipeline progress. |
 | ORM / migrations | **SQLAlchemy 2.0 + Alembic** | Schema-versioned; no runtime DDL. |
 | DB | **PostgreSQL 16** | JSONB for flexible payloads; **pgvector** for semantic search over criteria and clinical notes. Behind the database seam (Azure Database for PostgreSQL later). |
-| Jobs | **Durable job model** (job/job_step tables) + async worker, behind a queue interface | Resumable ingestion. Managed queue later (ADR 0003). |
+| Jobs | **Durable job model** (`job`/`job_step` tables; Job Kinds from the `job_kind` registry) + async worker, behind a queue interface | Resumable ingestion. Managed queue later (ADR 0003). |
 | File storage | **Local disk** behind a storage interface | Originals encrypted at rest. Blob Storage later (ADR 0003). |
 | PDF handling | **pypdfium2** (text layer + rasterise) + **pikepdf** (metadata strip) + **img2pdf**/Pillow (rebuild) | **No PyMuPDF** (AGPL; [ADR 0002](adr/0002-no-agpl-pdf-libraries.md)). |
 | OCR: PII localisation | **PP-OCRv5** (PaddleOCR 3.x) + **docTR**, union of word/line boxes | Runs on every page, CPU-capable, inside Docker. Provisional ([revisit-later.md](revisit-later.md) #1, #1a). |
@@ -329,6 +339,8 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 
 ### 6.1 Entity Relationships
 
+> **Clickable diagram:** [docs/data-model/index.html](data-model/index.html) is generated from the database models by `make erd`, and `make ci` fails if it is out of date. It shows every table, grouped into Core and Oncology, with its columns, allowed values, keys and relations. The Mermaid diagram below is only the overview.
+
 ```mermaid
 erDiagram
     PRACTICE ||--o{ USER : employs
@@ -403,8 +415,18 @@ erDiagram
 - `id`: UUID primary key, server-generated (`gen_random_uuid()`).
 - `created_at`: `TIMESTAMPTZ NOT NULL DEFAULT now()`.
 - `updated_at`: `TIMESTAMPTZ NOT NULL DEFAULT now()`, auto-updated via trigger.
-- `deleted_at`, `deleted_by_user_id`, `deleted_reason`: soft delete. All queries filter `WHERE deleted_at IS NULL` by default via SQLAlchemy query hooks. **Users never hard-delete anything.** A soft delete requires a reason and also writes a `verification` row with `action = 'delete'`.
-- `practice_id`: `NOT NULL` FK → `practice` on every Practice-scoped table (patient, user, provider, document, redaction_job, export and everything under them). There's only one Practice in the MVP, but every query is scoped by `practice_id` from day one.
+- `deleted_at`, `deleted_by_user_id`, `deleted_reason`: soft delete. All queries filter `WHERE deleted_at IS NULL` by default via SQLAlchemy query hooks. **Users never hard-delete anything.** A soft delete requires a reason and also writes a `verification` row with `action = 'delete'`. A CHECK makes the three columns all set or all null, and requires a non-empty reason.
+- **Models:** every table has a SQLAlchemy model from the baseline onward, in the package of the module that owns it (Oncology's models live in the Oncology module). The Alembic baseline is generated from the models and then edited by hand for triggers, grants and seed rows. A **drift test** fails if the models and the migrated database disagree.
+
+**Practice scoping.** There's only one Practice in the MVP, but every query is scoped by `practice_id` from day one. Every table falls into exactly one of three groups:
+
+| Group | `practice_id` | Tables |
+|---|---|---|
+| **Practice data** | `NOT NULL` FK → `practice`, on child rows too | `user`, `provider`, `practice_module`, `patient`, `identity.patient_identity`, `care_team_member`, `document`, `ocr_page`, `extraction`, `extracted_fact`, `verification`, every Clinical Record table (Core and Oncology), `medication_change_log`, `next_step`, `match_run`, `match_result`, `criterion_evaluation`, `redaction_job`, `redaction_job_file`, `redaction_log`, `redaction_entity`, `cloud_request`, `report`, `export` |
+| **Support data** | Nullable (null = system-wide, e.g. a Refresh) | `job`, `pipeline_run`, `llm_call_log`. `job_step` has none; it's reached through its `job`. |
+| **Shared reference data** | None | `practice` itself, `specialty_module`, `job_kind`, `fact_kind`, `document_type`, `cancer_type`, `treatment_protocol`, `protocol_drug`, `drug_reference`, `pbs_item`, `pbs_refresh_log`, `eviq_refresh_log`, `trial`, `trial_site`, `trial_snapshot`, `trial_criterion`, `llm_cache` |
+
+- **A child row can't point at another Practice's parent.** Every Practice-data table has `UNIQUE (id, practice_id)`. Every FK from one Practice-data table to another is **composite**, `(parent_id, practice_id) → parent(id, practice_id)`, so the database rejects a mismatch. Examples: a Condition belongs to the same Practice as its Patient, and a Verification to the same Practice as its User.
 
 **Provenance convention for Clinical Record tables** (condition, cancer_diagnosis, recurrence, biomarker, treatment_course, oncology_course_detail, imaging_study, finding, response_assessment, lab_result, performance_status, cns_status, medication, management_plan, clinical_note):
 - `source_fact_id`: FK → `extracted_fact`, nullable. Null means the value was entered directly by a User.
@@ -440,7 +462,55 @@ erDiagram
 - `criterion_evaluation.result IN ('MET', 'NOT_MET', 'UNKNOWN')`
 - `trial_criterion.scope IN ('target_condition', 'whole_person')`
 - `export.kind IN ('identified', 'deidentified')`
-- `verification.action IN ('accept', 'edit', 'reject', 'override', 'attribute', 'sign_off_export', 'delete', 'move', 'hold')`
+- `verification.action IN ('accept', 'edit', 'reject', 'override', 'attribute', 'sign_off_export', 'delete', 'move', 'hold', 'activate_module', 'deactivate_module')`
+- Documents & OCR: `document.input_method IN ('native_pdf', 'scan', 'photo', 'fax')`; `document.hold_reason IN ('unreadable', 'unknown_type', 'pii_uncertain', 'user_held')`, which must be set when `status = 'held'` and null otherwise; `ocr_page.engine IN ('ppocr_v5', 'doctr')`; `extraction.reader IN ('text_layer', 'classic_ocr', 'local_vlm', 'cloud_vlm')`.
+- Extracted Facts:
+  - `extracted_fact.confidence_band IN ('high', 'medium', 'low')`.
+  - `extracted_fact.numeric_crosscheck IN ('agree', 'disagree', 'not_applicable')`.
+  - `extracted_fact.required_job_title IN ('clinician', 'trial_coordinator', 'secretary')`. It can never be `developer_admin`, who can't verify anything.
+  - `confidence BETWEEN 0 AND 1`.
+- Oncology:
+  - `biomarker.method IN ('NGS', 'FISH', 'IHC', 'PCR', 'ctDNA')` and `biomarker.specimen_kind IN ('primary', 'metastasis', 'liquid_biopsy')`.
+  - `oncology_course_detail.best_response IN ('CR', 'PR', 'SD', 'PD', 'NE')`.
+  - `performance_status.scale IN ('ECOG', 'KPS')`, with ECOG 0–5 and KPS 0–100 in multiples of 10.
+- Medications:
+  - `medication.status IN ('active', 'discontinued', 'on_hold', 'completed', 'unknown')`.
+  - `frequency IN ('daily', 'twice_daily', 'three_times_daily', 'weekly', 'fortnightly', 'monthly', 'prn', 'stat', 'other')`.
+  - `route IN ('oral', 'iv', 'subcut', 'im', 'topical', 'inhaled', 'pr', 'other')`.
+  - `category IN ('cancer_treatment', 'supportive_care', 'comorbidity_management', 'supplement', 'other')`.
+  - `source IN ('patient_reported', 'document_extracted', 'doctor_entered', 'pharmacy_list')`.
+  - `confidence IN ('high', 'medium', 'low')`.
+  - `medication_change_log.change_type IN ('added', 'dose_changed', 'discontinued', 'restarted', 'status_changed', 'verified', 'corrected')`.
+- Plan, notes and labs: `next_step.kind IN ('rescan', 'mdt', 'trial_window', 'review', 'other')`; `clinical_note.note_type IN ('clinical_note', 'letter_to_referrer', 'discharge_summary')`; `lab_result.flag IN ('low', 'normal', 'high', 'critical')`.
+- Protocols & PBS: `treatment_protocol.intent` uses the Treatment Course intents; `protocol_drug.role IN ('backbone', 'combination', 'maintenance')`; `pbs_item.restriction_level IN ('unrestricted', 'restricted', 'authority_required', 'authority_required_streamlined')`.
+- Trials: `trial.registry IN ('CTGOV', 'ANZCTR')`; `trial_criterion.kind IN ('inclusion', 'exclusion')`.
+- Redaction:
+  - `redaction_job.purpose IN ('trial_portal', 'referral', 'other')`.
+  - `redaction_job.status IN ('draft', 'processing', 'in_review', 'complete', 'failed')`.
+  - `redaction_entity.entity_type IN ('NAME', 'DOB', 'MEDICARE', 'IHI', 'DVA', 'MRN', 'ADDRESS', 'PHONE', 'EMAIL', 'PROVIDER_NAME', 'REFERRING_DOCTOR')`.
+  - `redaction_entity.origin IN ('auto', 'manual')`.
+  - `redaction_entity.status IN ('active', 'removed_false_positive')`.
+- Cloud requests: `cloud_request.purpose IN ('vlm_read', 'classify', 'extract', 'adjudicate', 'parse_criteria')`; `payload_kind IN ('masked_image', 'pseudonymised_text', 'public_text')`; `status IN ('pending', 'sent', 'received', 'failed')`. The ledger row is written as `pending` before anything is sent.
+- Reports & audit:
+  - `report.report_type IN ('treatment_summary', 'trial_match', 'patient_summary_snapshot', 'combined')`.
+  - `pipeline_run.kind IN ('ingest', 'extract', 'match', 'report', 'pbs_refresh', 'trial_refresh', 'eviq_refresh', 'ocr', 'mask', 'redaction_job', 'reference_set_eval')`.
+  - `pipeline_run.status` and `job.status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')`.
+  - `job_step.status IN ('pending', 'running', 'succeeded', 'failed', 'skipped')`.
+  - `pbs_refresh_log.status` and `eviq_refresh_log.status IN ('succeeded', 'partial', 'failed')`.
+  - `llm_call_log.endpoint IN ('local_vlm', 'cloud')`.
+- **One of two parents:** `ocr_page` and `redaction_log` belong to exactly one of `document_id` or `redaction_job_file_id` (a CHECK allows one, not both and not neither).
+- **Module-contributed values are registries, not CHECKs**, because the Core can't name a module's values:
+  - `job.kind` must exist in `job_kind`.
+  - `extracted_fact.fact_kind` must exist in `fact_kind`.
+  - `practice_module.module_key` must exist in `specialty_module`.
+
+  Each is an FK, so the database rejects an unknown value. Modules add their rows in their own migrations.
+- **Deliberately free text** (the value set is open-ended or not yet decided; [revisit-later.md](revisit-later.md) #19):
+  - Oncology: `biomarker.result`, `cancer_diagnosis.stage_system`, `cancer_diagnosis.laterality`.
+  - Imaging and labs: `imaging_study.modality`, `lab_result.panel`, `medication.dose_unit`.
+  - People: `patient.sex`, `provider.title`.
+  - Coding: `condition.code_system` (TBD, [revisit-later.md](revisit-later.md) #6).
+  - Trials: `trial.phase`, `trial.overall_status`, `trial_site.site_status`, `trial_criterion.attribute` (validated by the owning module's vocabulary).
 - Numeric bounds: `performance_status.value >= 0`, `finding.size_mm > 0`, `oncology_course_detail.line_of_therapy >= 1`.
 
 **Unique constraints:**
@@ -466,6 +536,8 @@ erDiagram
 - `trial_site`: `(country, city)`.
 - `match_run`: `(patient_id, target_condition_id, created_at DESC)`.
 - `practice_module`: unique `(practice_id, module_key)`.
+- `job`: `(status, run_after, priority)`, so a worker can claim the next Job (`SELECT … FOR UPDATE SKIP LOCKED`).
+- `job_step`: unique `(job_id, sequence)`.
 - `llm_cache`: `cache_key`.
 
 **JSONB validation:** JSONB columns with a defined shape (`extracted_fact.payload`, `ocr_page.words`, `treatment_course.details`, etc.) are validated by Pydantic before write. `document_type.json_schema` holds the JSON Schema for each Document Type's extraction.
@@ -475,6 +547,19 @@ erDiagram
 - `patient_identity` columns ending `_encrypted` use application-level AES-256-GCM and are `BYTEA`. The key is held via the key seam (`.env` / local keystore in the MVP; Key Vault later), never in the database.
 - `patient_identity` lives in a separate Postgres schema (`identity`) with restricted grants.
 - TOTP secrets (`user.totp_secret_encrypted`) are encrypted the same way.
+
+**Database roles and grants.** Restrictions are enforced by Postgres itself, not only by the app:
+
+| Role | Login | What it can do |
+|---|---|---|
+| `vigil_owner` | Yes (migrations only) | Owns every schema and table; runs Alembic. The running app never uses it. |
+| `vigil_app` | Yes (the backend) | `SELECT`, `INSERT`, `UPDATE` on the main schema. **No `DELETE` on any table** except `llm_cache`, `job` and `job_step`, so Patient data can only be soft-deleted. Reaches the `identity` schema only through `identity_access`. |
+| `identity_access` | No | `USAGE` on the `identity` schema; `SELECT`, `INSERT`, `UPDATE` (never `DELETE`) on its tables. Granted only to `vigil_app`. |
+| `vigil_support` | Yes (support tooling) | Read-only on Support-data and registry tables (`job`, `job_step`, `job_kind`, `pipeline_run`, `llm_call_log`, `cloud_request`, the refresh logs, `specialty_module`, `practice_module`). **Never** the `identity` schema or any Patient data table. It's the database-level mirror of the developer admin's rule (§6.4). |
+
+`PUBLIC` has no privileges on the `identity` schema. Tests prove that a role without `identity_access` is refused, and that `vigil_app` can't `DELETE` Patient data.
+
+**Tables that never change once written.** A trigger rejects every `UPDATE` and `DELETE` on `verification`, `medication_change_log`, `llm_call_log`, `match_run`, `match_result`, `criterion_evaluation` and `trial_snapshot`, with a test per table. They keep the standard columns for uniformity, but can't be soft-deleted. **`cloud_request`** is the one partial exception: it may be updated only to record the reply (`status`, `response_received_at`); every other column is locked.
 
 ### 6.3 Table Catalogue
 
@@ -488,8 +573,8 @@ erDiagram
 | `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`), `sex`, `created_at`. No real identity here. |
 | `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
 | `care_team_member` | A Provider's role in one Patient's care | `patient_id`, `provider_id`, `role`, `is_primary`, `start_date`, `end_date` (null = current), `notes` |
-| `specialty_module` | Registry of installed Specialty Modules | `key` (e.g. `oncology`), `display_name`, `version` |
-| `practice_module` | Which modules are active for a Practice | `practice_id`, `module_key`, `is_active`, `changed_by_user_id` (developer admin; each change also writes a Verification) |
+| `specialty_module` | Registry of installed Specialty Modules. "Installed" means the module's code ships with this build; its row and tables are created by migrations (the baseline registers `oncology`). | `key` (unique, e.g. `oncology`), `display_name`, `version` |
+| `practice_module` | Which modules are active for a Practice | `practice_id`, `module_key` (FK → `specialty_module.key`), `is_active`, `changed_by_user_id` (developer admin; each change also writes a Verification with action `activate_module`/`deactivate_module`). The bootstrap command (§15 Phase 1) activates Oncology for the new Practice, attributed to the first developer admin it creates ([revisit-later.md](revisit-later.md) #18). |
 
 **Documents, OCR & Extraction**
 
@@ -499,8 +584,17 @@ erDiagram
 | `document_type` | Registry of known Document Types | `key` (e.g. `radiology_ct`), `display_name`, `json_schema` (JSONB), `extraction_prompt_ref`, `version`, `is_active`. Developer-maintained only; no proposed types in the MVP. |
 | `ocr_page` | Classic-OCR output for one page of the Working Copy | `document_id` (or `redaction_job_file_id`), `page_number`, `engine` (ppocr_v5/doctr), `engine_version`, `words` (JSONB: `[{text, bbox_pt, confidence}]`), `mean_confidence`, `rotation_deg` |
 | `extraction` | One run of the extractor over a Document | `document_id`, `document_type_id`, `pipeline_run_id`, `reader` (text_layer/classic_ocr/local_vlm/cloud_vlm), `model_id`, `prompt_version`, `created_at` |
-| `extracted_fact` | One candidate clinical statement: **the unit of review** | `extraction_id`, `patient_id`, `fact_kind` (condition/cancer_diagnosis/recurrence/biomarker/lab_result/imaging_study/finding/response_assessment/treatment_course/medication/performance_status/cns_status/management_plan/clinical_note), `module_key` (null = Core), `payload` (JSONB, validated against the fact kind's Pydantic model, which the owning module registers), `source_locations` (JSONB: `[{page, bbox_pt, text}]`), `confidence` (0–1), `confidence_band` (high/medium/low), `numeric_crosscheck` (agree/disagree/not_applicable), `required_job_title` (the minimum Job Title that may verify it, from §6.4), `review_status`, `accepted_record_table`, `accepted_record_id` (set on accept) |
+| `extracted_fact` | One candidate clinical statement: **the unit of review** | `extraction_id`, `patient_id`, `fact_kind` (FK → `fact_kind.key`: condition/cancer_diagnosis/recurrence/biomarker/lab_result/imaging_study/finding/response_assessment/treatment_course/medication/performance_status/cns_status/management_plan/clinical_note), `module_key` (null = Core), `payload` (JSONB, validated against the fact kind's Pydantic model, which the owning module registers), `source_locations` (JSONB: `[{page, bbox_pt, text}]`), `confidence` (0–1), `confidence_band` (high/medium/low), `numeric_crosscheck` (agree/disagree/not_applicable), `required_job_title` (the minimum Job Title that may verify it, from §6.4), `review_status`, `accepted_record_table`, `accepted_record_id` (set on accept) |
 | `verification` | A User's sign-off on anything: **the audit spine** | `subject_table`, `subject_id`, `user_id`, `job_title_at_time`, `action`, `reason` (nullable), `before` (JSONB, nullable), `after` (JSONB, nullable), `reauthenticated` (bool: true for clinician-only actions), `created_at` |
+
+**Registries & Jobs** (Core; modules add rows through their own migrations)
+
+| Table | Purpose | Key columns |
+|-------|---------|-------------|
+| `fact_kind` | Every kind of Extracted Fact, and who contributed it | `key` (unique, e.g. `lab_result`, `biomarker`), `module_key` (FK → `specialty_module.key`, null = Core), `record_table` (the Clinical Record table an accepted fact lands in) |
+| `job_kind` | Every Job Kind. A Job of an unknown kind is rejected by the database. | `key` (unique, e.g. `ingest_document`, `refresh_pbs`), `module_key` (FK, null = Core), `description` |
+| `job` | One Job on the durable queue (§3). **Payload holds IDs only.** | `kind` (FK → `job_kind.key`), `status`, `practice_id` (nullable: null = system-wide, e.g. a Refresh), `payload` (JSONB, IDs only), `priority`, `attempts`, `max_attempts`, `run_after`, `locked_at`, `locked_by` (worker ID), `last_error` (IDs only), `pipeline_run_id` (nullable), `finished_at`. The queue refuses to enqueue or run a Job whose Job Kind's module isn't active for its Practice. |
+| `job_step` | One resumable step of a Job | `job_id` (`ON DELETE CASCADE`), `sequence`, `name`, `status`, `started_at`, `finished_at`, `output` (JSONB, IDs only), `error_detail` (IDs only) |
 
 **Clinical Record: Conditions (Core) and Cancer (Oncology)**
 
@@ -603,6 +697,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | Change Settings | ✅ | ❌ | ❌ | ✅ |
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
 | **Support views** (health, pipeline-run status and errors, the cloud request ledger's metadata, job queue, refresh logs, VLM worker status, audit counts) | ✅ | ✅ | ✅ | ✅ |
+| **Start a Refresh** (trial registries, PBS, eviQ) from the Support Views | ❌ | ❌ | ❌ | ✅ |
 
 **Developer admins** configure and support Vigil, and **can never access Patient data, in any environment**. Every Patient-data endpoint returns 403 for them, and the frontend hides those screens. Their Dashboard shows system status instead of Open Items. Troubleshooting that would need Patient data is done by a clinician, secretary or trial coordinator. Granting or removing the developer admin Job Title is recorded as a Verification.
 
@@ -1298,7 +1393,8 @@ flowchart LR
 **What:**
 - Docker Compose (Postgres 16 + FastAPI + Next.js).
 - **Environments** (`VIGIL_ENV=dev|test`) with the startup guard that refuses the dev login outside dev, plus a test asserting it.
-- Alembic baseline with the **full schema** from §6 (all tables, constraints, indexes, `identity` schema).
+- SQLAlchemy models for every table, and an Alembic baseline with the **full schema** from §6: all tables, constraints, indexes, the `identity` schema, database roles and grants, the triggers for tables that never change, and the registry rows (`specialty_module` for `oncology`, Core and Oncology `fact_kind`/`job_kind`). A drift test compares the models with the migrated database.
+- `make erd` generates the clickable data-model diagram (`docs/data-model/`); `make ci` fails if it's out of date.
 - `core/`: config, DB session, base model with soft-delete and `practice_id` mixin.
 - `core/seams/` with local implementations: storage, keys, queue, identity (stub), VLM worker client (stub).
 - FastAPI app factory + `/health`.
@@ -1322,6 +1418,7 @@ flowchart LR
 
 **What:**
 - `accounts/`: local accounts (argon2id), **TOTP 2FA** enrolment and login, **10-minute inactivity lock**, re-authentication endpoint, **dev login** (dev only), User management with Job Title.
+- **Bootstrap command:** creates the Practice and the first User (a developer admin), then activates Oncology for the Practice as that User, recording a Verification (`activate_module`).
 - `core/permissions.py`: `can_verify` implementing §6.4. The `verification` table and its service.
 - `practice/`: Practice details, Provider directory, Care Team roles.
 - `patients/`: Patient + **Patient Identity** (encrypted fields in the `identity` schema), Pseudonym generation.
