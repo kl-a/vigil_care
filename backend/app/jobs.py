@@ -2,10 +2,12 @@
 jobs so the worker can run them. Each Job Kind here is also registered by a migration (`job_kind`).
 """
 
+from app.modules.pbs import refresh as pbs_refresh
 from app.orchestrator.handlers import JobRegistry
 
 
 def registry() -> JobRegistry:
     jobs = JobRegistry()
-    # Modules register their handlers and schedules here, e.g. the PBS Refresh (#19).
+    jobs.register(pbs_refresh.handler())
+    jobs.schedule(pbs_refresh.MONTHLY)
     return jobs
