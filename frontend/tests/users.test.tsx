@@ -46,11 +46,11 @@ describe("User Management", () => {
     expect(within(sam).getByText("—")).toBeInTheDocument();
   });
 
-  it("offers no actions on your own row", async () => {
+  it("offers only linking your own Provider record on your own row", async () => {
     await renderPage();
     const mine = (await screen.findByText(me.display_name)).closest("tr")!;
     expect(within(mine).getByText("You")).toBeInTheDocument();
-    expect(within(mine).queryByRole("button")).not.toBeInTheDocument();
+    expect(within(mine).getAllByRole("button").map((b) => b.textContent)).toEqual(["Link Provider"]);
   });
 
   it("changes a Job Title as a sign-off in your name", async () => {
@@ -108,8 +108,7 @@ describe("User Management", () => {
     expect((await screen.findByText("Sam Lee (synthetic)")).closest("tr")).toHaveTextContent("Dr Riley Hart");
   });
 
-  it("links a User to their own Provider record (Stage 2, shown as upcoming)", async () => {
-    window.localStorage.setItem("vigil.showUpcoming", "true");
+  it("links a User to their own Provider record", async () => {
     providers.listProviders.mockResolvedValue([
       { id: "p-1", display_name: "Dr Riley Hart", title: "Dr", first_name: "Riley", last_name: "Hart", provider_number: null, specialty: "medical_oncology", is_internal: true, organisation: null, phone: null, email: null, fax: null, notes: null },
     ]);
@@ -121,12 +120,6 @@ describe("User Management", () => {
     fireEvent.click(within(dialog).getByRole("checkbox"));
     fireEvent.click(within(dialog).getByRole("button", { name: "Link" }));
     await waitFor(() => expect(users.changeUser).toHaveBeenCalledWith("u-1", { provider_id: "p-1" }));
-  });
-
-  it("hides linking until Stage 2 ships", async () => {
-    await renderPage();
-    const sam = (await screen.findByText("Sam Lee (synthetic)")).closest("tr")!;
-    expect(within(sam).queryByRole("button", { name: "Link Provider" })).not.toBeInTheDocument();
   });
 
   it("shows why the backend refused", async () => {

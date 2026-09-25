@@ -99,9 +99,13 @@ def provider_detail(db: Session, actor: Actor, provider_id: uuid.UUID) -> Provid
     return _row(_provider(db, actor, provider_id))
 
 
-def provider_names(db: Session, practice_id: uuid.UUID, provider_ids: set[uuid.UUID]) -> dict[uuid.UUID, str]:
-    """Live Providers' names, for other modules (User Management shows each User's linked Provider)."""
-    providers = db.scalars(_in_practice(practice_id).where(Provider.id.in_(provider_ids)))
+def provider_names(
+    db: Session, practice_id: uuid.UUID, provider_ids: set[uuid.UUID], include_removed: bool = False
+) -> dict[uuid.UUID, str]:
+    """Providers' names, for other modules (a User's linked Provider, Care Teams). Live ones only, unless a
+    history needs removed Providers named too."""
+    query = _in_practice(practice_id).where(Provider.id.in_(provider_ids))
+    providers = db.scalars(query.execution_options(include_deleted=include_removed))
     return {provider.id: display_name(provider) for provider in providers}
 
 

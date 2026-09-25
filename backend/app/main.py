@@ -11,7 +11,7 @@ from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
 from app.modules.patients import router as patients
 from app.modules.practice import router as practice
-from app.modules.practice import providers_router, sites_router
+from app.modules.practice import care_team_router, providers_router, sites_router
 from app.modules.registry import router as specialty_modules
 
 SESSION_HOURS = 12
@@ -52,6 +52,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(sites_router.router)
     app.include_router(providers_router.router)
     app.include_router(patients.router)
+    app.include_router(care_team_router.router)
     app.include_router(specialty_modules.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)

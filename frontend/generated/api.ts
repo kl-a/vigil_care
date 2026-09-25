@@ -169,10 +169,46 @@ export interface paths {
         get: operations["patient_detail_patients__patient_id__get"];
         put?: never;
         post?: never;
+        /** Remove Patient */
+        delete: operations["remove_patient_patients__patient_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/care-team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Patient Care Team */
+        get: operations["patient_care_team_patients__patient_id__care_team_get"];
+        put?: never;
+        /** Add Member */
+        post: operations["add_member_patients__patient_id__care_team_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/care-team/{member_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Member */
+        patch: operations["change_member_patients__patient_id__care_team__member_id__patch"];
         trace?: never;
     };
     "/patients/{patient_id}/identity": {
@@ -245,6 +281,23 @@ export interface paths {
         head?: never;
         /** Change Provider */
         patch: operations["change_provider_providers__provider_id__patch"];
+        trace?: never;
+    };
+    "/providers/{provider_id}/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Provider Patients */
+        get: operations["provider_patients_providers__provider_id__patients_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/sites": {
@@ -356,6 +409,56 @@ export interface components {
             module: string;
             /** Segment */
             segment: string;
+        };
+        /**
+         * CareTeamChange
+         * @description Only the fields sent are changed. Ending a membership is setting its `end_date`; the primary is moved
+         *     by choosing another member, never unset.
+         */
+        CareTeamChange: {
+            /** End Date */
+            end_date?: string | null;
+            /** Is Primary */
+            is_primary?: true | null;
+            /** Notes */
+            notes?: string | null;
+            /** Role */
+            role?: ("treating_oncologist" | "referring_gp" | "referring_specialist" | "surgeon" | "radiation_oncologist" | "trial_site_contact") | null;
+            /** Start Date */
+            start_date?: string | null;
+        };
+        /**
+         * CareTeamRow
+         * @description A Provider in a Patient's Care Team (#9). Ended memberships are past (`is_current` false).
+         */
+        CareTeamRow: {
+            /** End Date */
+            end_date: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Current */
+            is_current: boolean;
+            /** Is Primary */
+            is_primary: boolean;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /** Provider Name */
+            provider_name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "treating_oncologist" | "referring_gp" | "referring_specialist" | "surgeon" | "radiation_oncologist" | "trial_site_contact";
+            /** Start Date */
+            start_date: string | null;
         };
         /**
          * CurrentUser
@@ -589,6 +692,30 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** NewCareTeamMember */
+        NewCareTeamMember: {
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Is Primary
+             * @default false
+             */
+            is_primary: boolean;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "treating_oncologist" | "referring_gp" | "referring_specialist" | "surgeon" | "radiation_oncologist" | "trial_site_contact";
+            /** Start Date */
+            start_date?: string | null;
+        };
         /**
          * NewPatient
          * @description A new Patient's identity. The Pseudonym is assigned, never chosen.
@@ -791,6 +918,37 @@ export interface components {
             specialty?: ("medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other") | null;
             /** Title */
             title?: string | null;
+        };
+        /**
+         * ProviderPatientRow
+         * @description A Patient a Provider is involved with, and in what role (Provider page, #9).
+         */
+        ProviderPatientRow: {
+            /**
+             * Care Team Member Id
+             * Format: uuid
+             */
+            care_team_member_id: string;
+            /** End Date */
+            end_date: string | null;
+            /** Is Current */
+            is_current: boolean;
+            /** Is Primary */
+            is_primary: boolean;
+            /**
+             * Patient Id
+             * Format: uuid
+             */
+            patient_id: string;
+            /** Patient Name */
+            patient_name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "treating_oncologist" | "referring_gp" | "referring_specialist" | "surgeon" | "radiation_oncologist" | "trial_site_contact";
+            /** Start Date */
+            start_date: string | null;
         };
         /**
          * ProviderRow
@@ -1248,6 +1406,141 @@ export interface operations {
             };
         };
     };
+    remove_patient_patients__patient_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patient_care_team_patients__patient_id__care_team_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CareTeamRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_member_patients__patient_id__care_team_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCareTeamMember"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CareTeamRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_member_patients__patient_id__care_team__member_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                member_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CareTeamChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CareTeamRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     change_identity_patients__patient_id__identity_patch: {
         parameters: {
             query?: never;
@@ -1488,6 +1781,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProviderRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    provider_patients_providers__provider_id__patients_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderPatientRow"][];
                 };
             };
             /** @description Validation Error */

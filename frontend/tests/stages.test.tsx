@@ -27,10 +27,10 @@ const showUpcoming = () => fireEvent.click(screen.getByLabelText("Show upcoming 
 describe("build stages (design doc §15)", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("is at Stage 1: only Stage 1 screens have shipped", () => {
-    expect(SHIPPED_STAGE).toBe(1);
-    expect(isShipped(1)).toBe(true);
-    expect(isShipped(2)).toBe(false);
+  it("is at Stage 2: Stages 1 and 2 have shipped", () => {
+    expect(SHIPPED_STAGE).toBe(2);
+    expect(isShipped(2)).toBe(true);
+    expect(isShipped(3)).toBe(false);
   });
 
   it("gives every screen and Patient tab a stage", () => {
@@ -44,13 +44,15 @@ describe("build stages (design doc §15)", () => {
 
   it("shows only built screens of shipped stages in the navigation", async () => {
     await renderAt("/system");
-    for (const released of ["Users", "Settings", "System status"]) expect(mainNav().getByRole("link", { name: released })).toBeInTheDocument();
-    for (const upcoming of ["Dashboard", "Patients", "PBS lookup", "Trials", "Providers"]) {
+    for (const released of ["Patients", "Providers", "Users", "Settings", "System status"]) {
+      expect(mainNav().getByRole("link", { name: released })).toBeInTheDocument();
+    }
+    for (const upcoming of ["Dashboard", "PBS lookup", "Trials", "Review queue"]) {
       expect(mainNav().queryByRole("link", { name: upcoming })).not.toBeInTheDocument();
     }
   });
 
-  it.each(["/pbs", "/providers"])("shows a friendly page, not a placeholder, at %s", async (path) => {
+  it.each(["/pbs", "/dashboard"])("shows a friendly page, not a placeholder, at %s", async (path) => {
     await renderAt(path);
     expect(screen.getByRole("heading", { name: "Not available yet" })).toBeInTheDocument();
     expect(screen.queryByText("placeholder content")).not.toBeInTheDocument();
@@ -61,7 +63,7 @@ describe("build stages (design doc §15)", () => {
     showUpcoming();
     expect(screen.getByText("placeholder content")).toBeInTheDocument();
     expect(screen.getByRole("note")).toHaveTextContent("coming in Stage 3");
-    expect(mainNav().getByRole("link", { name: /Patients/ })).toHaveTextContent("S2");
+    expect(mainNav().getByRole("link", { name: /PBS lookup/ })).toHaveTextContent("S3");
     expect(window.localStorage.getItem("vigil.showUpcoming")).toBe("true");
   });
 
@@ -77,10 +79,14 @@ describe("build stages (design doc §15)", () => {
     expect(screen.getByRole("heading", { name: "Not available for your Job Title" })).toBeInTheDocument();
   });
 
-  it("hides upcoming Patient tabs until revealed", () => {
+  it("shows only the built tabs of shipped stages on a Patient (the Overview) until upcoming ones are revealed", async () => {
     pathname = "/patients/42/overview";
-    render(<ViewerProvider loadUser={async () => null}><PatientTabs patientId="42" /></ViewerProvider>);
-    const tabs = within(screen.getByRole("navigation", { name: "Patient" }));
-    expect(tabs.queryAllByRole("link")).toHaveLength(0);
+    render(
+      <ViewerProvider initialUser={userWith("clinician")} loadModules={async () => ONCOLOGY_ON}>
+        <PatientTabs patientId="42" />
+      </ViewerProvider>,
+    );
+    const tabs = within(await screen.findByRole("navigation", { name: "Patient" }));
+    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview"]);
   });
 });

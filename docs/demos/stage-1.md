@@ -16,7 +16,7 @@
 | 4 | As Casey Dev, paste `/patients` into the address bar. | "Not available for your Job Title". The Patient API refuses too, with a 403. | #13 |
 
 | 5 | As Casey Dev, look at the sidebar and the home page. | Only what's built appears: Users and System status (Settings joins with #14/#15). Home is **System status**: database OK, VLM worker not configured, DEV. | #16 |
-| 6 | Tick **Show upcoming screens** (top bar, dev only). | Every later screen appears, badged with its stage (Patients "S2", PBS "S3"…). Open one: an orange note says "coming in Stage N". Untick it again. | #16 |
+| 6 | Tick **Show upcoming screens** (top bar, dev only). | Every later screen appears, badged with its stage (PBS "S3", Dashboard "S5"…). Open one: an orange note says "coming in Stage N". Untick it again. | #16 |
 | 7 | As Casey Dev, open **Users** → **New User**: *Riley Hart (synthetic)*, `riley.hart`, Secretary → Add User. | Anyone who manages Users (clinician, secretary, developer admin) can add one. Trial coordinators don't even see this screen. | #6 |
 | 8 | On Riley's row → **Change Job Title** → Trial coordinator, reason "Moving to trials" → Change. | The dialog says it's recorded as a sign-off by Casey Dev (Developer admin). | #6 |
 | 9 | Click **Riley Hart** → the audit trail. | "Job Title changed from Secretary to Trial coordinator, signed off by Casey Dev (synthetic) (Developer admin)", with the reason and time; "Added as Secretary" below it. | #6 |

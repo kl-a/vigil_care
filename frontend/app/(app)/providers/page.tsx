@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { useSignedInUser } from "@/components/shell/ViewerProvider";
@@ -91,7 +92,7 @@ export default function ProvidersPage() {
               {providers.map((provider) => (
                 <tr key={provider.id} className="border-t border-border align-top">
                   <td className="px-3 py-2">
-                    <div className="font-medium">{provider.display_name}</div>
+                    <Link href={`/providers/${provider.id}`} className="font-medium text-foreground">{provider.display_name}</Link>
                     {provider.notes && <div className="text-[11px] text-muted-foreground">{provider.notes}</div>}
                   </td>
                   <td className="px-3 py-2">{SPECIALTY_LABEL[provider.specialty]}</td>

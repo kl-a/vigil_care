@@ -402,6 +402,15 @@ const DATA = [
     "unique": false,
     "using": false,
     "where": null
+   },
+   {
+    "name": "uq_care_team_member_patient_id_primary",
+    "on": [
+     "patient_id"
+    ],
+    "unique": true,
+    "using": false,
+    "where": "is_primary AND deleted_at IS NULL"
    }
   ],
   "module": "Core",

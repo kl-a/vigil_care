@@ -29,7 +29,7 @@ from app.db import metadata  # noqa: F401  (registers every table, so foreign ke
 from app.modules.accounts.models import PracticeMembership, User
 from app.modules.patients.models import Patient, PatientIdentity
 from app.modules.patients.service import ENCRYPTED, field_context
-from app.modules.practice.models import Practice, Provider, ProviderSpecialty, Site
+from app.modules.practice.models import CareTeamMember, CareTeamRole, Practice, Provider, ProviderSpecialty, Site
 from app.modules.registry.models import PracticeModule
 
 NAMESPACE = uuid.UUID("5b0f3c1e-0d6a-4a5e-9c1b-7a1d2c3e4f50")
@@ -124,6 +124,28 @@ PATIENTS = (
 )
 
 
+@dataclass(frozen=True)
+class DemoCareTeamMember:
+    patient: DemoPatient
+    provider: DemoProvider
+    role: CareTeamRole
+    start_date: date
+    is_primary: bool = False
+
+    @property
+    def id(self) -> uuid.UUID:
+        return uuid.uuid5(NAMESPACE, f"care_team:{self.patient.pseudonym}:{self.provider.id}:{self.role}")
+
+
+JANE = PATIENTS[0]
+REFERRING_GP = PROVIDERS[1]
+# Jane Citizen: diagnosed 2024 (frontend brief §10), referred by her GP, treated by Dr Rivera.
+CARE_TEAM = (
+    DemoCareTeamMember(JANE, TREATING_ONCOLOGIST, "treating_oncologist", date(2024, 3, 1), is_primary=True),
+    DemoCareTeamMember(JANE, REFERRING_GP, "referring_gp", date(2024, 2, 12)),
+)
+
+
 def load(settings: Settings) -> None:
     if settings.environment != "dev":
         raise DemoDataRefused(f"Demo data is for dev only, not '{settings.environment}'.")
@@ -143,6 +165,8 @@ def load(settings: Settings) -> None:
         cipher = FieldCipher(keystore(settings))
         for patient in PATIENTS:
             _patient(db, cipher, patient)
+        for member in CARE_TEAM:
+            _care_team_member(db, member)
         _activate_oncology(db)
 
 
@@ -265,6 +289,18 @@ def _patient(db: Session, cipher: FieldCipher, patient: DemoPatient) -> None:
         else:
             setattr(identity, field, value)
     db.add(identity)
+    db.flush()
+
+
+def _care_team_member(db: Session, member: DemoCareTeamMember) -> None:
+    if db.get(CareTeamMember, member.id) is not None:
+        return
+    db.add(
+        CareTeamMember(
+            id=member.id, practice_id=PRACTICE_ID, patient_id=member.patient.id, provider_id=member.provider.id,
+            role=member.role, is_primary=member.is_primary, start_date=member.start_date,
+        )
+    )
     db.flush()
 
 

@@ -2,7 +2,9 @@
 
 import uuid
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
+
+from app.audit.schemas import Removal
 
 from app.core.crypto import Cipher
 from app.modules.accounts.dependencies import Db, SignedIn
@@ -12,7 +14,10 @@ from app.modules.patients.schemas import IdentityChange, NewPatient, PatientDeta
 router = APIRouter(prefix="/patients", tags=["patients"])
 
 
-def _not_found() -> HTTPException:
+def _missing(error: LookupError) -> HTTPException:
+    """Removed Patients answer 410 Gone, saying who removed them and why; unknown ones 404."""
+    if isinstance(error, service.PatientRemoved):
+        return HTTPException(status.HTTP_410_GONE, str(error))
     return HTTPException(status.HTTP_404_NOT_FOUND, "No such Patient.")
 
 
@@ -30,13 +35,22 @@ def create_patient(new: NewPatient, actor: SignedIn, db: Db, cipher: Cipher) -> 
 def patient_detail(patient_id: uuid.UUID, actor: SignedIn, db: Db, cipher: Cipher) -> PatientDetail:
     try:
         return service.patient_detail(db, cipher, actor, patient_id)
-    except service.PatientNotFound:
-        raise _not_found() from None
+    except (service.PatientNotFound, service.PatientRemoved) as error:
+        raise _missing(error) from None
 
 
 @router.patch("/{patient_id}/identity")
 def change_identity(patient_id: uuid.UUID, change: IdentityChange, actor: SignedIn, db: Db, cipher: Cipher) -> PatientDetail:
     try:
         return service.change_identity(db, cipher, actor, patient_id, change)
-    except service.PatientNotFound:
-        raise _not_found() from None
+    except (service.PatientNotFound, service.PatientRemoved) as error:
+        raise _missing(error) from None
+
+
+@router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_patient(patient_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        service.remove_patient(db, actor, patient_id, removal.reason)
+    except (service.PatientNotFound, service.PatientRemoved) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -1,21 +1,28 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { SectionSlot } from "@/components/SectionSlot";
+import { useSignedInUser } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
-import { JOB_TITLE_LABEL, isKnownJobTitle } from "@/lib/jobTitles";
+import { JOB_TITLE_LABEL, isKnownJobTitle, signOffName } from "@/lib/jobTitles";
 import {
-  changeIdentity, IDENTITY_FIELDS, IDENTITY_LABEL, type IdentityChange, type IdentityField, type IdentityHistoryEntry,
+  changeIdentity, IDENTITY_FIELDS, IDENTITY_LABEL, removePatient, type IdentityChange, type IdentityField, type IdentityHistoryEntry,
   type PatientDetail,
 } from "@/lib/patients";
 import { formatWhen } from "@/lib/users";
+import { CareTeam } from "./CareTeam";
 import { usePatient } from "./PatientContext";
 
-/** Patient Overview (design doc §5 screen 4). Stage 2: Patient Identity; later stages add Conditions, Care Team, modules' sections. */
+/** Patient Overview (design doc §5 screen 4). Stage 2: Patient Identity and Care Team; later stages add Conditions and modules' sections. */
 export function PatientOverview() {
+  const router = useRouter();
+  const me = useSignedInUser();
   const { state, update } = usePatient();
   const [editing, setEditing] = useState(false);
+  const [removing, setRemoving] = useState(false);
   if (state.status !== "ready") return null;
   const { patient } = state;
   return (
@@ -43,6 +50,7 @@ export function PatientOverview() {
           Shown in full inside Vigil only. It never leaves the Practice; De-identified Exports use the Pseudonym {patient.pseudonym} instead.
         </p>
       </section>
+      <CareTeam />
       <SectionSlot slot="patient-overview" />
       <section aria-labelledby="identity-trail" className="flex flex-col gap-2">
         <h2 id="identity-trail" className="m-0 text-sm font-semibold">Audit trail</h2>
@@ -50,6 +58,18 @@ export function PatientOverview() {
           {patient.history.map((entry, index) => <TrailEntry key={index} entry={entry} />)}
         </ol>
       </section>
+      <div>
+        <button onClick={() => setRemoving(true)} className="h-8 rounded-md border border-border px-3 text-[13px] text-neg hover:bg-muted">Remove Patient</button>
+      </div>
+      {removing && (
+        <ReasonDialog title={`Remove ${patient.display_name}`} actor={signOffName(me)} confirmLabel="Remove Patient" danger
+          onConfirm={async (reason) => { await removePatient(patient.id, reason ?? ""); router.push("/patients"); }}
+          onClose={() => setRemoving(false)}>
+          <p className="m-0 text-[13px] text-muted-foreground">
+            For a Patient added by mistake, such as a duplicate. They disappear from the Patient List and search. Nothing is erased: their page will say who removed them and why.
+          </p>
+        </ReasonDialog>
+      )}
     </div>
   );
 }

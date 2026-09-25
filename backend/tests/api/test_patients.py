@@ -166,3 +166,62 @@ def test_details_sealed_under_another_key_are_reported_not_leaked(sign_in: SignI
     refused = other_key.get(f"/patients/{created['id']}")
     assert refused.status_code == 500
     assert refused.json()["detail"] == "Some Patient details can't be decrypted with the configured encryption key."
+
+
+# --- Removing a Patient (#17): soft delete with a reason, never erased ------------------------------
+
+
+def test_removing_a_patient_needs_a_reason_and_hides_them(sign_in: SignIn, committed: Seed) -> None:
+    client, _ = sign_in("secretary", display_name="Jordan Park (synthetic)")
+    created = create(client, patient())
+    assert client.request("DELETE", f"/patients/{created['id']}", json={"reason": "  "}).status_code == 422
+    assert client.request("DELETE", f"/patients/{created['id']}", json={"reason": "Duplicate record"}).status_code == 204
+
+    assert client.get("/patients").json() == []
+    assert client.get("/patients", params={"q": "citizen"}).json() == []
+    row = committed.conn.execute(
+        "SELECT deleted_at IS NOT NULL, deleted_reason FROM patient WHERE id = %s", [created["id"]]
+    ).fetchone()
+    assert row == (True, "Duplicate record")  # still there: removed, never erased
+    audit = committed.conn.execute(
+        "SELECT action, reason FROM verification WHERE subject_table = 'patient' AND subject_id = %s AND action = 'delete'",
+        [created["id"]],
+    ).fetchone()
+    assert audit == ("delete", "Duplicate record")
+
+
+def test_a_removed_patients_url_says_who_removed_them_and_why(sign_in: SignIn) -> None:
+    client, _ = sign_in("secretary", display_name="Jordan Park (synthetic)")
+    created = create(client, patient())
+    client.request("DELETE", f"/patients/{created['id']}", json={"reason": "Duplicate record"})
+
+    opened = client.get(f"/patients/{created['id']}")
+    assert opened.status_code == 410
+    detail = opened.json()["detail"]
+    assert detail.startswith("This Patient was removed by Jordan Park (synthetic) (Secretary) on ")
+    assert detail.endswith(": Duplicate record")
+    assert client.patch(f"/patients/{created['id']}/identity", json={"phone": "02 5550 0000"}).status_code == 410
+    assert client.request("DELETE", f"/patients/{created['id']}", json={"reason": "Again"}).status_code == 410
+
+
+def test_developer_admins_cant_remove_patients(sign_in: SignIn, committed: Seed) -> None:
+    client, ids = sign_in("developer_admin")
+    someone = committed.patient(ids["practice"])
+    assert client.request("DELETE", f"/patients/{someone}", json={"reason": "x"}).status_code == 403
+
+
+def test_another_practice_cant_remove_our_patients(sign_in: SignIn) -> None:
+    ours, _ = sign_in("clinician")
+    theirs, _ = sign_in("clinician")
+    created = create(ours, patient())
+    assert theirs.request("DELETE", f"/patients/{created['id']}", json={"reason": "x"}).status_code == 404
+    assert ours.get(f"/patients/{created['id']}").status_code == 200
+
+
+def test_no_endpoint_hard_deletes_patient_data(api: Any) -> None:
+    """Every DELETE on a Patient route soft-deletes and needs a reason (a Removal body)."""
+    spec = api().app.openapi()
+    for path, methods in spec["paths"].items():
+        if path.startswith("/patients") and "delete" in methods:
+            body = methods["delete"]["requestBody"]["content"]["application/json"]["schema"]["$ref"]
+            assert body.endswith("/Removal"), path

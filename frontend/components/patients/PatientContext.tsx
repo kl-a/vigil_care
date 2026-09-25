@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { messageOf } from "@/lib/api";
+import { CARE_TEAM_ROLE_LABEL, fetchCareTeam, type CareTeamRow } from "@/lib/careTeam";
 import { fetchPatient, formatDob, type PatientDetail } from "@/lib/patients";
 
 type PatientState =
@@ -13,6 +14,10 @@ interface PatientContextValue {
   state: PatientState;
   /** After a change: the backend's answer becomes the Patient everyone on the page sees. */
   update: (patient: PatientDetail) => void;
+  /** The Care Team (#9), or null while loading. */
+  careTeam: CareTeamRow[] | null;
+  careTeamError: string | null;
+  reloadCareTeam: () => void;
 }
 
 const PatientContext = createContext<PatientContextValue | null>(null);
@@ -28,7 +33,17 @@ export function PatientProvider({ patientId, children }: { patientId: string; ch
   }, [patientId]);
   useEffect(load, [load]);
   const update = useCallback((patient: PatientDetail) => setState({ status: "ready", patient }), []);
-  return <PatientContext.Provider value={{ state, update }}>{children}</PatientContext.Provider>;
+  const [careTeam, setCareTeam] = useState<CareTeamRow[] | null>(null);
+  const [careTeamError, setCareTeamError] = useState<string | null>(null);
+  const reloadCareTeam = useCallback(() => {
+    fetchCareTeam(patientId)
+      .then((team) => { setCareTeam(team); setCareTeamError(null); })
+      .catch((reason: unknown) => setCareTeamError(messageOf(reason)));
+  }, [patientId]);
+  useEffect(reloadCareTeam, [reloadCareTeam]);
+  return (
+    <PatientContext.Provider value={{ state, update, careTeam, careTeamError, reloadCareTeam }}>{children}</PatientContext.Provider>
+  );
 }
 
 export function usePatient(): PatientContextValue {
@@ -39,7 +54,8 @@ export function usePatient(): PatientContextValue {
 
 /** The Patient header (design doc §5 screen 4): who this is, on every Patient screen. */
 export function PatientHeader() {
-  const { state } = usePatient();
+  const { state, careTeam } = usePatient();
+  const primary = careTeam?.find((member) => member.is_primary && member.is_current);
   return (
     <section aria-label="Patient" className="flex flex-wrap items-baseline gap-x-4 gap-y-1 pb-2">
       {state.status === "loading" && <span role="status" className="text-sm text-muted-foreground">Loading Patient…</span>}
@@ -50,6 +66,7 @@ export function PatientHeader() {
           <span className="text-[13px] text-muted-foreground">DOB {formatDob(state.patient.identity.dob)}</span>
           <span className="font-mono text-xs text-muted-foreground">MRN {state.patient.identity.mrn ?? "—"}</span>
           <span className="font-mono text-xs text-muted-foreground" title="Pseudonym: printed only on De-identified Exports">{state.patient.pseudonym}</span>
+          {primary && <span className="text-[13px]">{CARE_TEAM_ROLE_LABEL[primary.role]}: {primary.provider_name}</span>}
         </>
       )}
     </section>

@@ -55,6 +55,11 @@ def _counts(database: DatabaseSettings) -> dict[str, Any]:
                 " JOIN identity.patient_identity i ON i.patient_id = p.id WHERE p.practice_id = %s",
                 [practice],
             ).fetchone(),
+            "jane_care_team": conn.execute(
+                "SELECT array_agg(c.role || ': ' || pr.first_name || CASE WHEN c.is_primary THEN ' (primary)' ELSE '' END ORDER BY c.role DESC)"
+                " FROM care_team_member c JOIN provider pr ON pr.id = c.provider_id JOIN patient p ON p.id = c.patient_id"
+                " WHERE p.pseudonym = 'VG-0042'"
+            ).fetchone(),
             "oncology": conn.execute("SELECT is_active FROM practice_module WHERE practice_id = %s AND module_key = 'oncology'", [practice]).fetchone(),
             "activations": conn.execute("SELECT count(*) FROM verification WHERE practice_id = %s AND action = 'activate_module'", [practice]).fetchone(),
         }
@@ -77,6 +82,7 @@ def test_demo_data_loads_two_practices_one_user_per_job_title_and_oncology(datab
     assert counts["patients"] == (
         ["VG-0042 Jane Citizen (synthetic)", "VG-0043 Sam Example (synthetic)", "VG-0044 Robin Sample (synthetic)"],
     )
+    assert counts["jane_care_team"] == (["treating_oncologist: Alex (primary)", "referring_gp: Morgan"],)
     assert counts["oncology"] == (True,)
     assert counts["activations"] == (1,)
 
