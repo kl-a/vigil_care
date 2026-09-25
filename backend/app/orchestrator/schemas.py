@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -9,6 +10,7 @@ class JobStepView(BaseModel):
     status: str
     started_at: datetime | None
     finished_at: datetime | None
+    output: dict[str, Any]
 
 
 class JobView(BaseModel):
@@ -17,12 +19,22 @@ class JobView(BaseModel):
     id: uuid.UUID
     kind: str
     status: str
+    system_wide: bool
     attempts: int
     max_attempts: int
     created_at: datetime
     finished_at: datetime | None
     last_error: str | None
+    payload: dict[str, Any]
     steps: list[JobStepView]
+
+
+class QueueDepthView(BaseModel):
+    """Jobs queued and running now, and failed for good in the last day: system-wide and this Practice's."""
+
+    queued: int
+    running: int
+    failed_last_day: int
 
 
 class RefreshView(BaseModel):

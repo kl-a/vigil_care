@@ -191,7 +191,8 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 
 **Developer admin home: System status** *(from design doc §6.4)*
 - Tiles: DB, VLM worker, job queue depth, last PBS/eviQ/trial refresh, last backup + restore test.
-- Tables: pipeline runs (status, kind, timings, error, **IDs only**) and refresh logs.
+- Tables: Jobs, Refresh history and pipeline runs (status, kind, timings, error, **IDs only**). System-wide rows and the Practice's own, never another Practice's.
+- A developer admin who opens /dashboard lands here.
 - **No Patient names anywhere.**
 
 ### Core clinical screens

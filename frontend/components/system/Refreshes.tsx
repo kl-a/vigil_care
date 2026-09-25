@@ -2,25 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useSignedInUser } from "@/components/shell/ViewerProvider";
-import { StatusPill, type Tone } from "@/components/ui/StatusPill";
 import { messageOf } from "@/lib/api";
 import { fetchJob, isActive, listRefreshes, startRefresh, type JobView, type RefreshView } from "@/lib/jobs";
 import { formatWhen } from "@/lib/users";
+import { RunStatus } from "./parts";
 
 const POLL_MS = 1000;
-const STATUS: Record<string, { label: string; tone: Tone }> = {
-  queued: { label: "Queued", tone: "neu" },
-  running: { label: "Running", tone: "cau" },
-  succeeded: { label: "Succeeded", tone: "pos" },
-  failed: { label: "Failed", tone: "neg" },
-  cancelled: { label: "Cancelled", tone: "neu" },
-};
 
 /**
  * Refreshes (#18, design doc §6.4): the last run of each, for everyone; only a developer admin starts one.
- * A started Refresh is followed until it finishes. IDs, states and error codes only.
+ * A started Refresh is followed until it finishes. IDs, states and error codes only. `onChange` hears when
+ * one is started or its Job moves on, so the other Support Views can catch up.
  */
-export function Refreshes() {
+export function Refreshes({ onChange = () => {} }: { onChange?: () => void }) {
   const me = useSignedInUser();
   const canStart = me.job_title === "developer_admin";
   const [refreshes, setRefreshes] = useState<RefreshView[] | null>(null);
@@ -39,7 +33,7 @@ export function Refreshes() {
       {refreshes === null && !error && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading…</p>}
       {refreshes && (
         <ul aria-label="Refreshes" className="m-0 flex list-none flex-col gap-2 p-0">
-          {refreshes.map((refresh) => <RefreshItem key={refresh.kind} refresh={refresh} canStart={canStart} />)}
+          {refreshes.map((refresh) => <RefreshItem key={refresh.kind} refresh={refresh} canStart={canStart} onChange={onChange} />)}
         </ul>
       )}
       {!canStart && <p className="m-0 text-xs text-muted-foreground">Only a developer admin starts a Refresh.</p>}
@@ -47,34 +41,36 @@ export function Refreshes() {
   );
 }
 
-function RefreshItem({ refresh, canStart }: { refresh: RefreshView; canStart: boolean }) {
+function RefreshItem({ refresh, canStart, onChange }: { refresh: RefreshView; canStart: boolean; onChange: () => void }) {
   const [job, setJob] = useState<JobView | null>(refresh.last_job ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!job || !isActive(job)) return;
     const timer = setTimeout(() => {
-      fetchJob(job.id).then(setJob).catch((reason: unknown) => setError(messageOf(reason)));
+      fetchJob(job.id)
+        .then((next) => { setJob(next); if (next.status !== job.status) onChange(); })
+        .catch((reason: unknown) => setError(messageOf(reason)));
     }, POLL_MS);
     return () => clearTimeout(timer);
-  }, [job]);
+  }, [job, onChange]);
 
   async function start() {
     setError(null);
     try {
       setJob(await startRefresh(refresh.kind));
+      onChange();
     } catch (reason) {
       setError(messageOf(reason));
     }
   }
 
-  const status = job ? STATUS[job.status] ?? { label: job.status, tone: "neu" as Tone } : null;
   return (
     <li className="flex flex-col gap-1.5 rounded-md border border-border px-3 py-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-[13px] font-medium">{refresh.description}</span>
         <span className="flex items-center gap-2">
-          {status ? <StatusPill tone={status.tone}>{status.label}</StatusPill> : <span className="text-xs text-muted-foreground">Never run</span>}
+          {job ? <RunStatus status={job.status} /> : <span className="text-xs text-muted-foreground">Never run</span>}
           {canStart && (
             <button onClick={start} disabled={isActive(job)} className="h-7 rounded-md border border-border px-2 text-xs font-medium hover:bg-muted disabled:opacity-50">
               Start Refresh

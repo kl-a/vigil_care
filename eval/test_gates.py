@@ -1,6 +1,6 @@
 import pytest
 
-from gates import Gate, GateResult, run_gates
+from gates import BACKEND, GATES, Gate, GateResult, run_gates
 
 
 def passing() -> GateResult:
@@ -37,3 +37,8 @@ def test_any_failing_gate_fails_the_build(capsys: pytest.CaptureFixture[str]) ->
 def test_a_gate_that_crashes_counts_as_a_failure(capsys: pytest.CaptureFixture[str]) -> None:
     assert run_gates([Gate("broken", exploding)], environment="test") == 1
     assert "FAIL broken" in capsys.readouterr().out
+
+
+def test_the_no_patient_data_gate_runs_its_backend_test() -> None:
+    assert [gate.name for gate in GATES] == ["No Patient data in support data"]
+    assert (BACKEND / "tests/api/test_no_patient_data_in_support.py").is_file()

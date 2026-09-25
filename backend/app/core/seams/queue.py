@@ -61,6 +61,7 @@ class StepStatus:
     status: str
     started_at: datetime | None
     finished_at: datetime | None
+    output: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -75,6 +76,14 @@ class JobStatus:
     finished_at: datetime | None
     last_error: str | None
     steps: list[StepStatus]
+    payload: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class QueueDepth:
+    queued: int
+    running: int
+    failed_last_day: int
 
 
 class JobQueue(Protocol):
@@ -105,6 +114,15 @@ class JobQueue(Protocol):
         """The most recently enqueued Job of a kind, e.g. to show the last Refresh."""
         ...
 
+    def recent(self, practice_id: uuid.UUID | None, kinds: Sequence[str] | None = None, limit: int = 100) -> list[JobStatus]:
+        """Newest first: system-wide Jobs, plus `practice_id`'s own (never another Practice's). For the Support
+        Views; `kinds` narrows them."""
+        ...
+
+    def depth(self, practice_id: uuid.UUID | None, kinds: Sequence[str] | None = None) -> QueueDepth:
+        """How many Jobs are queued and running now, and failed for good in the last day; scoped as `recent`."""
+        ...
+
 
 def ids_only(values: Mapping[str, Any]) -> None:
     """Raises NotIdsOnly unless every key and value is an ID, count, flag, date or short code."""
@@ -115,6 +133,25 @@ def ids_only(values: Mapping[str, Any]) -> None:
         for item in items:
             if not _is_id_like(item):
                 raise NotIdsOnly(f"{key}: only IDs, counts, flags, dates and short codes are allowed")
+
+
+WITHHELD = "withheld"
+
+
+def withhold_non_ids(values: Mapping[str, Any]) -> dict[str, Any]:
+    """For display: `values` with anything but IDs, counts, flags, dates and short codes replaced by "withheld".
+    A key that isn't a short code is dropped (a key can hold Patient data too)."""
+    shown: dict[str, Any] = {}
+    for key, value in values.items():
+        if CODE.match(key):
+            items = value if isinstance(value, list) else [value]
+            shown[key] = value if all(_is_id_like(item) for item in items) else WITHHELD
+    return shown
+
+
+def code_or_withheld(error: str | None) -> str | None:
+    """For display: an error that is a short code, else "withheld" (a free-text error can hold Patient data)."""
+    return error if error is None or CODE.match(error) else WITHHELD
 
 
 def check_code(error: str) -> None:

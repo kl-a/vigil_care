@@ -89,6 +89,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Jobs
+         * @description The most recent Jobs, newest first; `kind` narrows them to one Job Kind.
+         */
+        get: operations["list_jobs_jobs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{job_id}": {
         parameters: {
             query?: never;
@@ -245,6 +265,40 @@ export interface paths {
         patch: operations["change_identity_patients__patient_id__identity_patch"];
         trace?: never;
     };
+    "/pipeline-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Pipeline Runs */
+        get: operations["list_pipeline_runs_pipeline_runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pipeline-runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pipeline Run */
+        get: operations["pipeline_run_pipeline_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/practice": {
         parameters: {
             query?: never;
@@ -317,6 +371,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Queue Depth */
+        get: operations["queue_depth_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/refreshes": {
         parameters: {
             query?: never;
@@ -329,6 +400,23 @@ export interface paths {
         put?: never;
         /** Start Refresh */
         post: operations["start_refresh_refreshes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/refreshes/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Refresh History */
+        get: operations["refresh_history_refreshes_history_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -715,6 +803,10 @@ export interface components {
             finished_at: string | null;
             /** Name */
             name: string;
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            };
             /** Started At */
             started_at: string | null;
             /** Status */
@@ -745,10 +837,16 @@ export interface components {
             last_error: string | null;
             /** Max Attempts */
             max_attempts: number;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
             /** Status */
             status: string;
             /** Steps */
             steps: components["schemas"]["JobStepView"][];
+            /** System Wide */
+            system_wide: boolean;
         };
         /** ModuleChange */
         ModuleChange: {
@@ -927,6 +1025,42 @@ export interface components {
             updated_at: string;
         };
         /**
+         * PipelineRunView
+         * @description A pipeline run, as Support Views show it: IDs, kinds, states and timings only (§6.4).
+         */
+        PipelineRunView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error Detail */
+            error_detail: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Inputs */
+            inputs: {
+                [key: string]: unknown;
+            };
+            /** Kind */
+            kind: string;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** System Wide */
+            system_wide: boolean;
+            /** Versions */
+            versions: {
+                [key: string]: unknown;
+            };
+        };
+        /**
          * PracticeChange
          * @description Only the fields sent are changed. Empty text clears an optional field.
          */
@@ -1063,6 +1197,18 @@ export interface components {
             specialty: "medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other";
             /** Title */
             title: string | null;
+        };
+        /**
+         * QueueDepthView
+         * @description Jobs queued and running now, and failed for good in the last day: system-wide and this Practice's.
+         */
+        QueueDepthView: {
+            /** Failed Last Day */
+            failed_last_day: number;
+            /** Queued */
+            queued: number;
+            /** Running */
+            running: number;
         };
         /**
          * RefreshView
@@ -1324,6 +1470,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    list_jobs_jobs_get: {
+        parameters: {
+            query?: {
+                kind?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1699,6 +1876,57 @@ export interface operations {
             };
         };
     };
+    list_pipeline_runs_pipeline_runs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineRunView"][];
+                };
+            };
+        };
+    };
+    pipeline_run_pipeline_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineRunView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     practice_details_practice_get: {
         parameters: {
             query?: never;
@@ -1948,6 +2176,26 @@ export interface operations {
             };
         };
     };
+    queue_depth_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueDepthView"];
+                };
+            };
+        };
+    };
     list_refreshes_refreshes_get: {
         parameters: {
             query?: never;
@@ -1997,6 +2245,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_history_refreshes_history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"][];
                 };
             };
         };

@@ -6,7 +6,8 @@ from pydantic import BaseModel
 from app.core.config import Environment, Settings
 from app.core.database import DatabaseCheck
 
-router = APIRouter(tags=["system"])
+# A Support View: IDs and states only (design doc §6.4).
+router = APIRouter(tags=["support"])
 
 
 class Health(BaseModel):
