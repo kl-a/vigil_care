@@ -50,6 +50,7 @@ services:
       # The app's own role: no DELETE on Patient data, Patient Identity only via identity_access.
       VIGIL_DATABASE_URL: postgresql://vigil_app:${VIGIL_DB_APP_PASSWORD:-vigil_app_dev}@db:5432/vigil
       VIGIL_VLM_WORKER_URL: ${VIGIL_VLM_WORKER_URL:-}
+      VIGIL_SESSION_SECRET: ${VIGIL_SESSION_SECRET:-}
     ports: ["${VIGIL_BACKEND_PORT:-8000}:8000"]
     depends_on:
       migrate: { condition: service_completed_successfully }
@@ -60,6 +61,8 @@ services:
       args:
         NEXT_PUBLIC_VIGIL_ENV: ${VIGIL_ENV:-dev}
         NEXT_PUBLIC_VIGIL_ACTIVE_MODULES: ${VIGIL_ACTIVE_MODULES:-oncology}
+        # The frontend proxies /api to the backend (keeps the session cookie same-origin).
+        VIGIL_API_URL: http://backend:8000
     ports: ["${VIGIL_FRONTEND_PORT:-3000}:3000"]
     depends_on: [backend]
 

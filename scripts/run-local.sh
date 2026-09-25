@@ -54,6 +54,11 @@ ensure_env_file() {
   else
     ok ".env exists"
   fi
+  # Stage demos sign in with the dev login (design doc §15). Older .env files had it off.
+  if grep -q '^VIGIL_ENV=dev' "$ROOT/.env" && grep -q '^VIGIL_DEV_LOGIN_ENABLED=false' "$ROOT/.env"; then
+    sed -i.bak 's/^VIGIL_DEV_LOGIN_ENABLED=false/VIGIL_DEV_LOGIN_ENABLED=true/' "$ROOT/.env" && rm -f "$ROOT/.env.bak"
+    ok "Turned the dev login on in .env (dev only)"
+  fi
 }
 
 port_in_use() { lsof -nP -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1; }
@@ -100,6 +105,8 @@ start_docker() {
   bold "Starting the full stack in Docker (first run builds images; allow a few minutes)"
   (cd "$ROOT" && docker compose up --build -d)
   wait_for "$BACKEND_URL/health" "Backend" 180
+  bold "Loading the synthetic demo Practice"
+  (cd "$ROOT" && docker compose exec -T backend python -m app.db.demo_data)
   wait_for "$FRONTEND_URL/login" "Frontend" 180
   report_health
 }
@@ -133,13 +140,16 @@ start_dev() {
   bold "Creating database roles and migrating the schema"
   (cd "$ROOT/backend" && VIGIL_DB_ADMIN_URL="postgresql://vigil:vigil@127.0.0.1:$DB_PORT/vigil" .venv/bin/python -m app.db.provision)
   ok "Schema at head"
+  (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
+    .venv/bin/python -m app.db.demo_data)
 
   bold "Starting backend and frontend with hot reload"
   trap 'on_dev_failure' EXIT
-  (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
+  (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DEV_LOGIN_ENABLED=true \
+    VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
     nohup .venv/bin/uvicorn app.main:create_app --factory --reload --port "$BACKEND_PORT" >"$RUN_DIR/backend.log" 2>&1 &
     echo $! >"$RUN_DIR/backend.pid")
-  (cd "$ROOT/frontend" && nohup npm run dev -- -p "$FRONTEND_PORT" >"$RUN_DIR/frontend.log" 2>&1 & echo $! >"$RUN_DIR/frontend.pid")
+  (cd "$ROOT/frontend" && VIGIL_API_URL="$BACKEND_URL" nohup npm run dev -- -p "$FRONTEND_PORT" >"$RUN_DIR/frontend.log" 2>&1 & echo $! >"$RUN_DIR/frontend.pid")
   wait_for "$BACKEND_URL/health" "Backend" 60
   wait_for "$FRONTEND_URL/login" "Frontend" 120
   trap - EXIT
@@ -185,15 +195,15 @@ $(bold "Vigil is running")
   Health:     $BACKEND_URL/health
   API docs:   $BACKEND_URL/docs
 
-$(bold "Click-through guide (ticket #11: walking skeleton)")
-  1. Open $FRONTEND_URL. You land on the Dashboard with an orange DEV badge in the top bar.
-  2. Use "Preview as" (top bar, dev only) to switch Job Title and watch the sidebar change:
-       Clinician         → every item
-       Trial coordinator → no Users or Settings
-       Secretary         → Users, but no Settings
-       Developer admin   → only Users, Settings, System status; no Patient search
-  3. As Developer admin, open $FRONTEND_URL/patients/jane/summary: you get "Not available for your Job Title".
-  4. Switch back to Clinician → Patients → "Jane Citizen (synthetic)" → click through the Patient tabs.
+$(bold "Click-through guide (Stage 1 so far; the full script is docs/demos/stage-1.md)")
+  1. Open $FRONTEND_URL. The dev login lists the synthetic Harbourside Oncology Users. Choose one:
+       Dr Alex Rivera (Clinician)      → every item
+       Sam Lee (Trial coordinator)     → no Users or Settings
+       Jordan Park (Secretary)         → Users, but no Settings
+       Casey Dev (Developer admin)     → only Users, Settings, System status; no Patient search
+  2. Log out (top right) and choose someone else to watch the sidebar change.
+  3. As Casey Dev, open $FRONTEND_URL/patients/jane/summary: you get "Not available for your Job Title".
+  4. As Dr Alex Rivera → Patients → "Jane Citizen (synthetic)" → click through the Patient tabs.
      Summary, Overview and Clinical Data show sections registered by the Oncology module;
      "Treatment Options" is an Oncology tab.
   5. Try the moon icon (dark theme), the sidebar toggle, and a bad URL like $FRONTEND_URL/nope (404 with the badge).

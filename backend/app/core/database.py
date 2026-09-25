@@ -1,5 +1,6 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 import psycopg
+from fastapi import Request
 from sqlalchemy import ColumnElement, create_engine, event
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import ORMExecuteState, Session, sessionmaker, with_loader_criteria
@@ -27,6 +28,13 @@ def postgres_check(database_url: str, timeout_seconds: int = 2) -> DatabaseCheck
 def session_factory(database_url: str) -> sessionmaker[Session]:
     url = make_url(database_url).set(drivername="postgresql+psycopg")
     return sessionmaker(create_engine(url))
+
+
+def db_session(request: Request) -> Iterator[Session]:
+    """FastAPI dependency: one Session per request, committed if the request succeeds."""
+    make_session: sessionmaker[Session] = request.app.state.sessionmaker
+    with make_session.begin() as session:
+        yield session
 
 
 @event.listens_for(Session, "do_orm_execute")

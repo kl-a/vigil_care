@@ -5,51 +5,15 @@ enforces the schema rules (spec #1, Testing Decisions). Each test runs in a tran
 rolled back, so tests never see each other's rows.
 """
 
-import os
-import uuid
 from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager
 
 import psycopg
 import pytest
-from psycopg import sql
 from psycopg.rows import dict_row
-from sqlalchemy.engine import make_url
 
-from app.db.provision import (
-    APP_ROLE,
-    OWNER_ROLE,
-    SUPPORT_ROLE,
-    DatabaseSettings,
-    migrate,
-    provision_roles,
-)
+from app.db.provision import APP_ROLE, OWNER_ROLE, SUPPORT_ROLE, DatabaseSettings
 from tests.db.seed import Seed
-
-ADMIN_URL = os.environ.get("VIGIL_TEST_DB_ADMIN_URL", "postgresql://vigil:vigil@localhost:55432/vigil")
-
-
-@pytest.fixture(scope="session")
-def database() -> Iterator[DatabaseSettings]:
-    name = f"vigil_test_{uuid.uuid4().hex[:12]}"
-    try:
-        admin = psycopg.connect(ADMIN_URL, autocommit=True, connect_timeout=3)
-    except psycopg.OperationalError as error:
-        pytest.fail(
-            f"The test database isn't reachable at {ADMIN_URL}. Start it with `make test-db`.\n{error}"
-        )
-    with admin:
-        admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
-    url = make_url(ADMIN_URL).set(database=name).render_as_string(hide_password=False)
-    settings = DatabaseSettings(admin_url=url)
-    try:
-        provision_roles(settings)
-        migrate(settings)
-        yield settings
-    finally:
-        with psycopg.connect(ADMIN_URL, autocommit=True) as admin:
-            admin.execute(sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(name)))
-
 
 def _connection(settings: DatabaseSettings, role: str) -> Iterator[psycopg.Connection[dict[str, object]]]:
     with psycopg.connect(settings.role_url(role), row_factory=dict_row) as conn:

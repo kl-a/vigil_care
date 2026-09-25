@@ -1064,7 +1064,9 @@ POST   /auth/2fa                            TOTP code → session
 POST   /auth/2fa/enrol                      Start TOTP enrolment (QR)
 POST   /auth/reauth                         Re-authenticate before clinician-only actions
 POST   /auth/logout
-POST   /auth/dev-login                      DEV ENVIRONMENT ONLY (route not registered elsewhere; startup fails if enabled)
+GET    /auth/me                             The signed-in User (name, Job Title, Practice)
+GET    /auth/dev-login/users                DEV ONLY: active Users you can sign in as
+POST   /auth/dev-login                      DEV ONLY: sign in as a chosen User (routes not registered elsewhere; startup fails if enabled)
 GET    /users                               List Users (Job Title, 2FA status, active)
 POST   /users                               Create User
 PATCH  /users/{id}                          Update Job Title / deactivate / link Provider

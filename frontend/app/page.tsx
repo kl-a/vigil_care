@@ -7,7 +7,10 @@ import { homePath } from "@/lib/jobTitles";
 
 export default function Home() {
   const router = useRouter();
-  const { jobTitle } = useViewer();
-  useEffect(() => router.replace(homePath(jobTitle)), [router, jobTitle]);
+  const { session } = useViewer();
+  useEffect(() => {
+    if (session.status === "signed_in") router.replace(homePath(session.user.job_title));
+    if (session.status === "signed_out") router.replace("/login");
+  }, [router, session]);
   return null;
 }

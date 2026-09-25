@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { canAccess } from "@/lib/navigation";
 import { Forbidden } from "./Forbidden";
 import { Sidebar } from "./Sidebar";
@@ -20,8 +20,18 @@ function crumbsFor(pathname: string): { label: string; href: string }[] {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { jobTitle } = useViewer();
+  const router = useRouter();
+  const { session } = useViewer();
   const [expanded, setExpanded] = useState(true);
+
+  useEffect(() => {
+    if (session.status === "signed_out") router.replace("/login");
+  }, [session.status, router]);
+
+  if (session.status === "loading") return <p role="status" className="p-6 text-sm text-muted-foreground">Loading…</p>;
+  if (session.status === "signed_out") return null;
+
+  const { job_title: jobTitle } = session.user;
   const crumbs = crumbsFor(pathname);
   return (
     <div className="flex min-h-screen flex-col">

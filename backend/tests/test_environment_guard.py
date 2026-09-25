@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import StartupRefused
+from app.core.config import DEV_SESSION_SECRET, StartupRefused
 from app.main import create_app
 from tests.conftest import make_settings
 
@@ -46,3 +46,22 @@ def test_the_guard_fires_from_real_environment_variables(monkeypatch: pytest.Mon
     monkeypatch.setenv("VIGIL_DEV_LOGIN_ENABLED", "true")
     with pytest.raises(StartupRefused):
         create_app(database_check=lambda: True)
+
+
+def test_the_dev_session_secret_is_refused_outside_dev() -> None:
+    with pytest.raises(StartupRefused, match="session secret"):
+        create_app(make_settings(environment="test", session_secret=DEV_SESSION_SECRET), database_check=lambda: True)
+
+
+def test_a_short_session_secret_is_refused_outside_dev() -> None:
+    with pytest.raises(StartupRefused, match="session secret"):
+        create_app(make_settings(environment="test", session_secret="too-short"), database_check=lambda: True)
+
+
+def test_an_empty_session_secret_falls_back_to_the_dev_default() -> None:
+    assert make_settings(environment="dev", session_secret="").session_secret == DEV_SESSION_SECRET
+
+
+def test_a_real_session_secret_is_accepted_in_test() -> None:
+    app = create_app(make_settings(environment="test", session_secret="s" * 48), database_check=lambda: True)
+    assert app.title == "Vigil"
