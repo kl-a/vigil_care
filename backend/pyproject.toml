@@ -8,6 +8,8 @@ dependencies = [
   "uvicorn[standard]>=0.30",
   "pydantic-settings>=2.4",
   "psycopg[binary]>=3.2",
+  "sqlalchemy>=2.0.30",
+  "alembic>=1.13",
 ]
 
 [project.optional-dependencies]
@@ -19,6 +21,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.setuptools.package-data]
+"app.db" = ["erd_template.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

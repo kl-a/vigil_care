@@ -416,29 +416,31 @@ erDiagram
 - `created_at`: `TIMESTAMPTZ NOT NULL DEFAULT now()`.
 - `updated_at`: `TIMESTAMPTZ NOT NULL DEFAULT now()`, auto-updated via trigger.
 - `deleted_at`, `deleted_by_user_id`, `deleted_reason`: soft delete. All queries filter `WHERE deleted_at IS NULL` by default via SQLAlchemy query hooks. **Users never hard-delete anything.** A soft delete requires a reason and also writes a `verification` row with `action = 'delete'`. A CHECK makes the three columns all set or all null, and requires a non-empty reason.
-- **Models:** every table has a SQLAlchemy model from the baseline onward, in the package of the module that owns it (Oncology's models live in the Oncology module). The Alembic baseline is generated from the models and then edited by hand for triggers, grants and seed rows. A **drift test** fails if the models and the migrated database disagree.
+- **Models:** every table has a SQLAlchemy model from the baseline onward, in the package of the module that owns it (Oncology's models live in the Oncology module). The Alembic baseline is generated from the models and then edited by hand for triggers, grants and seed rows. A **drift test** fails if the models and the migrated database disagree. The Core and each Specialty Module have their own migrations (baseline: `0001_core`, then `0002_oncology`).
 
 **Practice scoping.** There's only one Practice in the MVP, but every query is scoped by `practice_id` from day one. Every table falls into exactly one of three groups:
 
 | Group | `practice_id` | Tables |
 |---|---|---|
-| **Practice data** | `NOT NULL` FK → `practice`, on child rows too | `user`, `provider`, `practice_module`, `patient`, `identity.patient_identity`, `care_team_member`, `document`, `ocr_page`, `extraction`, `extracted_fact`, `verification`, every Clinical Record table (Core and Oncology), `medication_change_log`, `next_step`, `match_run`, `match_result`, `criterion_evaluation`, `redaction_job`, `redaction_job_file`, `redaction_log`, `redaction_entity`, `cloud_request`, `report`, `export` |
-| **Support data** | Nullable (null = system-wide, e.g. a Refresh) | `job`, `pipeline_run`, `llm_call_log`. `job_step` has none; it's reached through its `job`. |
+| **Practice data** | `NOT NULL` FK → `practice`, on child rows too | `user`, `provider`, `practice_module`, `patient`, `identity.patient_identity`, `care_team_member`, `document`, `ocr_page`, `extraction`, `extracted_fact`, `verification`, every Clinical Record table (Core and Oncology), `medication_change_log`, `next_step`, `match_run`, `match_result`, `criterion_evaluation`, `redaction_job`, `redaction_job_file`, `redaction_log`, `redaction_entity`, `report`, `export` |
+| **Support data** | Nullable (null = system-wide, e.g. a Refresh) | `job`, `pipeline_run`, `llm_call_log`, `cloud_request` (null only for public text, e.g. parsing a trial's criteria). `job_step` has none; it's reached through its `job`. |
 | **Shared reference data** | None | `practice` itself, `specialty_module`, `job_kind`, `fact_kind`, `document_type`, `cancer_type`, `treatment_protocol`, `protocol_drug`, `drug_reference`, `pbs_item`, `pbs_refresh_log`, `eviq_refresh_log`, `trial`, `trial_site`, `trial_snapshot`, `trial_criterion`, `llm_cache` |
 
+- **Composite FKs and a nullable `practice_id`.** A composite FK isn't checked when `practice_id` is null. So `cloud_request` also has plain FKs to `document` and `user`, plus a CHECK: a Patient payload (masked image or pseudonymised text) needs both `practice_id` and `document_id`, and a public-text payload has no `document_id`.
 - **A child row can't point at another Practice's parent.** Every Practice-data table has `UNIQUE (id, practice_id)`. Every FK from one Practice-data table to another is **composite**, `(parent_id, practice_id) → parent(id, practice_id)`, so the database rejects a mismatch. Examples: a Condition belongs to the same Practice as its Patient, and a Verification to the same Practice as its User.
 
 **Provenance convention for Clinical Record tables** (condition, cancer_diagnosis, recurrence, biomarker, treatment_course, oncology_course_detail, imaging_study, finding, response_assessment, lab_result, performance_status, cns_status, medication, management_plan, clinical_note):
 - `source_fact_id`: FK → `extracted_fact`, nullable. Null means the value was entered directly by a User.
 - `source_document_id`: FK → `document`, nullable.
 - `entered_by_user_id`: FK → `user`, nullable. Set when entered directly.
+- A CHECK requires `source_fact_id` or `entered_by_user_id`: every Clinical Record row says where it came from.
 - A row exists in a Clinical Record table **only after** a Verification by a User whose Job Title permits it (§6.4). Unverified candidates live only in `extracted_fact`.
 
 **Foreign key constraints:**
 - Every FK column has an explicit `REFERENCES` with `ON DELETE` behaviour. Because deletes are soft, `ON DELETE` rules mostly guard against developer error:
   - Patient-scoped data: `ON DELETE RESTRICT`. A Patient with data can't be hard-deleted at the DB level.
   - User references (`reviewed_by_user_id`, `entered_by_user_id`, etc.): `ON DELETE RESTRICT`. Users are deactivated, never deleted, so the audit trail stays intact.
-  - Provider references: `ON DELETE SET NULL`.
+  - Optional Provider references: `ON DELETE SET NULL`, which nulls only the Provider column, never `practice_id` (Postgres 15+ column list). A required one (`care_team_member.provider_id`) is `RESTRICT`.
   - Extraction → Document, MatchResult → MatchRun, CriterionEvaluation → MatchResult: `ON DELETE CASCADE`.
 - Every FK has a corresponding index on the referencing column (Postgres doesn't create these automatically).
 
@@ -498,6 +500,14 @@ erDiagram
   - `job_step.status IN ('pending', 'running', 'succeeded', 'failed', 'skipped')`.
   - `pbs_refresh_log.status` and `eviq_refresh_log.status IN ('succeeded', 'partial', 'failed')`.
   - `llm_call_log.endpoint IN ('local_vlm', 'cloud')`.
+- **Domain rules as CHECKs:**
+  - `treatment_course`: `regimen_name`/`regimen_planned` only when systemic.
+  - `recurrence`: `attributed_by_user_id` and `attributed_at` are set together, and required unless `suspected`; `new_cancer_diagnosis_id` is set exactly when `reclassified_as_new_primary`.
+  - `response_assessment`: an override (`overrides_id`) is always `source = 'clinician'`.
+  - `next_step`: `done_at` and `done_by_user_id` are set together.
+  - `export`: needs a Patient or a Redaction Job (`patient_id` is null only for an unlinked Redaction Job's export); `job_title_at_time` is never `developer_admin`.
+  - `lab_result`: a numeric `value` or a `value_text` (for results like "<5").
+  - Start/end dates in order on Treatment Courses and Medications; counts and page numbers never negative.
 - **One of two parents:** `ocr_page` and `redaction_log` belong to exactly one of `document_id` or `redaction_job_file_id` (a CHECK allows one, not both and not neither).
 - **Module-contributed values are registries, not CHECKs**, because the Core can't name a module's values:
   - `job.kind` must exist in `job_kind`.
@@ -557,9 +567,11 @@ erDiagram
 | `identity_access` | No | `USAGE` on the `identity` schema; `SELECT`, `INSERT`, `UPDATE` (never `DELETE`) on its tables. Granted only to `vigil_app`. |
 | `vigil_support` | Yes (support tooling) | Read-only on Support-data and registry tables (`job`, `job_step`, `job_kind`, `pipeline_run`, `llm_call_log`, `cloud_request`, the refresh logs, `specialty_module`, `practice_module`). **Never** the `identity` schema or any Patient data table. It's the database-level mirror of the developer admin's rule (§6.4). |
 
+Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate` service in Docker Compose), which needs the cluster admin and then runs the migrations as `vigil_owner`. New tables get the `vigil_app` grants automatically through default privileges.
+
 `PUBLIC` has no privileges on the `identity` schema. Tests prove that a role without `identity_access` is refused, and that `vigil_app` can't `DELETE` Patient data.
 
-**Tables that never change once written.** A trigger rejects every `UPDATE` and `DELETE` on `verification`, `medication_change_log`, `llm_call_log`, `match_run`, `match_result`, `criterion_evaluation` and `trial_snapshot`, with a test per table. They keep the standard columns for uniformity, but can't be soft-deleted. **`cloud_request`** is the one partial exception: it may be updated only to record the reply (`status`, `response_received_at`); every other column is locked.
+**Tables that never change once written.** A trigger rejects every `UPDATE`, `DELETE` and `TRUNCATE` on `verification`, `medication_change_log`, `llm_call_log`, `match_run`, `match_result`, `criterion_evaluation` and `trial_snapshot`, with a test per table. They keep the standard columns for uniformity, but can't be soft-deleted. **`cloud_request`** is the one partial exception: it may be updated only to record sending and the reply (`status`, `sent_at`, `response_received_at`); every other column is locked, and it can't be deleted.
 
 ### 6.3 Table Catalogue
 
@@ -581,7 +593,7 @@ erDiagram
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `document` | One uploaded file belonging to a Patient | `practice_id`, `patient_id`, `document_type_id` (nullable until classified), `original_uri` (encrypted), `original_sha256`, `working_copy_uri`, `page_count`, `doc_date`, `uploaded_by_user_id`, `input_method` (native_pdf/scan/photo/fax), `status`, `hold_reason` (nullable: `unreadable`/`unknown_type`/`pii_uncertain`/`user_held`), `held_by_user_id` (nullable) |
-| `document_type` | Registry of known Document Types | `key` (e.g. `radiology_ct`), `display_name`, `json_schema` (JSONB), `extraction_prompt_ref`, `version`, `is_active`. Developer-maintained only; no proposed types in the MVP. |
+| `document_type` | Registry of known Document Types | `key` (e.g. `radiology_ct`), `display_name`, `module_key` (FK → `specialty_module.key`, null = Core; a Document of an inactive module's type is Held), `json_schema` (JSONB), `extraction_prompt_ref`, `version`, `is_active`. Developer-maintained only; no proposed types in the MVP. |
 | `ocr_page` | Classic-OCR output for one page of the Working Copy | `document_id` (or `redaction_job_file_id`), `page_number`, `engine` (ppocr_v5/doctr), `engine_version`, `words` (JSONB: `[{text, bbox_pt, confidence}]`), `mean_confidence`, `rotation_deg` |
 | `extraction` | One run of the extractor over a Document | `document_id`, `document_type_id`, `pipeline_run_id`, `reader` (text_layer/classic_ocr/local_vlm/cloud_vlm), `model_id`, `prompt_version`, `created_at` |
 | `extracted_fact` | One candidate clinical statement: **the unit of review** | `extraction_id`, `patient_id`, `fact_kind` (FK → `fact_kind.key`: condition/cancer_diagnosis/recurrence/biomarker/lab_result/imaging_study/finding/response_assessment/treatment_course/medication/performance_status/cns_status/management_plan/clinical_note), `module_key` (null = Core), `payload` (JSONB, validated against the fact kind's Pydantic model, which the owning module registers), `source_locations` (JSONB: `[{page, bbox_pt, text}]`), `confidence` (0–1), `confidence_band` (high/medium/low), `numeric_crosscheck` (agree/disagree/not_applicable), `required_job_title` (the minimum Job Title that may verify it, from §6.4), `review_status`, `accepted_record_table`, `accepted_record_id` (set on accept) |
@@ -611,7 +623,7 @@ erDiagram
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `treatment_course` | Any course of treatment for a Condition (**Core**): systemic, procedure/surgery, radiation or other | `condition_id`, `modality` (systemic/surgery/radiation; modules may add values), `intent`, `regimen_name` (systemic only), `regimen_planned` (JSONB: planned drugs and doses), `start_date`, `end_date` (null = ongoing; set only when a User records that the course ended), `reason_stopped`, `details` (JSONB: surgery = procedure, margins; radiation = site, dose, fractions), + provenance |
-| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (PK/FK), `line_of_therapy` (nullable; see the Line of Therapy rule), `treatment_protocol_id` (nullable), `best_response` (CR/PR/SD/PD/NE, nullable) |
+| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable; see the Line of Therapy rule), `treatment_protocol_id` (nullable), `best_response` (CR/PR/SD/PD/NE, nullable) |
 | `drug_reference` | Canonical drug lookup | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_id`, `common_doses`, `common_routes` |
 | `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set when the drug belongs to a Treatment Course); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
 | `medication_change_log` | Audit trail of Medication changes | As v1.1, with `changed_by_user_id` (replaces `changed_by` → provider) |
@@ -623,7 +635,7 @@ erDiagram
 | `imaging_study` | One imaging examination | `patient_id`, `modality` (CT/MRI/PET/PET-CT/bone/ultrasound/X-ray), `body_region`, `study_date`, `impression` (verbatim), `comparison_date`, + provenance |
 | `finding` | One observation in a single study (**not linked across studies**) | `imaging_study_id`, `patient_id`, `condition_id` (nullable: attributed only when the report says so), `site`, `laterality`, `description`, `size_mm` (nullable), `suv_max` (nullable), `is_new` (nullable), `is_measurable` (nullable: ≥10 mm on CT, for trial criteria), + provenance |
 | `response_assessment` *(Oncology)* | Stated direction of a Cancer Diagnosis at a point in time | `patient_id`, `cancer_diagnosis_id` (nullable = unattributed; unattributed rows show as Needs Information), `assessed_on`, `direction`, `source`, `imaging_study_id` (nullable), `overrides_id` (nullable: a clinician override of an earlier row), + provenance |
-| `lab_result` | One lab value | As v1.1 + provenance |
+| `lab_result` | One lab value | As v1.1 (`analyte`, `value`, `unit`, `ref_low`, `ref_high`, `flag`, `collected_at`, `panel`) + `value_text` for non-numeric results + provenance |
 | `performance_status` *(Oncology)* | ECOG or KPS at a point in time | As v1.1 + provenance |
 | `cns_status` *(Oncology)* | CNS disease status (first-class because it gates most trials) | As v1.1 + provenance |
 
@@ -662,14 +674,14 @@ erDiagram
 | `redaction_job_file` | One file in a Redaction Job | `redaction_job_id`, `original_uri` (encrypted), `original_sha256`, `redacted_uri`, `redacted_sha256`, `leak_check_passed` (bool), `leak_check_report` (JSONB) |
 | `redaction_log` | PII detection and masking for one Document or Redaction Job file | `document_id` or `redaction_job_file_id`, `pipeline_run_id`, `entity_count`, `min_confidence`, `required_manual_review` (bool), `reviewed_by_user_id`, `leak_check_passed` |
 | `redaction_entity` | One PII item | `redaction_log_id`, `entity_type` (NAME/DOB/MEDICARE/IHI/DVA/MRN/ADDRESS/PHONE/EMAIL/PROVIDER_NAME/REFERRING_DOCTOR), `page_number`, `bbox_pt`, `text_hash` (never plaintext), `replacement_token`, `confidence`, `origin` (auto/manual), `status` (active/removed_false_positive) |
-| `cloud_request` | **The ledger:** every payload sent outside the Practice Boundary | `request_id` (random UUID, the only identifier sent), `document_id`, `page_numbers`, `purpose` (vlm_read/classify/extract/adjudicate/parse_criteria), `payload_kind` (masked_image/pseudonymised_text/public_text), `payload_sha256`, `initiated_by_user_id` (required in on-click mode), `model_id`, `sent_at`, `response_received_at`, `status` |
+| `cloud_request` | **The ledger:** every payload sent outside the Practice Boundary. Support data. | `practice_id` (null only for public text), `request_id` (random UUID, the only identifier sent), `document_id`, `page_numbers`, `purpose` (vlm_read/classify/extract/adjudicate/parse_criteria), `payload_kind` (masked_image/pseudonymised_text/public_text), `payload_sha256`, `initiated_by_user_id` (required in on-click mode), `model_id`, `sent_at`, `response_received_at`, `status` |
 
 **Exports, Reports & Audit**
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `report` | A generated report (not yet exported) | `patient_id`, `match_run_id` (nullable), `report_type` (treatment_summary/trial_match/patient_summary_snapshot/combined), `template_version`, `manifest` (JSONB), `file_uri` |
-| `export` | A signed-off Identified or De-identified Export | `patient_id`, `report_id` (nullable), `redaction_job_id` (nullable), `kind`, `recipient_description`, `recipient_provider_id` (nullable), `file_uri`, `file_sha256`, `signed_off_by_user_id`, `job_title_at_time`, `signed_off_at`. De-identified Exports carry the Pseudonym and must pass the leak check. |
+| `export` | A signed-off Identified or De-identified Export | `patient_id` (null only for an unlinked Redaction Job), `report_id` (nullable), `redaction_job_id` (nullable), `kind`, `recipient_description`, `recipient_provider_id` (nullable), `file_uri`, `file_sha256`, `signed_off_by_user_id`, `job_title_at_time`, `signed_off_at`. De-identified Exports carry the Pseudonym and must pass the leak check. |
 | `pipeline_run` | Audit record of any pipeline execution | As v1.1; `kind` adds `ocr`, `mask`, `redaction_job`, `reference_set_eval` |
 | `llm_call_log` | Every model call, local or cloud | As v1.1 + `endpoint` (local_vlm/cloud), `cloud_request_id` (nullable) |
 | `llm_cache` | Content-addressed response cache | As v1.1 |

@@ -14,16 +14,45 @@ services:
       timeout: 3s
       retries: 10
 
+  # Throwaway database for the backend tests: in memory, on its own port, never holds data you keep.
+  db-test:
+    image: pgvector/pgvector:pg16
+    profiles: [test]
+    environment:
+      POSTGRES_USER: vigil
+      POSTGRES_PASSWORD: vigil
+      POSTGRES_DB: vigil
+    ports: ["${VIGIL_TEST_DB_PORT:-55432}:5432"]
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vigil -d vigil"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # One-shot: creates the database roles, then migrates the schema to head (as vigil_owner).
+  migrate:
+    build: ./backend
+    command: ["python", "-m", "app.db.provision"]
+    environment:
+      VIGIL_DB_ADMIN_URL: postgresql://vigil:vigil@db:5432/vigil
+      VIGIL_DB_OWNER_PASSWORD: ${VIGIL_DB_OWNER_PASSWORD:-vigil_owner_dev}
+      VIGIL_DB_APP_PASSWORD: ${VIGIL_DB_APP_PASSWORD:-vigil_app_dev}
+      VIGIL_DB_SUPPORT_PASSWORD: ${VIGIL_DB_SUPPORT_PASSWORD:-vigil_support_dev}
+    depends_on:
+      db: { condition: service_healthy }
+
   backend:
     build: ./backend
     environment:
       VIGIL_ENV: ${VIGIL_ENV:-dev}
       VIGIL_DEV_LOGIN_ENABLED: ${VIGIL_DEV_LOGIN_ENABLED:-false}
-      VIGIL_DATABASE_URL: postgresql://vigil:vigil@db:5432/vigil
+      # The app's own role: no DELETE on Patient data, Patient Identity only via identity_access.
+      VIGIL_DATABASE_URL: postgresql://vigil_app:${VIGIL_DB_APP_PASSWORD:-vigil_app_dev}@db:5432/vigil
       VIGIL_VLM_WORKER_URL: ${VIGIL_VLM_WORKER_URL:-}
     ports: ["${VIGIL_BACKEND_PORT:-8000}:8000"]
     depends_on:
-      db: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
 
   frontend:
     build:

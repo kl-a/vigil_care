@@ -1,0 +1,86 @@
+"""Practice, Provider directory and Care Team (design doc §6.3)."""
+
+import uuid
+from datetime import date
+from decimal import Decimal
+
+from sqlalchemy import Index, text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.base_model import PracticeEntity, SharedEntity, allowed, practice_fk
+
+PROVIDER_SPECIALTIES = (
+    "medical_oncology",
+    "radiation_oncology",
+    "surgery",
+    "general_practice",
+    "haematology",
+    "pathology",
+    "radiology",
+    "other",
+)
+CARE_TEAM_ROLES = (
+    "treating_oncologist",
+    "referring_gp",
+    "referring_specialist",
+    "surgeon",
+    "radiation_oncologist",
+    "trial_site_contact",
+)
+
+
+class Practice(SharedEntity):
+    """A Practice using Vigil. The root of Practice scoping, so it has no `practice_id` itself."""
+
+    __tablename__ = "practice"
+
+    name: Mapped[str]
+    address: Mapped[str | None]
+    phone: Mapped[str | None]
+    fax: Mapped[str | None]
+    email: Mapped[str | None]
+    abn: Mapped[str | None]
+    lat: Mapped[Decimal | None]
+    lng: Mapped[Decimal | None]
+
+
+class Provider(PracticeEntity):
+    __tablename__ = "provider"
+    __extra_args__ = (
+        Index(
+            "uq_provider_practice_id_provider_number",
+            "practice_id",
+            "provider_number",
+            unique=True,
+            postgresql_where=text("provider_number IS NOT NULL"),
+        ),
+    )
+
+    title: Mapped[str | None]
+    first_name: Mapped[str]
+    last_name: Mapped[str]
+    provider_number: Mapped[str | None]
+    specialty: Mapped[str] = mapped_column(info=allowed(*PROVIDER_SPECIALTIES))
+    is_internal: Mapped[bool] = mapped_column(server_default=text("false"))
+    organisation: Mapped[str | None]
+    phone: Mapped[str | None]
+    email: Mapped[str | None]
+    fax: Mapped[str | None]
+    notes: Mapped[str | None]
+
+
+class CareTeamMember(PracticeEntity):
+    __tablename__ = "care_team_member"
+    __extra_args__ = (
+        practice_fk("patient_id", "patient"),
+        # Required, so RESTRICT rather than SET NULL.
+        practice_fk("provider_id", "provider"),
+    )
+
+    patient_id: Mapped[uuid.UUID] = mapped_column(index=True)
+    provider_id: Mapped[uuid.UUID] = mapped_column(index=True)
+    role: Mapped[str] = mapped_column(info=allowed(*CARE_TEAM_ROLES))
+    is_primary: Mapped[bool] = mapped_column(server_default=text("false"))
+    start_date: Mapped[date | None]
+    end_date: Mapped[date | None]
+    notes: Mapped[str | None]
