@@ -55,7 +55,7 @@ scripts/run-local.sh --stop   # stop everything (the database volume is kept)
 
 The script checks prerequisites, creates `.env` from `.env.example`, starts Docker Desktop if needed, and picks the next free port if 3000, 8000 or 5432 is taken by another app. It also waits until everything answers. To run Compose yourself: `cp .env.example .env && docker compose up --build`.
 
-- App: http://localhost:3000. In dev, the **dev login** lists the synthetic demo Users (one per Job Title); choose one to sign in as them. Password + 2FA login arrives in Stage 12. The stage demo scripts are in [docs/demos/](docs/demos/).
+- App: http://localhost:3000. In dev, the **dev login** lists the synthetic demo Users (one per Job Title); choose one to sign in as them. Password + 2FA login arrives in Stage 13. The stage demo scripts are in [docs/demos/](docs/demos/).
 - Health: http://localhost:8000/health · API docs: http://localhost:8000/docs
 
 For local development without Docker:

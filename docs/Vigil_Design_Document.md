@@ -13,7 +13,7 @@
 
 **v1.3 (2026-09-25): general Core + Specialty Modules** ([ADR 0004](adr/0004-general-core-with-specialty-modules.md)). Vigil is structured as a specialty-agnostic **Core** with pluggable **Specialty Modules**; **Oncology** is the first and only module in the MVP (§4.1). The general **Condition** replaces the cancer-only Diagnosis in the Core; Oncology extends it into a **Cancer Diagnosis**. **Comorbidity** is now a view, not a table. Match Runs target a Condition. Oncology-only concepts (Stage, Disease Extent, Recurrence, Biomarker, Line of Therapy, Response Assessment, ECOG, CNS status, eviQ Treatment Options) move into the Oncology module. Previous version: [archive/Vigil_Design_Document_v1.2.md](archive/Vigil_Design_Document_v1.2.md).
 
-**v1.3 build stages (2026-09-25):** §15 is rewritten from 12 back-end-first phases into **stakeholder-demoable stages**. The Clinical Record is entered by hand first, screens appear stage by stage and section by section, and login hardening comes last (required before prod).
+**v1.3 build stages (2026-09-25):** §15 is rewritten from 12 back-end-first phases into **13 stakeholder-demoable stages**; Patients' Documents come straight after the Patient Summary. The Clinical Record is entered by hand first, screens appear stage by stage and section by section, and login hardening comes last (required before prod).
 
 **v1.3 schema decisions (2026-09-25, for the baseline migration, ticket #2):**
 - Practice scoping extends to child rows, kept consistent by composite foreign keys.
@@ -77,7 +77,7 @@ The application stack runs via `docker compose up`. Host prerequisites: Docker, 
 | **test** | Unit tests + end-to-end tests against the Reference Set only | Synthetic only (the Reference Set) | Real login flow, exercised by the E2E tests |
 | **prod** | Real use by the Practice. **Not part of the MVP.** | Real patients | Real login |
 
-> **Claude Code note: the dev login must be impossible in test or prod.** Enable it only when `VIGIL_ENV=dev`. At startup, the app must **refuse to start** if the dev login is enabled in any other environment. Add a test that asserts this. Every guardrail (masking, Verification, per-fact review, Job Title permissions, leak tests, quality gates, database roles) is fully active in dev and test even though the data is synthetic. **Exception:** login hardening (2FA, inactivity lock, re-authentication) is built in the last stage and is required before prod (§15).
+> **Claude Code note: the dev login must be impossible in test or prod.** Enable it only when `VIGIL_ENV=dev`. At startup, the app must **refuse to start** if the dev login is enabled in any other environment. Add a test that asserts this. Every guardrail (masking, Verification, per-fact review, Job Title permissions, leak tests, quality gates, database roles) is fully active in dev and test even though the data is synthetic. **Exception:** login hardening (2FA, inactivity lock, re-authentication) is built in the last stage (Stage 13) and is required before prod (§15).
 
 ---
 
@@ -592,7 +592,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
 | `care_team_member` | A Provider's role in one Patient's care | `patient_id`, `provider_id`, `role`, `is_primary`, `start_date`, `end_date` (null = current), `notes` |
 | `specialty_module` | Registry of installed Specialty Modules. "Installed" means the module's code ships with this build; its row and tables are created by migrations (the baseline registers `oncology`). | `key` (unique, e.g. `oncology`), `display_name`, `version` |
-| `practice_module` | Which modules are active for a Practice | `practice_id`, `module_key` (FK → `specialty_module.key`), `is_active`, `changed_by_user_id` (developer admin; each change also writes a Verification with action `activate_module`/`deactivate_module`). The bootstrap command (§15 Stage 12) activates Oncology; until then `make demo-data` activates it in dev for the new Practice, attributed to the first developer admin it creates ([revisit-later.md](revisit-later.md) #18). |
+| `practice_module` | Which modules are active for a Practice | `practice_id`, `module_key` (FK → `specialty_module.key`), `is_active`, `changed_by_user_id` (developer admin; each change also writes a Verification with action `activate_module`/`deactivate_module`). The bootstrap command (§15 Stage 13) activates Oncology; until then `make demo-data` activates it in dev for the new Practice, attributed to the first developer admin it creates ([revisit-later.md](revisit-later.md) #18). |
 
 **Documents, OCR & Extraction**
 
@@ -1395,11 +1395,12 @@ vigil/
 > **Principle (2026-09-25):** every stage ends with something a stakeholder can see and use. Each stage finishes with a **stage demo**: a short written script run from a laptop in dev against the synthetic demo Practice (`make demo-data`), shown to Dr De Souza, practice staff or anyone else we're presenting to. Nothing is hosted until the Azure move ([ADR 0003](adr/0003-local-mvp-with-cloud-seams.md)).
 >
 > **Rules:**
+> - **Order (revised 2026-09-25):** after the Patient Summary come Patients' Documents (filing, then the trust gate, pipeline and extraction), so the Practice can track Patients and their Documents before any matching. Trials, Treatment Options and Exports follow.
 > - **Build the product's value first.** The Clinical Record is **entered by hand first** (every Clinical Record table allows a row "entered by a User"). The Patient Summary, PBS and trial matching run on that record. The document pipeline arrives later and fills the *same* record automatically.
 > - **Tie each ticket to a visible feature where there is one.** A ticket that is genuinely back end only (logic, a job, an interface) is fine; don't force a screen onto it. Infrastructure seams ([ADR 0003](adr/0003-local-mvp-with-cloud-seams.md)) are built inside the first slice that needs them, not up front.
 > - **The front end grows stage by stage.** A screen is hidden from the navigation until its stage ships (a stage flag per screen). Dev has a "Show upcoming screens" toggle that shows the placeholders. Screens grow **section by section**, each section appearing once its data exists (the section registry, §4.1).
 > - **Tickets are small, logical vertical slices.** There's no fixed count per stage. Each stage is a GitHub milestone. Only the next few stages are broken into tickets; later stages stay as outlines until the demos have taught us something.
-> - **Login hardening comes last** (Stage 12): real accounts with 2FA, the inactivity lock, re-authentication, rate limiting and the bootstrap command. It is **required before prod or any real Patient data**. Until then:
+> - **Login hardening comes last** (Stage 13): real accounts with 2FA, the inactivity lock, re-authentication, rate limiting and the bootstrap command. It is **required before prod or any real Patient data**. Until then:
 >   - Demos use the **dev login**, where you pick a seeded User (one per Job Title). Permissions by Job Title are real from Stage 1.
 >   - Clinician-only Verifications check the Job Title and record `reauthenticated = false`.
 >   - End-to-end tests run in dev through the dev login. The test environment runs the unit and database tests and the quality gates, and takes over the end-to-end tests once the real login exists. There is no test-only login shortcut.
@@ -1415,15 +1416,15 @@ flowchart LR
     S2 --> S4[4 Clinical Record by hand]
     S3 --> S4
     S4 --> S5[5 Patient Summary v1]
-    S4 --> S6[6 Trials]
-    S5 --> S7[7 Redaction Jobs]
-    S6 --> S7
-    S7 --> S8[8 Documents]
+    S5 --> S6[6 Document filing]
+    S6 --> S7[7 Redaction Jobs]
+    S7 --> S8[8 Document pipeline]
     S8 --> S9[9 Extraction Review]
-    S4 --> S10[10 Treatment Options]
-    S9 --> S11[11 Exports]
-    S10 --> S11
-    S11 --> S12[12 Login hardening + polish]
+    S9 --> S10[10 Trials]
+    S9 --> S11[11 Treatment Options]
+    S10 --> S12[12 Exports]
+    S11 --> S12
+    S12 --> S13[13 Login hardening + polish]
 ```
 
 | Stage | Shows stakeholders | Milestone |
@@ -1434,14 +1435,14 @@ flowchart LR
 | 3 | PBS Drug Lookup on real PBS data; Support Views and the developer admin's Dashboard | Stage 3 · PBS & Support Views |
 | 4 | The Clinical Record entered by hand, in three parts | Stage 4 · Clinical Record by hand |
 | 5 | Patient Summary v1 and Open Items | Stage 5 · Patient Summary |
-| 6 | Trial Browser, then the Match Board | Stage 6 · Trials |
+| 6 | Document filing: upload a Patient's Documents, view them, set Type and date by hand | Stage 6 · Document filing |
 | 7 | Redaction Jobs: the de-identification trust gate | Stage 7 · Redaction Jobs |
-| 8 | Document upload and the pipeline | Stage 8 · Documents |
+| 8 | The document pipeline processes filed Documents | Stage 8 · Document pipeline |
 | 9 | Extraction Review into the same Clinical Record | Stage 9 · Extraction Review |
-| 10 | Treatment Options (eviQ + PBS Coverage) | Stage 10 · Treatment Options |
-| 11 | Reports and Exports | Stage 11 · Exports |
-| 12 | Login hardening, backup, polish: MVP complete | Stage 12 · Login hardening & polish |
-
+| 10 | Trial Browser, then the Match Board | Stage 10 · Trials |
+| 11 | Treatment Options (eviQ + PBS Coverage) | Stage 11 · Treatment Options |
+| 12 | Reports and Exports | Stage 12 · Exports |
+| 13 | Login hardening, backup, polish: MVP complete | Stage 13 · Login hardening & polish |
 ---
 
 ### Foundation (done or in review)
@@ -1457,7 +1458,7 @@ flowchart LR
 - **Dev login as a seeded User:** pick the synthetic clinician (Dr Alex Rivera), trial coordinator, secretary or developer admin; names from [frontend-design.md](frontend-design.md) §10, since no real people appear in demo data. This replaces the skeleton's "Preview as". It comes with the identity interface and its dev-login implementation.
 - **Demo data v1** (`make demo-data`, dev only): the demo Practice and one User per Job Title.
 - **Permissions and Verification:** one permission check implementing §6.4, and the Verification service.
-- **User Management basics:** list, create, deactivate and change Job Title, each change recorded as a Verification. Password and 2FA resets come in Stage 12.
+- **User Management basics:** list, create, deactivate and change Job Title, each change recorded as a Verification. Password and 2FA resets come in Stage 13.
 - **Practice details** in Settings.
 - **Specialty Modules** in Settings: the module contract, registry and Builder (§4.1). A developer admin switches Oncology on or off, and its sections appear or disappear.
 - **Stage flags:** only built screens appear in the navigation, plus a **System status** page (health).
@@ -1526,26 +1527,32 @@ Every entry is recorded as "entered by a User" with a Verification, and clinicia
 
 ---
 
-### Stage 6: Trials
+### Stage 6: Document filing
 
-- **6a Trial Browser:** ClinicalTrials.gov and ANZCTR Refreshes, snapshots, sites with distance from the Practice, geographic scope, and criteria parsing with scope (target_condition / whole_person). Parsing sends **public trial text only** through the LLM gateway, recorded in the ledger as `public_text`.
-- **6b Match Board:** Match Runs per target Condition; deterministic pre-filters; adjudication on pseudonymised values (authorised by "Run match"); Potentially Eligible / Needs Information / Excluded; Stale runs; the diff. Unknown criteria become Open Items.
+**What:**
+- **Storage interface** (ADR 0003): Originals encrypted at rest.
+- **Upload** (scan, PDF, photo; drag-drop and batch) to a Patient: the Original is stored, and a **Working Copy** is made (deskew, greyscale, ≤300 dpi; §7).
+- The Patient's **Documents tab**: list by date, with Document Type, status and who uploaded it. Duplicate uploads are refused (same file, same Patient).
+- The **shared page viewer** (react-pdf + react-konva) for reading any page; Redaction QA and Extraction Review reuse it later.
+- A User sets the **Document Type and date by hand**. **Hold** a Document on purpose ("keep as a scan only"); **move** a misfiled Document to the right Patient; soft delete with a reason.
+- Filed Documents stay `status = 'uploaded'`, shown as "Filed, not yet processed". The Stage 8 pipeline processes them.
+- The Patient Summary shows "latest letter" and "latest scan" links.
+- Nothing leaves the Practice Boundary in this stage; there's no OCR and no cloud.
 
-**Stage demo:** browse Australian breast cancer trials near the Practice, then run a match for Jane Citizen and walk through a Needs Information criterion.
+**Stage demo:** drop Jane Citizen's latest CT report and a GP letter onto her record, read them in the viewer, file the CT as "CT report, 12 Aug 2026", then open her Summary and follow the latest-scan link.
 
-**Depends on:** Stage 4 (Stage 5 for the Open Items). 6a can start after Stage 3.
+**Depends on:** Stage 5 (Stage 2 for Patients).
 
 ---
 
 ### Stage 7: Redaction Jobs (the trust gate)
 
 **What:**
-- **Storage interface:** Originals encrypted at rest.
-- **Working Copy** normalisation, and the text layer via pypdfium2.
+- Reuses Stage 6's storage, Working Copy and page viewer; adds the text layer via pypdfium2.
 - **Classic OCR:** PP-OCRv5 + docTR, with the union of word boxes.
 - **PII detection:** Presidio + AU recognisers, then boxes.
 - **Burn-in** (§9.5) and the **leak check**.
-- The **shared page viewer** (react-pdf + react-konva) and **Redaction QA**.
+- **Redaction QA** on the shared page viewer.
 - The **Redaction Jobs** screen, with the "Unlinked" filter.
 - Import of the **Reference Set**.
 - Gates: **PII detection** and **masking leak tests**, including rotated and downscaled variants.
@@ -1554,22 +1561,22 @@ Every entry is recorded as "entered by a User" with a Verification, and clinicia
 
 **Why here:** nothing patient-derived may leave the Practice Boundary until this passes. It's also useful on its own (Dr De Souza confirmed it).
 
-**Depends on:** Stage 2. Placed after Stages 5–6 so the product's value is on screen first.
+**Depends on:** Stage 6.
 
 ---
 
-### Stage 8: Documents
+### Stage 8: Document pipeline
 
 **What:**
-- Document Upload with the status stepper.
+- The pipeline runs on **filed Documents** (everything still `uploaded` from Stage 6, and every new upload), with a status stepper on the Documents tab.
 - The **VLM worker** (llama.cpp + PaddleOCR-VL-1.6; [hardware-options.md](hardware-options.md)) and the VLM PII re-scan.
 - The **LLM gateway** with local and cloud endpoints, privacy-invariant enforcement, the **cloud request ledger**, pre-flight and the cache.
 - **"Enhance with cloud"** (on-click; masked pages only).
-- Classification, **Held Documents**, and **move** for misfiled Documents.
+- Classification (the User can still correct the Document Type), and **Held Documents** when the pipeline can't read one.
 - VLM worker settings.
 - Gate: **unreadable routing**.
 
-**Stage demo:** drop in a synthetic fax and a phone photo and watch them move through the pipeline. Show an unreadable scan being Held. Then show exactly what an "Enhance with cloud" request would send.
+**Stage demo:** process Jane Citizen's filed Documents, then drop in a synthetic fax and a phone photo and watch them move through the pipeline. Show an unreadable scan being Held. Then show exactly what an "Enhance with cloud" request would send.
 
 **Depends on:** Stage 7.
 
@@ -1579,7 +1586,7 @@ Every entry is recorded as "entered by a User" with a Verification, and clinicia
 
 **What:**
 - Pydantic models and prompts per fact kind; **Extracted Facts**; the **numeric cross-check**.
-- **Extraction Review:** per-fact review with Job Title enforcement. Accepted facts land in the *same* Clinical Record tables that Stages 4–5 display.
+- **Extraction Review:** per-fact review with Job Title enforcement. Accepted facts land in the *same* Clinical Record tables that Stages 4–5 display, from the Documents filed in Stage 6 onward.
 - **Reconciliation** of Medications and Conditions (§7.2).
 - Gate: **extraction accuracy**.
 
@@ -1589,7 +1596,18 @@ Every entry is recorded as "entered by a User" with a Verification, and clinicia
 
 ---
 
-### Stage 10: Treatment Options
+### Stage 10: Trials
+
+- **10a Trial Browser:** ClinicalTrials.gov and ANZCTR Refreshes, snapshots, sites with distance from the Practice, geographic scope, and criteria parsing with scope (target_condition / whole_person). Parsing sends **public trial text only** through the LLM gateway, recorded in the ledger as `public_text`.
+- **10b Match Board:** Match Runs per target Condition; deterministic pre-filters; adjudication on pseudonymised values (authorised by "Run match"); Potentially Eligible / Needs Information / Excluded; Stale runs; the diff. Unknown criteria become Open Items.
+
+**Stage demo:** browse Australian breast cancer trials near the Practice, then run a match for Jane Citizen and walk through a Needs Information criterion.
+
+**Depends on:** Stage 9, so matching also sees extracted data. **10a (the Trial Browser) loads public data only and can start any time after Stage 3** if we want something to show while the document stages are built.
+
+---
+
+### Stage 11: Treatment Options
 
 **Blocked until eviQ's terms of use are confirmed** ([revisit-later.md](revisit-later.md) #9).
 
@@ -1601,17 +1619,17 @@ Every entry is recorded as "entered by a User" with a Verification, and clinicia
 
 ---
 
-### Stage 11: Reports & Exports
+### Stage 12: Reports & Exports
 
 **What:** report templates, and **Identified vs De-identified Exports** with an explicit choice and **sign-off**. De-identified Exports carry the Pseudonym and must pass the leak check. Frontend: the Exports screen.
 
 **Stage demo:** export Jane Citizen's Summary as an Identified Export for her GP, and a trial-matching report as a De-identified Export, then show both in the export history.
 
-**Depends on:** Stages 5, 7 and 9.
+**Depends on:** Stages 5, 7 and 9 (and 10 for trial-matching reports).
 
 ---
 
-### Stage 12: Login hardening & polish
+### Stage 13: Login hardening & polish
 
 **What:**
 - **Accounts:** local accounts (argon2id), **TOTP 2FA** enrolment and login, rate limiting, the **10-minute inactivity lock**, **re-authentication** for clinician-only actions (`reauthenticated = true`), and password/2FA resets in User Management.
@@ -1727,7 +1745,7 @@ Revisit at the Azure move ([revisit-later.md](revisit-later.md) #14).
 ## 19. Remaining Open Decisions
 
 None for the MVP design. Everything deferred or provisional is tracked in [revisit-later.md](revisit-later.md), with items needing Dr De Souza marked **Ask Dr De Souza**. Items that block specific phases or go-live:
-- **Stage 10** is blocked on confirming eviQ's terms of use (#9).
+- **Stage 11** is blocked on confirming eviQ's terms of use (#9).
 - **Go-live with real patients** is gated by the checklist in [quality-gates.md](quality-gates.md) (incl. Presidio maturity #4 and retention #15).
 
 ---

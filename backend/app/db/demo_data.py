@@ -23,7 +23,7 @@ from app.modules.registry.models import PracticeModule
 
 NAMESPACE = uuid.UUID("5b0f3c1e-0d6a-4a5e-9c1b-7a1d2c3e4f50")
 PRACTICE_ID = uuid.uuid5(NAMESPACE, "practice")
-# Not a password hash: nobody can sign in with a password until Stage 12, and then only after enrolment.
+# Not a password hash: nobody can sign in with a password until Stage 13, and then only after enrolment.
 NO_PASSWORD = "!demo-user-dev-login-only"
 
 

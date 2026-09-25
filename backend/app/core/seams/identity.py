@@ -2,7 +2,7 @@
 
 An implementation checks credentials and answers with the User's id; sessions are the app's job.
 `DevLogin` exists only in dev (the startup guard and route registration enforce that). `LocalAccounts`
-(password + TOTP 2FA) is a placeholder until login hardening in Stage 12 (design doc §15).
+(password + TOTP 2FA) is a placeholder until login hardening in Stage 13 (design doc §15).
 """
 
 import uuid
@@ -54,7 +54,7 @@ class DevLogin:
 
 
 class LocalAccounts:
-    """Password + TOTP 2FA login. Built in Stage 12; until then it refuses everyone."""
+    """Password + TOTP 2FA login. Built in Stage 13; until then it refuses everyone."""
 
     def authenticate(self, credentials: Credentials) -> uuid.UUID:
         raise LoginRefused()

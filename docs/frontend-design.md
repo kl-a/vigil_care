@@ -162,7 +162,7 @@ Build each as a reusable component in the scaffold, with a **component gallery p
 
 Numbering follows design doc §5. For each screen: purpose, layout, key content, actions, and states the scaffold must show. **Use the synthetic data in §10.**
 
-### Account screens (the Login screen's real 2FA flow ships in Stage 12; until then only the dev login is used)
+### Account screens (the Login screen's real 2FA flow ships in Stage 13; until then only the dev login is used)
 
 **1. Login**
 - Centred card: username, password → then the 6-digit 2FA code.

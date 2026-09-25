@@ -6,7 +6,8 @@
 - Every stage ends with a **stage demo**: a scripted walkthrough in dev, on synthetic data, for stakeholders ([docs/demos/](demos/)).
 - The **Clinical Record is entered by hand first**. The document pipeline fills the same record later.
 - Screens appear only once built, and grow section by section.
-- **Login hardening comes last** (Stage 12) and is required before prod or any real Patient data.
+- **Patients' Documents come straight after the Patient Summary** (Stages 6–9), so the Practice can track Patients and their Documents before any trial or treatment matching.
+- **Login hardening comes last** (Stage 13) and is required before prod or any real Patient data.
 
 ## Where we are
 
@@ -31,8 +32,8 @@
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#13](https://github.com/kl-a/vigil_care/issues/13) | Dev login as a seeded User, and demo data | #2 | 🔨 Built (`ticket-13-dev-login`) |
-| 2 | [#6](https://github.com/kl-a/vigil_care/issues/6) | Permissions, Verification and User Management basics | #13 | ⏳ Blocked |
+| 1 | [#13](https://github.com/kl-a/vigil_care/issues/13) | Dev login as a seeded User, and demo data | #2 | ✅ Done |
+| 2 | [#6](https://github.com/kl-a/vigil_care/issues/6) | Permissions, Verification and User Management basics | #13 | ⏭️ Ready |
 | 3 | [#14](https://github.com/kl-a/vigil_care/issues/14) | Practice details in Settings | #6 | ⏳ Blocked |
 | 3 | [#15](https://github.com/kl-a/vigil_care/issues/15) | Specialty Modules: contract, registry and Settings toggle | #6 | ⏳ Blocked |
 | any | [#16](https://github.com/kl-a/vigil_care/issues/16) | Show only built screens, and System status | none | ⏭️ Ready |
@@ -61,25 +62,26 @@ This stage can run alongside Stage 2.
 | 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | ⏳ Blocked |
 | 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | ⏳ Blocked |
 
-### Stages 4–12 (outlines)
+### Stages 4–13 (outlines)
 
 | Stage | Shows stakeholders | Depends on | Status |
 |---|---|---|---|
 | 4 · Clinical Record by hand | 4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan | 2, 3 | 📋 Outline |
 | 5 · Patient Summary | Patient Summary v1 and Open Items, from the hand-entered record | 4 | 📋 Outline |
-| 6 · Trials | 6a Trial Browser (can start after Stage 3), 6b Match Board | 4 | 📋 Outline |
-| 7 · Redaction Jobs | De-identification trust gate: OCR, masking, Redaction QA, leak check | 2 (placed after 5–6) | 📋 Outline |
-| 8 · Documents | Upload, pipeline, VLM worker, cloud ledger, Held Documents | 7 | 📋 Outline |
+| 6 · Document filing | Upload a Patient's Documents (Original encrypted), view them, set Type and date by hand, Hold, move; nothing leaves the Practice | 5 | 📋 Outline |
+| 7 · Redaction Jobs | De-identification trust gate: OCR, masking, Redaction QA, leak check | 6 | 📋 Outline |
+| 8 · Document pipeline | Processes filed Documents: OCR, VLM worker, classification, cloud ledger, Held Documents | 7 | 📋 Outline |
 | 9 · Extraction Review | Extracted Facts reviewed into the same Clinical Record | 8 | 📋 Outline |
-| 10 · Treatment Options | eviQ + PBS Coverage. **Blocked on eviQ terms of use** ([revisit-later.md](revisit-later.md) #9) | 3, 4 | 📋 Outline |
-| 11 · Exports | Identified and De-identified Exports with sign-off | 5, 7, 9 | 📋 Outline |
-| 12 · Login hardening & polish | 2FA, inactivity lock, re-authentication, bootstrap, onboarding, backup, polish. Tickets so far: [#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5) | all | 📋 Outline |
+| 10 · Trials | 10a Trial Browser (public data; can start any time after Stage 3), 10b Match Board | 9 | 📋 Outline |
+| 11 · Treatment Options | eviQ + PBS Coverage. **Blocked on eviQ terms of use** ([revisit-later.md](revisit-later.md) #9) | 3, 4 | 📋 Outline |
+| 12 · Exports | Identified and De-identified Exports with sign-off | 5, 7, 9 (10 for trial reports) | 📋 Outline |
+| 13 · Login hardening & polish | 2FA, inactivity lock, re-authentication, bootstrap, onboarding, backup, polish. Tickets so far: [#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5) | all | 📋 Outline |
 
 ## Critical path
 
 ```mermaid
 flowchart LR
-    T2[#2 schema ✅] --> T13[#13 dev login 🔨]
+    T2[#2 schema ✅] --> T13[#13 dev login ✅]
     T13 --> T6[#6 permissions + Users]
     T6 --> T14[#14 Practice details]
     T6 --> T15[#15 Specialty Modules]
@@ -99,6 +101,7 @@ flowchart LR
 ```
 
 **Next up:**
-1. Merge #13.
-2. Build #6. It unblocks the rest of Stage 1 and all of Stages 2 and 3.
-3. #16 can be done at any point.
+1. Build #6. It unblocks the rest of Stage 1 and all of Stages 2 and 3.
+2. #16 can be done at any point.
+
+**After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.

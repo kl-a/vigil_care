@@ -36,7 +36,7 @@ function NotYet() {
     <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-6 shadow-card">
       <h1 className="m-0 text-lg font-semibold">Sign in</h1>
       <p className="m-0 text-[13px] text-muted-foreground">
-        Sign-in with a password and 2FA arrives in Stage 12. Until then Vigil is used only in the dev environment.
+        Sign-in with a password and 2FA arrives in Stage 13. Until then Vigil is used only in the dev environment.
       </p>
     </div>
   );
