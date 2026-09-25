@@ -1,0 +1,25 @@
+import type { CurrentUser, DevLoginChoice } from "@/lib/session";
+import type { JobTitle } from "@/lib/jobTitles";
+
+const NAMES: Record<JobTitle, string> = {
+  clinician: "Dr Alex Rivera",
+  trial_coordinator: "Sam Lee",
+  secretary: "Jordan Park",
+  developer_admin: "Casey Dev",
+};
+
+/** A synthetic signed-in User (names from the frontend brief §10). */
+export function userWith(jobTitle: JobTitle): CurrentUser {
+  return {
+    id: `00000000-0000-0000-0000-00000000000${Object.keys(NAMES).indexOf(jobTitle) + 1}`,
+    display_name: NAMES[jobTitle],
+    job_title: jobTitle,
+    practice_id: "00000000-0000-0000-0000-0000000000aa",
+    practice_name: "Harbourside Oncology (synthetic)",
+  };
+}
+
+export function choiceFor(jobTitle: JobTitle): DevLoginChoice {
+  const { id, display_name, job_title, practice_name } = userWith(jobTitle);
+  return { id, display_name, job_title, practice_name };
+}

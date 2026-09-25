@@ -1,7 +1,7 @@
 # Vigil developer commands. Nothing is installed on the host outside backend/.venv and frontend/node_modules.
 BACKEND_PY := backend/.venv/bin/python
 
-.PHONY: setup up down test test-db test-backend test-frontend typecheck gates api-types check-api-types migrate erd ci
+.PHONY: setup up down test test-db test-backend test-frontend typecheck gates api-types check-api-types migrate demo-data erd ci
 
 setup: ## Create the backend venv and install frontend deps (local only)
 	cd backend && python3 -m venv .venv && .venv/bin/pip install -q -e '.[dev]'
@@ -34,6 +34,9 @@ gates: ## Run the quality gates (test environment only; fails the build on any g
 
 migrate: ## Provision database roles and migrate the dev database to head
 	cd backend && .venv/bin/python -m app.db.provision
+
+demo-data: ## Load the synthetic demo Practice into the dev database (dev only)
+	cd backend && .venv/bin/python -m app.db.demo_data
 
 erd: ## Regenerate the clickable data-model diagram (docs/data-model/index.html)
 	cd backend && .venv/bin/python -m app.db.erd

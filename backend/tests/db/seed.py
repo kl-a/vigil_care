@@ -34,10 +34,10 @@ class Seed:
 
     def user(self, practice_id: uuid.UUID, job_title: str = "clinician", **values: Any) -> uuid.UUID:
         values.setdefault("username", f"user-{uuid.uuid4().hex[:8]}")
+        values.setdefault("display_name", "Synthetic User")
         return self.insert(
             "user",
             practice_id=practice_id,
-            display_name="Synthetic User",
             password_hash="not-a-real-hash",
             job_title=job_title,
             **values,

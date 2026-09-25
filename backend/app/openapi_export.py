@@ -8,7 +8,8 @@ from app.main import create_app
 
 
 def main() -> None:
-    app = create_app(Settings(environment="dev", dev_login_enabled=False), database_check=lambda: True)
+    # Include the dev-only routes so the frontend has their types; the server registers them only in dev.
+    app = create_app(Settings(environment="dev", dev_login_enabled=True), database_check=lambda: True)
     json.dump(app.openapi(), sys.stdout, indent=2, sort_keys=True)
     sys.stdout.write("\n")
 

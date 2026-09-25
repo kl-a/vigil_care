@@ -16,7 +16,3 @@ export function seesPatientData(jobTitle: JobTitle): boolean {
 export function homePath(jobTitle: JobTitle): string {
   return seesPatientData(jobTitle) ? "/dashboard" : "/system";
 }
-
-export function isJobTitle(value: unknown): value is JobTitle {
-  return typeof value === "string" && (JOB_TITLES as readonly string[]).includes(value);
-}

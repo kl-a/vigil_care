@@ -30,6 +30,7 @@
 | [docs/adr/](docs/adr/) | Architecture decisions |
 | [docs/quality-gates.md](docs/quality-gates.md) | Reference Set, deployment gates, masking leak tests, go-live checklist |
 | [docs/hardware-options.md](docs/hardware-options.md) | Where the OCR and vision models can run |
+| [docs/build-order.md](docs/build-order.md) | Where the build stands: stages, tickets in order, status, what's next |
 | [docs/revisit-later.md](docs/revisit-later.md) | Provisional decisions and deferred scope |
 
 ## Planned stack
@@ -54,7 +55,7 @@ scripts/run-local.sh --stop   # stop everything (the database volume is kept)
 
 The script checks prerequisites, creates `.env` from `.env.example`, starts Docker Desktop if needed, and picks the next free port if 3000, 8000 or 5432 is taken by another app. It also waits until everything answers. To run Compose yourself: `cp .env.example .env && docker compose up --build`.
 
-- App: http://localhost:3000. In dev, use **Preview as** in the top bar to see each Job Title's navigation. Real logins arrive with #4.
+- App: http://localhost:3000. In dev, the **dev login** lists the synthetic demo Users (one per Job Title); choose one to sign in as them. Password + 2FA login arrives in Stage 13. The stage demo scripts are in [docs/demos/](docs/demos/).
 - Health: http://localhost:8000/health · API docs: http://localhost:8000/docs
 
 For local development without Docker:
@@ -66,13 +67,14 @@ make typecheck        # mypy (strict) + tsc
 make gates            # quality gates; test environment only
 make migrate          # create the database roles and migrate the dev database to head
 make test-db          # start the throwaway test database (make test-backend does this for you)
+make demo-data        # load the synthetic demo Practice into dev (run-local.sh does this for you)
 make erd              # regenerate docs/data-model/index.html after any schema change
 make ci               # tests + typecheck + gates + API-types drift check (what a build must pass)
 make api-types        # regenerate frontend/generated/api.ts from the backend's OpenAPI schema
 ```
 
 **Safety rules:**
-- The dev login may only be enabled when `VIGIL_ENV=dev`. The backend refuses to start otherwise, and `VIGIL_ENV=prod` is refused in the MVP.
+- The dev login may only be enabled when `VIGIL_ENV=dev`. The backend refuses to start otherwise, and `VIGIL_ENV=prod` is refused in the MVP. Outside dev it also refuses the dev session secret: set `VIGIL_SESSION_SECRET`.
 - The backend connects as `vigil_app`, which can't hard-delete Patient data and reaches Patient Identity only through the `identity_access` role (design doc §6.2).
 - Any database change also updates the models, a migration, `make erd` and design doc §6 (see CLAUDE.md).
 - The frontend build fails if `NEXT_PUBLIC_VIGIL_ENV` is missing or unknown; it never silently falls back to dev. `next dev` reads `frontend/.env.development`.
