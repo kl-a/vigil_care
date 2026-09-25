@@ -55,10 +55,12 @@ describe("User Management", () => {
     const sam = (await screen.findByText("Sam Lee (synthetic)")).closest("tr")!;
     fireEvent.click(within(sam).getByRole("button", { name: "Change Job Title" }));
     const dialog = screen.getByRole("dialog");
-    expect(dialog).toHaveTextContent(`sign-off by ${me.display_name} (Secretary)`);
     fireEvent.change(within(dialog).getByLabelText("Job Title"), { target: { value: "developer_admin" } });
     expect(dialog).toHaveTextContent("will no longer see any Patient data");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Change Job Title" }));
+    const confirm = within(dialog).getByRole("button", { name: "Change Job Title" });
+    expect(confirm).toBeDisabled(); // SignOffDialog: nothing is signed off until you tick the box
+    fireEvent.click(within(dialog).getByRole("checkbox", { name: `I confirm this change. Sign it off as ${me.display_name} (Secretary).` }));
+    fireEvent.click(confirm);
     await waitFor(() => expect(users.changeUser).toHaveBeenCalledWith("u-1", { job_title: "developer_admin", reason: undefined }));
   });
 

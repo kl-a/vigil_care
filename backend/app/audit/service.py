@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.audit.models import Verification
 from app.audit.schemas import VerificationEntry
+from app.core.vocabulary import JobTitle
 
 VerificationAction = Literal[
     "accept",
@@ -32,7 +33,7 @@ class Actor(Protocol):
     @property
     def practice_id(self) -> uuid.UUID: ...
     @property
-    def job_title(self) -> str: ...
+    def job_title(self) -> JobTitle: ...
 
 
 def record_verification(

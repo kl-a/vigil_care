@@ -46,7 +46,7 @@ class HistoryEntry(BaseModel):
 
     action: str
     by_display_name: str
-    by_job_title: str
+    by_job_title: JobTitle
     before: dict[str, Any] | None
     after: dict[str, Any] | None
     reason: str | None

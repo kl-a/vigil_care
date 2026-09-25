@@ -7,7 +7,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { homePath } from "@/lib/jobTitles";
 import { canAccess } from "@/lib/navigation";
 import { screenForPathname } from "@/lib/screens";
-import { isShipped, isVisible } from "@/lib/stages";
+import { isReleased, isVisible } from "@/lib/stages";
 import { Forbidden } from "./Forbidden";
 import { NotYetAvailable } from "./NotYetAvailable";
 import { Sidebar } from "./Sidebar";
@@ -38,15 +38,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { job_title: jobTitle } = session.user;
   const crumbs = crumbsFor(pathname);
   const screen = screenForPathname(pathname);
-  const stage = screen?.stage;
   const crumbVisible = (href: string) => {
-    const crumbStage = screenForPathname(href)?.stage;
-    return crumbStage === undefined || isVisible(crumbStage, showUpcoming);
+    const crumbScreen = screenForPathname(href);
+    return crumbScreen === undefined || isVisible(crumbScreen, showUpcoming);
   };
 
+  const allowed = canAccess(pathname, jobTitle);
+  const available = screen === undefined || isVisible(screen, showUpcoming);
+  // An upcoming screen shown only because of the dev toggle gets a note saying so.
+  const previewing = allowed && screen !== undefined && available && !isReleased(screen);
   let content: ReactNode = children;
-  if (!canAccess(pathname, jobTitle)) content = <Forbidden jobTitle={jobTitle} />;
-  else if (stage !== undefined && !isVisible(stage, showUpcoming)) content = <NotYetAvailable title={screen?.title ?? "This screen"} home={homePath(jobTitle)} />;
+  if (!allowed) content = <Forbidden jobTitle={jobTitle} />;
+  else if (!available) content = <NotYetAvailable title={screen?.title ?? "This screen"} home={homePath(jobTitle)} />;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -64,9 +67,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               </span>
             ))}
           </nav>
-          {stage !== undefined && !isShipped(stage) && isVisible(stage, showUpcoming) && content === children && (
+          {previewing && (
             <p role="note" className="mx-5 mt-2 rounded-md border border-dashed border-dev/60 bg-dev-bg px-3 py-1.5 text-xs text-dev">
-              Upcoming screen: coming in Stage {stage}. Shown because &ldquo;Show upcoming screens&rdquo; is on (dev only).
+              Upcoming screen: coming in Stage {screen.stage}. Shown because &ldquo;Show upcoming screens&rdquo; is on (dev only).
             </p>
           )}
           {content}

@@ -15,7 +15,7 @@
 | 3 | Log out, choose **Casey Dev (synthetic), Developer admin**. | No Patients anywhere: developer admins configure and support Vigil but never see Patient data. | #13 |
 | 4 | As Casey Dev, paste `/patients/jane/summary` into the address bar. | "Not available for your Job Title". (From #8 the Patient API refuses too, with a 403.) | #13 |
 
-| 5 | As Casey Dev, look at the sidebar and the home page. | Only what's built appears: Users, Settings, System status. Home is **System status**: database OK, VLM worker not configured, DEV. | #16 |
+| 5 | As Casey Dev, look at the sidebar and the home page. | Only what's built appears: Users and System status (Settings joins with #14/#15). Home is **System status**: database OK, VLM worker not configured, DEV. | #16 |
 | 6 | Tick **Show upcoming screens** (top bar, dev only). | Every later screen appears, badged with its stage (Patients "S2", PBS "S3"…). Open one: an orange note says "coming in Stage N". Untick it again. | #16 |
 | 7 | As Casey Dev, open **Users** → **New User**: *Riley Hart (synthetic)*, `riley.hart`, Secretary → Add User. | Anyone who manages Users (clinician, secretary, developer admin) can add one. Trial coordinators don't even see this screen. | #6 |
 | 8 | On Riley's row → **Change Job Title** → Trial coordinator, reason "Moving to trials" → Change. | The dialog says it's recorded as a sign-off by Casey Dev (Developer admin). | #6 |

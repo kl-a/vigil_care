@@ -1,37 +1,36 @@
-import { API, type Schemas } from "./api";
+import { ApiError, request, type Schemas } from "./api";
 
 export type CurrentUser = Schemas["CurrentUser"];
 export type DevLoginChoice = Schemas["DevLoginChoice"];
 
-async function call(path: string, init?: RequestInit): Promise<Response> {
-  return fetch(`${API}${path}`, { credentials: "same-origin", ...init });
-}
-
 /** The signed-in User, or null when there's no session. */
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
-  const response = await call("/auth/me");
-  if (response.status === 401) return null;
-  if (!response.ok) throw new Error(`Couldn't load the signed-in User (${response.status}).`);
-  return (await response.json()) as CurrentUser;
+  try {
+    return await request<CurrentUser>("/auth/me");
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return null;
+    throw error;
+  }
 }
 
 /** Dev only: the seeded Users you can sign in as. */
 export async function fetchDevLoginChoices(): Promise<DevLoginChoice[]> {
-  const response = await call("/auth/dev-login/users");
-  if (!response.ok) throw new Error(`The dev login isn't available (${response.status}). Is VIGIL_DEV_LOGIN_ENABLED=true?`);
-  return (await response.json()) as DevLoginChoice[];
+  try {
+    return await request<DevLoginChoice[]>("/auth/dev-login/users");
+  } catch (error) {
+    const status = error instanceof ApiError ? error.status : "no answer";
+    throw new Error(`The dev login isn't available (${status}). Is VIGIL_DEV_LOGIN_ENABLED=true?`);
+  }
 }
 
-export async function devLogin(userId: string): Promise<CurrentUser> {
-  const response = await call("/auth/dev-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ user_id: userId }),
-  });
-  if (!response.ok) throw new Error("That User can't sign in.");
-  return (await response.json()) as CurrentUser;
-}
+export const devLogin = (userId: string) =>
+  request<CurrentUser>("/auth/dev-login", { method: "POST", body: JSON.stringify({ user_id: userId }) });
 
+/** Ends the session. Already signed out (401) counts as done. */
 export async function logout(): Promise<void> {
-  await call("/auth/logout", { method: "POST" });
+  try {
+    await request<void>("/auth/logout", { method: "POST" });
+  } catch (error) {
+    if (!(error instanceof ApiError && error.status === 401)) throw error;
+  }
 }

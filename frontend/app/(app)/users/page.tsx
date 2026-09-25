@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useSignedInUser } from "@/components/shell/ViewerProvider";
+import { FIELD } from "@/components/ui/styles";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { JobTitleChip } from "@/components/users/JobTitleChip";
 import { ChangeJobTitleDialog, SetActiveDialog } from "@/components/users/UserDialogs";
 import { messageOf } from "@/lib/api";
@@ -11,7 +13,6 @@ import { changeUser, createUser, formatWhen, listUsers, type UserChange, type Us
 
 type Dialog = { kind: "job_title" | "active"; user: UserRow } | null;
 
-const field = "h-8 rounded-md border border-border bg-background px-2 text-[13px]";
 
 /** User Management (design doc §5 screen 18). Clinicians, secretaries and developer admins (§6.4). */
 export default function UserManagementPage() {
@@ -68,9 +69,7 @@ export default function UserManagementPage() {
                   <td className="px-3 py-2"><JobTitleChip jobTitle={user.job_title} /></td>
                   <td className="px-3 py-2 text-muted-foreground">{user.provider_id ? "Linked" : "—"}</td>
                   <td className="px-3 py-2">
-                    <span className={`rounded-full border px-2 py-0.5 text-xs ${user.is_active ? "border-pos-bd bg-pos-bg text-pos" : "border-neu-bd bg-neu-bg text-neu"}`}>
-                      {user.is_active ? "Active" : "Inactive"}
-                    </span>
+                    <StatusPill tone={user.is_active ? "pos" : "neu"}>{user.is_active ? "Active" : "Inactive"}</StatusPill>
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{formatWhen(user.last_login_at)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right">
@@ -127,16 +126,16 @@ function NewUserForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1 text-xs font-medium">
           Name
-          <input id="new-user-name" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={field} />
+          <input id="new-user-name" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={FIELD} />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium">
           Username
           <input id="new-user-username" required value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            placeholder="e.g. riley.hart" pattern="[a-z0-9][a-z0-9._\-]{2,39}" title="3–40 lowercase letters, digits, dots, dashes or underscores" className={`${field} font-mono`} />
+            placeholder="e.g. riley.hart" pattern="[a-z0-9][a-z0-9._\-]{2,39}" title="3–40 lowercase letters, digits, dots, dashes or underscores" className={`${FIELD} font-mono`} />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium">
           Job Title
-          <select id="new-user-job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value as JobTitle)} className={field}>
+          <select id="new-user-job-title" value={jobTitle} onChange={(e) => setJobTitle(e.target.value as JobTitle)} className={FIELD}>
             {JOB_TITLES.map((title) => <option key={title} value={title}>{JOB_TITLE_LABEL[title]}</option>)}
           </select>
         </label>

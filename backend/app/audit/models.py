@@ -5,11 +5,11 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import ForeignKey, Index, UniqueConstraint, text
+from sqlalchemy import ForeignKey, Index, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import PracticeEntity, SharedEntity, SupportEntity, allowed, practice_fk
-from app.core.vocabulary import JOB_TITLES, RUN_STATUSES
+from app.core.vocabulary import JOB_TITLES, RUN_STATUSES, JobTitle
 
 VERIFICATION_ACTIONS = (
     "accept",
@@ -53,7 +53,7 @@ class Verification(PracticeEntity):
     subject_table: Mapped[str]
     subject_id: Mapped[uuid.UUID]
     user_id: Mapped[uuid.UUID] = mapped_column(index=True)
-    job_title_at_time: Mapped[str] = mapped_column(info=allowed(*JOB_TITLES))
+    job_title_at_time: Mapped[JobTitle] = mapped_column(Text, info=allowed(*JOB_TITLES))
     action: Mapped[str] = mapped_column(info=allowed(*VERIFICATION_ACTIONS))
     reason: Mapped[str | None]
     before: Mapped[dict[str, Any] | None]

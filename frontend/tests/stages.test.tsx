@@ -42,16 +42,17 @@ describe("build stages (design doc §15)", () => {
     for (const tab of patientTabsFor(ACTIVE_MODULES)) expect(tab.screen.stage).toBeGreaterThan(0);
   });
 
-  it("shows only shipped screens in the navigation", async () => {
+  it("shows only built screens of shipped stages in the navigation", async () => {
     await renderAt("/system");
-    for (const shipped of ["Users", "Settings", "System status"]) expect(mainNav().getByRole("link", { name: shipped })).toBeInTheDocument();
-    for (const upcoming of ["Dashboard", "Patients", "PBS lookup", "Trials", "Providers"]) {
+    for (const released of ["Users", "System status"]) expect(mainNav().getByRole("link", { name: released })).toBeInTheDocument();
+    // Settings is Stage 1 but still a placeholder until #14 and #15 build it.
+    for (const upcoming of ["Settings", "Dashboard", "Patients", "PBS lookup", "Trials", "Providers"]) {
       expect(mainNav().queryByRole("link", { name: upcoming })).not.toBeInTheDocument();
     }
   });
 
-  it("shows a friendly page, not a placeholder, at an upcoming screen's URL", async () => {
-    await renderAt("/pbs");
+  it.each(["/pbs", "/settings"])("shows a friendly page, not a placeholder, at %s", async (path) => {
+    await renderAt(path);
     expect(screen.getByRole("heading", { name: "Not available yet" })).toBeInTheDocument();
     expect(screen.queryByText("placeholder content")).not.toBeInTheDocument();
   });

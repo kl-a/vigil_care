@@ -8,7 +8,7 @@ export interface Screen extends ScreenInfo {
 
 /** Core screens outside a Patient. Patient screens come from the Patient tabs (Core and modules). */
 export const CORE_SCREENS: readonly Screen[] = [
-  { number: 1, title: "Login", path: "/login", purpose: "Individual sign-in with 2FA.", stage: 1 },
+  { number: 1, title: "Login", path: "/login", purpose: "Individual sign-in with 2FA.", stage: 1, built: true },
   { number: 2, title: "Dashboard", path: "/dashboard", purpose: "Practice-wide Open Items.", stage: 5 },
   { number: 3, title: "Patient List", path: "/patients", purpose: "Browse, search and create Patients.", stage: 2 },
   { number: 5, title: "Document Upload", path: "/documents", purpose: "Ingest Documents and follow their status.", stage: 6 },
@@ -18,9 +18,9 @@ export const CORE_SCREENS: readonly Screen[] = [
   { number: 12, title: "Trial Browser", path: "/trials", purpose: "Explore the local trial database.", stage: 10 },
   { number: 14, title: "PBS Drug Lookup", path: "/pbs", purpose: "Quick drug reference.", stage: 3 },
   { number: 17, title: "Provider Management", path: "/providers", purpose: "The Practice's Provider directory.", stage: 2 },
-  { number: 18, title: "User Management", path: "/users", purpose: "Manage who can log in.", stage: 1 },
+  { number: 18, title: "User Management", path: "/users", purpose: "Manage who can log in.", stage: 1, built: true },
   { number: 19, title: "Settings", path: "/settings", purpose: "System configuration.", stage: 1 },
-  { title: "System status", path: "/system", purpose: "Health, pipeline runs, job queue and refresh logs, with no Patient data.", stage: 1 },
+  { title: "System status", path: "/system", purpose: "Health, pipeline runs, job queue and refresh logs, with no Patient data.", stage: 1, built: true },
 ];
 
 export function screensFor(activeModules: readonly ModuleKey[]): Screen[] {

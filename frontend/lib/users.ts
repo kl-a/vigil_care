@@ -1,12 +1,11 @@
 import { request, type Schemas } from "./api";
-import type { JobTitle } from "./jobTitles";
 
 export type UserRow = Schemas["UserRow"];
 export type UserDetail = Schemas["UserDetail"];
 export type HistoryEntry = Schemas["HistoryEntry"];
 
-export interface NewUser { username: string; display_name: string; job_title: JobTitle }
-export interface UserChange { job_title?: JobTitle; is_active?: boolean; reason?: string }
+export type NewUser = Schemas["NewUser"];
+export type UserChange = Schemas["UserChange"];
 
 export const listUsers = () => request<UserRow[]>("/users");
 export const fetchUser = (id: string) => request<UserDetail>(`/users/${id}`);

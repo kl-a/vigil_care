@@ -1,23 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { StatusPill, type Tone } from "@/components/ui/StatusPill";
 import { messageOf } from "@/lib/api";
 import { fetchHealth, type Health } from "@/lib/system";
-
-type Tone = "pos" | "cau" | "neg" | "neu";
-
-const TONE: Record<Tone, string> = {
-  pos: "border-pos-bd bg-pos-bg text-pos",
-  cau: "border-cau-bd bg-cau-bg text-cau",
-  neg: "border-neg-bd bg-neg-bg text-neg",
-  neu: "border-neu-bd bg-neu-bg text-neu",
-};
 
 function Check({ label, value, tone, detail }: { label: string; value: string; tone: Tone; detail: string }) {
   return (
     <div className="flex flex-col gap-1.5 rounded-md border border-border bg-card p-4">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className={`w-fit rounded-full border px-2 py-0.5 text-xs font-medium ${TONE[tone]}`}>{value}</span>
+      <StatusPill tone={tone}>{value}</StatusPill>
       <span className="text-xs text-muted-foreground">{detail}</span>
     </div>
   );

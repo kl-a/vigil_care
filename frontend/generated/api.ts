@@ -232,8 +232,11 @@ export interface components {
             } | null;
             /** By Display Name */
             by_display_name: string;
-            /** By Job Title */
-            by_job_title: string;
+            /**
+             * By Job Title
+             * @enum {string}
+             */
+            by_job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
             /** Reason */
             reason: string | null;
             /** Reauthenticated */

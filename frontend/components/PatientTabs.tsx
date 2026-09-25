@@ -11,7 +11,7 @@ export function PatientTabs({ patientId }: { patientId: string }) {
   const { showUpcoming } = useViewer();
   return (
     <nav aria-label="Patient" className="flex gap-4 overflow-x-auto text-[13px]">
-      {patientTabsFor(ACTIVE_MODULES).filter((tab) => isVisible(tab.screen.stage, showUpcoming)).map((tab) => {
+      {patientTabsFor(ACTIVE_MODULES).filter((tab) => isVisible(tab.screen, showUpcoming)).map((tab) => {
         const href = `/patients/${patientId}/${tab.segment}`;
         const current = pathname === href;
         return (

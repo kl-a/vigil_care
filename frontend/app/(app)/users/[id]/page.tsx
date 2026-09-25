@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { messageOf } from "@/lib/api";
 import { JOB_TITLE_LABEL, isKnownJobTitle } from "@/lib/jobTitles";
 import { fetchUser, formatWhen, type HistoryEntry, type UserDetail } from "@/lib/users";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { JobTitleChip } from "@/components/users/JobTitleChip";
 
 function describe(entry: HistoryEntry): string {
@@ -39,7 +40,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="m-0 text-xl font-semibold">{user.display_name}</h1>
             <JobTitleChip jobTitle={user.job_title} />
-            {!user.is_active && <span className="rounded-full border border-neu-bd bg-neu-bg px-2 py-0.5 text-xs text-neu">Inactive</span>}
+            {!user.is_active && <StatusPill tone="neu">Inactive</StatusPill>}
           </div>
           <dl className="m-0 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1 text-[13px]">
             <dt className="text-muted-foreground">Username</dt><dd className="m-0 font-mono">{user.username}</dd>
