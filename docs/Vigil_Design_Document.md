@@ -99,7 +99,7 @@ The application stack runs via `docker compose up`. Host prerequisites: Docker, 
 - Not a regulated medical device. Operates under the TGA CDSS exemption for single-practice use.
 - No real patient data. The MVP runs dev and test environments only.
 - No EMR/EHR integration (MOSAIQ, Genie, CHARM, EPIC). Standalone document upload only.
-- No multi-practice / multi-tenant operation, and no Access Grants between Practices. The data model still records a Practice on every Patient, User and Document ([revisit-later.md](revisit-later.md) #13).
+- No multi-practice / multi-tenant operation, and no Access Grants between Practices. The data model still records a Practice on every Patient and Document, and a User's Job Title per Practice (Practice Memberships) ([revisit-later.md](revisit-later.md) #13).
 - No patient-facing features. Staff-only tool.
 - No treatment ordering or prescribing. Information display only.
 - No letter drafting ([revisit-later.md](revisit-later.md) #8).
@@ -430,7 +430,7 @@ erDiagram
 | **Support data** | Nullable (null = system-wide, e.g. a Refresh) | `job`, `pipeline_run`, `llm_call_log`, `cloud_request` (null only for public text, e.g. parsing a trial's criteria). `job_step` has none; it's reached through its `job`. |
 | **Shared reference data** | None | `practice` itself, `user` (a person, who may belong to several Practices; see Practice Memberships below), `specialty_module`, `job_kind`, `fact_kind`, `document_type`, `cancer_type`, `treatment_protocol`, `protocol_drug`, `drug_reference`, `pbs_item`, `pbs_refresh_log`, `eviq_refresh_log`, `trial`, `trial_site`, `trial_snapshot`, `trial_criterion`, `llm_cache` |
 
-- **Composite FKs and a nullable `practice_id`.** A composite FK isn't checked when `practice_id` is null. So `cloud_request` also has plain FKs to `document` and `user`, plus a CHECK: a Patient payload (masked image or pseudonymised text) needs both `practice_id` and `document_id`, and a public-text payload has no `document_id`.
+- **Composite FKs and a nullable `practice_id`.** A composite FK isn't checked when `practice_id` is null. So `cloud_request` also has plain FKs to `document` and `user` (and every Support table's `deleted_by_user_id` has a plain FK to `user` beside the composite one to `practice_membership`), plus a CHECK: a Patient payload (masked image or pseudonymised text) needs both `practice_id` and `document_id`, and a public-text payload has no `document_id`.
 - **A child row can't point at another Practice's parent.** Every Practice-data table has `UNIQUE (id, practice_id)`. Every FK from one Practice-data table to another is **composite**, `(parent_id, practice_id) → parent(id, practice_id)`, so the database rejects a mismatch. Examples: a Condition belongs to the same Practice as its Patient.
 - **Only a member can act in a Practice.** Every Practice-scoped reference to the User who did something (`entered_by_user_id`, `uploaded_by_user_id`, `signed_off_by_user_id`, `deleted_by_user_id`, a Verification's `user_id`, …) is composite `(user_id, practice_id) → practice_membership(user_id, practice_id)`. The column still holds the User's id, but the database rejects a User with no Membership in that Practice.
 
@@ -1308,7 +1308,7 @@ vigil/
 │   │   │   └── scheduler.py         # PBS / eviQ / trial refresh; backup
 │   │   │
 │   │   ├── modules/
-│   │   │   ├── accounts/            # User, login, 2FA, reauth
+│   │   │   ├── accounts/            # User, Practice Membership, login, 2FA, reauth
 │   │   │   ├── practice/            # Practice, Provider, Care Team
 │   │   │   ├── patients/            # Patient, Patient Identity
 │   │   │   ├── documents/           # Document, Original/Working Copy, hold, move
@@ -1746,7 +1746,7 @@ Revisit at the Azure move ([revisit-later.md](revisit-later.md) #14).
 | Pseudonym | Only on De-identified Exports; cloud requests use one-off request IDs. | §9.3 |
 | Environments | dev / test / prod; the MVP is dev + test; synthetic only, full guardrails; dev login in dev only. | Env section |
 | Cloud-readiness | Seams for storage, DB, VLM worker, queue, keys, login; no multi-tenancy yet. | ADR 0003, §14 |
-| Practices | Every Patient/User/Document belongs to a Practice; Access Grants and Combined View deferred. | revisit #13 |
+| Practices | Every Patient/Document belongs to a Practice, and a User works at Practices through Practice Memberships; Access Grants and Combined View deferred. | revisit #13 |
 | Core + Specialty Modules (v1.3) | A specialty-agnostic Core with pluggable Specialty Modules (plugin architecture: contract, registry, Strategy per extension point, per-Practice activation by developer admins); Oncology first. Condition is Core, Cancer Diagnosis is Oncology, Comorbidity is a view. Each concept is a self-contained unit so it can move between modules and the Core. Next specialties: private outpatient specialists, then GP; hospitals are future work. | ADR 0004, §4.1, revisit #17 |
 | Deletion | No hard deletes by Users; misfiled Documents are moved. Retention undecided. | §7.5, revisit #15 |
 | v1.1 §19 open decisions | Comorbidities (v1.3: non-focus Conditions) from all letters (reconciled); Management Plan verbatim + Next Steps; no letter drafting in the MVP; eviQ checked weekly. | §7, §10 |

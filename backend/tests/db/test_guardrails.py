@@ -44,6 +44,16 @@ def test_only_a_member_can_act_in_a_practice(seed: Seed, rejects: Rejects) -> No
     seed.insert("condition", practice_id=ours["practice"], patient_id=ours["patient"], name="x", entered_by_user_id=outsider)
 
 
+def test_only_a_member_can_delete_a_practices_support_data(seed: Seed, rejects: Rejects) -> None:
+    ours = seed.everyone()
+    outsider = seed.user(seed.practice())
+    deleted = {"deleted_at": "2026-09-25T00:00:00Z", "deleted_reason": "Duplicate run"}
+    with rejects(ForeignKeyViolation):
+        seed.insert("pipeline_run", practice_id=ours["practice"], kind="ingest", deleted_by_user_id=outsider, **deleted)
+    seed.insert("pipeline_run", practice_id=ours["practice"], kind="ingest", deleted_by_user_id=ours["user"], **deleted)
+    seed.insert("pipeline_run", kind="pbs_refresh", deleted_by_user_id=outsider, **deleted)  # system-wide: any User
+
+
 def test_a_membership_cant_link_another_practices_provider(seed: Seed, rejects: Rejects) -> None:
     ours, theirs = seed.practice(), seed.practice()
     with rejects(ForeignKeyViolation):

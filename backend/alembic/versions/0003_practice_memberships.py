@@ -25,6 +25,8 @@ SOFT_DELETE_CHECK = (
     "(deleted_at IS NULL AND deleted_by_user_id IS NULL AND deleted_reason IS NULL)"
     " OR (deleted_at IS NOT NULL AND deleted_by_user_id IS NOT NULL AND length(btrim(deleted_reason)) > 0)"
 )
+# Support data with a practice_id: deleting a Practice's row also takes a member of that Practice.
+SUPPORT_TABLES = ("job", "pipeline_run", "llm_call_log", "cloud_request")
 JOB_TITLE_CHECK = "job_title IN ('clinician', 'trial_coordinator', 'secretary', 'developer_admin')"
 
 
@@ -52,6 +54,11 @@ def _repoint(references: list[tuple[str, str, str]], parent: str) -> None:
 
 
 def upgrade() -> None:
+    op.execute(
+        "DO $$ BEGIN IF EXISTS (SELECT 1 FROM \"user\" GROUP BY username HAVING count(*) > 1) THEN"
+        " RAISE EXCEPTION 'Two Practices have a User with the same username; rename one before migrating.';"
+        " END IF; END $$"
+    )
     op.create_table(
         "practice_membership",
         sa.Column("id", sa.UUID(), server_default=sa.text("gen_random_uuid()"), nullable=False),
@@ -104,6 +111,16 @@ def upgrade() -> None:
         ondelete="RESTRICT",
     )
 
+    for table in SUPPORT_TABLES:
+        op.create_foreign_key(
+            op.f(f"fk_{table}_deleted_by_user_id_practice_id"),
+            table,
+            "practice_membership",
+            ["deleted_by_user_id", "practice_id"],
+            ["user_id", "practice_id"],
+            ondelete="RESTRICT",
+        )
+
     # The User is now the person: one login across Vigil.
     op.drop_constraint("fk_user_deleted_by_user_id_practice_id", "user", type_="foreignkey")
     op.drop_constraint("uq_user_id_practice_id", "user", type_="unique")
@@ -123,6 +140,8 @@ def downgrade() -> None:
         " RAISE EXCEPTION 'A User belongs to several Practices; downgrading would lose a Practice Membership.';"
         " END IF; END $$"
     )
+    for table in SUPPORT_TABLES:
+        op.drop_constraint(f"fk_{table}_deleted_by_user_id_practice_id", table, type_="foreignkey")
     op.drop_constraint("fk_user_deleted_by_user_id", "user", type_="foreignkey")
     op.drop_constraint("uq_user_username", "user", type_="unique")
     op.add_column("user", sa.Column("practice_id", sa.UUID(), nullable=True))

@@ -14,6 +14,7 @@ _STATUS: dict[type[Exception], int] = {
     service.UserNotFound: status.HTTP_404_NOT_FOUND,
     service.UsernameTaken: status.HTTP_409_CONFLICT,
     service.CantChangeYourself: status.HTTP_409_CONFLICT,
+    service.AlreadyInPractice: status.HTTP_409_CONFLICT,
     service.DisplayNameNeeded: status.HTTP_422_UNPROCESSABLE_CONTENT,
 }
 _MESSAGE: dict[type[Exception], str] = {service.UserNotFound: "No such User."}

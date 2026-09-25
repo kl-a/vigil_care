@@ -3677,7 +3677,7 @@ const DATA = [
     "default": null,
     "name": "deleted_by_user_id",
     "nullable": true,
-    "references": "user",
+    "references": "practice_membership",
     "standard": true,
     "type": "uuid"
    },
@@ -3708,6 +3708,15 @@ const DATA = [
     "composite": false,
     "onDelete": "RESTRICT",
     "table": "user"
+   },
+   {
+    "columns": [
+     "deleted_by_user_id",
+     "practice_id"
+    ],
+    "composite": true,
+    "onDelete": "RESTRICT",
+    "table": "practice_membership"
    },
    {
     "columns": [
@@ -3894,7 +3903,7 @@ const DATA = [
     "default": null,
     "name": "deleted_by_user_id",
     "nullable": true,
-    "references": "user",
+    "references": "practice_membership",
     "standard": true,
     "type": "uuid"
    },
@@ -3917,6 +3926,15 @@ const DATA = [
     "composite": false,
     "onDelete": "RESTRICT",
     "table": "user"
+   },
+   {
+    "columns": [
+     "deleted_by_user_id",
+     "practice_id"
+    ],
+    "composite": true,
+    "onDelete": "RESTRICT",
+    "table": "practice_membership"
    },
    {
     "columns": [
@@ -10563,7 +10581,7 @@ const DATA = [
     "default": null,
     "name": "deleted_by_user_id",
     "nullable": true,
-    "references": "user",
+    "references": "practice_membership",
     "standard": true,
     "type": "uuid"
    },
@@ -10586,6 +10604,15 @@ const DATA = [
     "composite": false,
     "onDelete": "RESTRICT",
     "table": "user"
+   },
+   {
+    "columns": [
+     "deleted_by_user_id",
+     "practice_id"
+    ],
+    "composite": true,
+    "onDelete": "RESTRICT",
+    "table": "practice_membership"
    },
    {
     "columns": [
@@ -11405,7 +11432,7 @@ const DATA = [
     "default": null,
     "name": "deleted_by_user_id",
     "nullable": true,
-    "references": "user",
+    "references": "practice_membership",
     "standard": true,
     "type": "uuid"
    },
@@ -11428,6 +11455,15 @@ const DATA = [
     "composite": false,
     "onDelete": "RESTRICT",
     "table": "user"
+   },
+   {
+    "columns": [
+     "deleted_by_user_id",
+     "practice_id"
+    ],
+    "composite": true,
+    "onDelete": "RESTRICT",
+    "table": "practice_membership"
    },
    {
     "columns": [

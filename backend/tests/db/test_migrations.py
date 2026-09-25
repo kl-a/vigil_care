@@ -109,3 +109,11 @@ def test_downgrading_one_membership_each_restores_the_old_user(before_membership
 
     with _owner(before_memberships) as conn:
         assert conn.execute('SELECT practice_id, job_title FROM "user"').fetchall() == [{"practice_id": practice, "job_title": "secretary"}]
+
+
+def test_a_username_shared_by_two_practices_stops_the_migration(before_memberships: DatabaseSettings) -> None:
+    with _owner(before_memberships) as conn:
+        for _ in range(2):
+            _old_user(conn, _id(conn, PRACTICE), "kim", "clinician")
+    with pytest.raises(ProgrammingError, match="same username"):
+        migrate(before_memberships)

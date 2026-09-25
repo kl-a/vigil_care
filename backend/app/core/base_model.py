@@ -161,6 +161,19 @@ class SupportEntity(Entity):
 
     __abstract__ = True
 
+    @classmethod
+    def _scope_args(cls) -> tuple[Any, ...]:
+        # A system-wide row (null practice_id) may be deleted by any User; a Practice's row only by a member.
+        return (
+            *super()._scope_args(),
+            ForeignKeyConstraint(
+                ["deleted_by_user_id", "practice_id"],
+                ["practice_membership.user_id", "practice_membership.practice_id"],
+                ondelete="RESTRICT",
+                use_alter=True,
+            ),
+        )
+
     @declared_attr
     def practice_id(cls) -> Mapped[uuid.UUID | None]:
         return mapped_column(

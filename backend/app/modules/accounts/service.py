@@ -107,6 +107,10 @@ class UsernameTaken(ValueError):
     pass
 
 
+class AlreadyInPractice(ValueError):
+    """The login already has a Membership here (active, deactivated or removed)."""
+
+
 class DisplayNameNeeded(ValueError):
     """A brand new login needs a display name; someone with a login elsewhere brings their own."""
 
@@ -184,7 +188,7 @@ def create_user(db: Session, actor: CurrentUser, new: NewUser) -> UserRow:
         PracticeMembership.practice_id == actor.practice_id, PracticeMembership.user_id == user.id
     )
     if db.scalars(joined.execution_options(include_deleted=True)).first() is not None:
-        raise UsernameTaken(f"{new.username} is already a User of this Practice.")
+        raise AlreadyInPractice(f"{new.username} is already a User of this Practice.")
     membership = PracticeMembership(practice_id=actor.practice_id, user_id=user.id, job_title=new.job_title)
     db.add(membership)
     db.flush()
