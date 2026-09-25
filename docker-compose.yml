@@ -1,0 +1,38 @@
+# Vigil local stack: `docker compose up` (or `make up`). Nothing is installed on the host.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: vigil
+      POSTGRES_PASSWORD: vigil
+      POSTGRES_DB: vigil
+    ports: ["5432:5432"]
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vigil -d vigil"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      VIGIL_ENV: ${VIGIL_ENV:-dev}
+      VIGIL_DEV_LOGIN_ENABLED: ${VIGIL_DEV_LOGIN_ENABLED:-false}
+      VIGIL_DATABASE_URL: postgresql://vigil:vigil@db:5432/vigil
+      VIGIL_VLM_WORKER_URL: ${VIGIL_VLM_WORKER_URL:-}
+    ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_VIGIL_ENV: ${VIGIL_ENV:-dev}
+        NEXT_PUBLIC_VIGIL_ACTIVE_MODULES: ${VIGIL_ACTIVE_MODULES:-oncology}
+    ports: ["3000:3000"]
+    depends_on: [backend]
+
+volumes:
+  db-data:

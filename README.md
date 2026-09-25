@@ -41,4 +41,24 @@ Work is tracked in [GitHub Issues](https://github.com/kl-a/vigil_care/issues). T
 
 ## Getting started
 
-Not yet. Setup instructions will arrive with the walking skeleton ([#11](https://github.com/kl-a/vigil_care/issues/11)). Once it lands, the whole stack will start with `docker compose up`. Nothing is installed on the host except Docker, Node.js and Python.
+Prerequisites on the host: Docker (with Compose), Node.js 20+ and Python 3.12+. Nothing else is installed on the host. Dependencies live in `backend/.venv` and `frontend/node_modules`.
+
+```bash
+cp .env.example .env      # VIGIL_ENV=dev by default
+docker compose up --build # Postgres (pgvector), backend on :8000, frontend on :3000
+```
+
+- App: http://localhost:3000. In dev, use **Preview as** in the top bar to see each Job Title's navigation. Real logins arrive with #4.
+- Health: http://localhost:8000/health · API docs: http://localhost:8000/docs
+
+For local development without Docker:
+
+```bash
+make setup            # backend venv + frontend deps
+make test             # backend, gates runner and frontend tests
+make typecheck        # mypy (strict) + tsc
+make gates            # quality gates; test environment only
+make api-types        # regenerate frontend/generated/api.ts from the backend's OpenAPI schema
+```
+
+**Safety rule:** the dev login may only be enabled when `VIGIL_ENV=dev`. The backend refuses to start otherwise, and `VIGIL_ENV=prod` is refused in the MVP.

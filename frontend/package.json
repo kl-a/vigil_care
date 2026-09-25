@@ -1,0 +1,35 @@
+{
+  "name": "vigil-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "gen:api": "openapi-typescript ../backend/openapi.json -o generated/api.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^1.48.0",
+    "next": "^14.2.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^20.19.43",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.6.1",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
+    "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}
