@@ -507,7 +507,8 @@ erDiagram
   - `next_step`: `done_at` and `done_by_user_id` are set together.
   - `export`: needs a Patient or a Redaction Job (`patient_id` is null only for an unlinked Redaction Job's export); `job_title_at_time` is never `developer_admin`.
   - `lab_result`: a numeric `value` or a `value_text` (for results like "<5").
-  - Start/end dates in order on Treatment Courses and Medications; counts and page numbers never negative.
+  - Start/end dates in order on Treatment Courses and Medications; counts, page numbers, doses, SUVmax and steroid doses never negative; confidences between 0 and 1.
+  - `verification.job_title_at_time` is one of the four Job Titles.
 - **One of two parents:** `ocr_page` and `redaction_log` belong to exactly one of `document_id` or `redaction_job_file_id` (a CHECK allows one, not both and not neither).
 - **Module-contributed values are registries, not CHECKs**, because the Core can't name a module's values:
   - `job.kind` must exist in `job_kind`.
@@ -532,6 +533,9 @@ erDiagram
 - `pbs_item(item_code, schedule_date)`.
 - `trial(registry, external_id)`.
 - `cloud_request.request_id`.
+- `drug_reference.generic_name` (one canonical entry per drug).
+- `match_result(match_run_id, trial_id)`: one result per trial per Match Run.
+- `practice_module(practice_id, module_key)`; `specialty_module.key`, `fact_kind.key`, `job_kind.key`, `document_type.key`, `cancer_type.key`.
 
 **Indexes (beyond PK and FK indexes):**
 - `patient`: partial index on `deleted_at IS NULL`.
@@ -626,7 +630,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable; see the Line of Therapy rule), `treatment_protocol_id` (nullable), `best_response` (CR/PR/SD/PD/NE, nullable) |
 | `drug_reference` | Canonical drug lookup | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_id`, `common_doses`, `common_routes` |
 | `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set when the drug belongs to a Treatment Course); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
-| `medication_change_log` | Audit trail of Medication changes | As v1.1, with `changed_by_user_id` (replaces `changed_by` → provider) |
+| `medication_change_log` | Audit trail of Medication changes. Never changes once written. | As v1.1 (`medication_id`, `change_type`, `previous_value`, `new_value`, `changed_at`, `reason`), with `changed_by_user_id` (replaces `changed_by` → provider) |
 
 **Clinical Record: Imaging, Labs, Status**
 
@@ -654,7 +658,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | `treatment_protocol` *(Oncology)* | An eviQ standard-of-care protocol | `cancer_type_id`, `protocol_name`, `intent`, `line_of_therapy` (nullable), `disease_extent_required` (JSONB), `biomarker_requirements` (JSONB, e.g. `{"HER2": "positive"}`), `eviq_id`, `eviq_url`, `eviq_version`, `eviq_updated_on`, `last_checked_at`, `evidence_level`, `raw_data` (JSONB) |
 | `protocol_drug` *(Oncology)* | One drug in a protocol | As v1.1 |
 | `pbs_item` | PBS Schedule entry | As v1.1. `indications` (JSONB) holds per-indication restriction levels, from which PBS Listing is derived per Condition (by the owning module). |
-| `pbs_refresh_log`, `eviq_refresh_log` | Refresh history | `refreshed_at`, `item_count`, `status`, `error_detail`. A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
+| `pbs_refresh_log`, `eviq_refresh_log` | Refresh history | `refreshed_at`, `item_count`, `status`, `error_detail`; `pbs_refresh_log` also keeps `schedule_date` (as v1.1). A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
 
 **Trials & Matching**
 
@@ -1269,7 +1273,8 @@ vigil/
 │   │   ├── core/
 │   │   │   ├── config.py            # Settings incl. VIGIL_ENV; refuses dev login outside dev
 │   │   │   ├── database.py
-│   │   │   ├── base_model.py        # UUID, timestamps, soft delete (+reason/by), practice_id mixin
+│   │   │   ├── base_model.py        # Entity: UUID, timestamps, soft delete; PracticeEntity / SupportEntity / SharedEntity
+│   │   │   ├── vocabulary.py        # Value sets shared by several modules (Job Titles, intents, statuses)
 │   │   │   ├── permissions.py       # can_verify(user, fact_kind), Job Title rules (§6.4)
 │   │   │   └── seams/               # ─── Swappable infrastructure (ADR 0003) ───
 │   │   │       ├── storage.py       # LocalDiskStorage → BlobStorage later
@@ -1318,7 +1323,7 @@ vigil/
 │   │   │   ├── clinical/            # Core Clinical Record: Condition, Treatment Course, imaging, labs, notes, plans
 │   │   │   ├── medications/         # + Condition reconciliation
 │   │   │   ├── pbs/                 # PBS adapter + PBS Listing (Core)
-│   │   │   ├── modules/             # Specialty Module contract, registry, per-Practice activation, config builder
+│   │   │   ├── registry/            # Specialty Module contract, registry, per-Practice activation, config builder
 │   │   │   ├── trials/
 │   │   │   ├── matching/            # Match Runs, scope, aggregation, staleness
 │   │   │   ├── summary/             # Patient Summary + Open Items (derived)
@@ -1330,6 +1335,7 @@ vigil/
 │   │   │                            # (one self-contained unit per concept: portability rule, §4.1)
 │   │   │
 │   │   ├── audit/                   # pipeline_run, llm_call_log, llm_cache, verification
+│   │   ├── db/                      # Tooling: all-models metadata, role provisioning + migrate, `make erd` generator
 │   │   └── main.py
 │   │
 │   ├── alembic/
@@ -1373,7 +1379,7 @@ vigil/
 > **Claude Code notes:**
 > - `data/` is gitignored; `prompts/` and `eval/reference_set/` are version-controlled (synthetic only; never commit real data).
 > - `.env` is gitignored; `.env.example` is committed with placeholders.
-> - All models inherit `core.base_model.BaseModel` (UUID `id`, `created_at`, `updated_at`, soft-delete columns). Practice-scoped models also use the `practice_id` mixin.
+> - All models inherit `core.base_model.Entity` (UUID `id`, `created_at`, `updated_at`, soft-delete columns) through exactly one of `PracticeEntity`, `SupportEntity` or `SharedEntity` (§6.2 Practice scoping). Each module's tables are in its own `models.py`.
 > - Routers call only their own module's service layer. Services accept and return Pydantic schemas, never SQLAlchemy models.
 
 ---

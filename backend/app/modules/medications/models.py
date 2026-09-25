@@ -1,11 +1,11 @@
 """Drug reference, Medications and their change log (design doc §6.3, §7.2)."""
 
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, UniqueConstraint, text
+from sqlalchemy import CheckConstraint, ForeignKey, UniqueConstraint, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import (
@@ -117,4 +117,5 @@ class MedicationChangeLog(PracticeEntity):
     previous_value: Mapped[dict[str, Any] | None]
     new_value: Mapped[dict[str, Any] | None]
     changed_by_user_id: Mapped[uuid.UUID] = mapped_column(index=True)
+    changed_at: Mapped[datetime] = mapped_column(server_default=func.now())
     reason: Mapped[str | None]

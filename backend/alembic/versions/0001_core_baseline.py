@@ -863,7 +863,7 @@ def upgrade() -> None:
     sa.CheckConstraint("review_status IN ('pending', 'accepted', 'edited', 'rejected', 'withdrawn')", name=op.f('ck_extracted_fact_review_status_allowed')),
     sa.CheckConstraint('(deleted_at IS NULL AND deleted_by_user_id IS NULL AND deleted_reason IS NULL) OR (deleted_at IS NOT NULL AND deleted_by_user_id IS NOT NULL AND length(btrim(deleted_reason)) > 0)', name=op.f('ck_extracted_fact_soft_delete')),
     sa.CheckConstraint('confidence >= 0 AND confidence <= 1', name=op.f('ck_extracted_fact_confidence_range')),
-    sa.ForeignKeyConstraint(['extraction_id', 'practice_id'], ['extraction.id', 'extraction.practice_id'], name=op.f('fk_extracted_fact_extraction_id_practice_id'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['extraction_id', 'practice_id'], ['extraction.id', 'extraction.practice_id'], name=op.f('fk_extracted_fact_extraction_id_practice_id'), ondelete='RESTRICT'),
     sa.ForeignKeyConstraint(['fact_kind'], ['fact_kind.key'], name=op.f('fk_extracted_fact_fact_kind'), ondelete='RESTRICT'),
     sa.ForeignKeyConstraint(['module_key'], ['specialty_module.key'], name=op.f('fk_extracted_fact_module_key'), ondelete='RESTRICT'),
     sa.ForeignKeyConstraint(['patient_id', 'practice_id'], ['patient.id', 'patient.practice_id'], name=op.f('fk_extracted_fact_patient_id_practice_id'), ondelete='RESTRICT'),
@@ -927,9 +927,9 @@ def upgrade() -> None:
     sa.CheckConstraint('(deleted_at IS NULL AND deleted_by_user_id IS NULL AND deleted_reason IS NULL) OR (deleted_at IS NOT NULL AND deleted_by_user_id IS NOT NULL AND length(btrim(deleted_reason)) > 0)', name=op.f('ck_ocr_page_soft_delete')),
     sa.CheckConstraint('num_nonnulls(document_id, redaction_job_file_id) = 1', name=op.f('ck_ocr_page_one_parent')),
     sa.CheckConstraint('page_number >= 1', name=op.f('ck_ocr_page_page_number_positive')),
-    sa.ForeignKeyConstraint(['document_id', 'practice_id'], ['document.id', 'document.practice_id'], name=op.f('fk_ocr_page_document_id_practice_id'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['document_id', 'practice_id'], ['document.id', 'document.practice_id'], name=op.f('fk_ocr_page_document_id_practice_id'), ondelete='RESTRICT'),
     sa.ForeignKeyConstraint(['practice_id'], ['practice.id'], name=op.f('fk_ocr_page_practice_id'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['redaction_job_file_id', 'practice_id'], ['redaction_job_file.id', 'redaction_job_file.practice_id'], name=op.f('fk_ocr_page_redaction_job_file_id_practice_id'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['redaction_job_file_id', 'practice_id'], ['redaction_job_file.id', 'redaction_job_file.practice_id'], name=op.f('fk_ocr_page_redaction_job_file_id_practice_id'), ondelete='RESTRICT'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_ocr_page')),
     sa.UniqueConstraint('id', 'practice_id', name=op.f('uq_ocr_page_id_practice_id'))
     )
@@ -1179,7 +1179,7 @@ def upgrade() -> None:
     sa.CheckConstraint('confidence IS NULL OR (confidence >= 0 AND confidence <= 1)', name=op.f('ck_redaction_entity_confidence_range')),
     sa.CheckConstraint('page_number >= 1', name=op.f('ck_redaction_entity_page_number_positive')),
     sa.ForeignKeyConstraint(['practice_id'], ['practice.id'], name=op.f('fk_redaction_entity_practice_id'), ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['redaction_log_id', 'practice_id'], ['redaction_log.id', 'redaction_log.practice_id'], name=op.f('fk_redaction_entity_redaction_log_id_practice_id'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['redaction_log_id', 'practice_id'], ['redaction_log.id', 'redaction_log.practice_id'], name=op.f('fk_redaction_entity_redaction_log_id_practice_id'), ondelete='RESTRICT'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_redaction_entity')),
     sa.UniqueConstraint('id', 'practice_id', name=op.f('uq_redaction_entity_id_practice_id'))
     )
@@ -1490,6 +1490,7 @@ def upgrade() -> None:
     sa.Column('previous_value', postgresql.JSONB(astext_type=Text()), nullable=True),
     sa.Column('new_value', postgresql.JSONB(astext_type=Text()), nullable=True),
     sa.Column('changed_by_user_id', sa.UUID(), nullable=False),
+    sa.Column('changed_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('reason', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),

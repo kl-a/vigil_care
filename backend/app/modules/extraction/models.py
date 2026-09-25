@@ -48,7 +48,7 @@ class Extraction(PracticeEntity):
 class ExtractedFact(PracticeEntity):
     __tablename__ = "extracted_fact"
     __extra_args__ = (
-        practice_fk("extraction_id", "extraction", ondelete="CASCADE"),
+        practice_fk("extraction_id", "extraction"),
         practice_fk("patient_id", "patient"),
         CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence_range"),
         Index("ix_extracted_fact_review_queue", "review_status", "required_job_title"),

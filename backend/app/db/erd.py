@@ -77,11 +77,13 @@ def _table(table: Table, model: type[Entity]) -> dict[str, Any]:
     # Each column's target table; a composite FK is listed under its first column.
     targets = {fk.column_keys[0]: fk.referred_table.name for fk in fks}
     package = model.__module__.split(".")[-2]
+    # Specialty Modules live under app.specialties.<module>; everything else is the Core.
+    is_specialty = model.__module__.startswith("app.specialties.")
     return {
         "name": table.name,
         "schema": table.schema,
-        "module": "Oncology" if package == "oncology" else "Core",
-        "area": AREAS[package],
+        "module": package.title() if is_specialty else "Core",
+        "area": AREAS.get(package, package.title()),
         "scope": _scope(model),
         "immutable": bool(table.info.get("immutable")),
         "doc": _doc(model),

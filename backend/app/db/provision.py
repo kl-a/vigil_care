@@ -35,26 +35,25 @@ class DatabaseSettings(BaseSettings):
     app_password: str = "vigil_app_dev"
     support_password: str = "vigil_support_dev"
 
-    def role_url(self, role: str, driver: str = "postgresql") -> str:
-        password = {
+    def passwords(self) -> dict[str, str]:
+        """Each login role and its password."""
+        return {
             OWNER_ROLE: self.owner_password,
             APP_ROLE: self.app_password,
             SUPPORT_ROLE: self.support_password,
-        }[role]
+        }
+
+    def role_url(self, role: str, driver: str = "postgresql") -> str:
+        password = self.passwords()[role]
         url = make_url(self.admin_url).set(drivername=driver, username=role, password=password)
         return url.render_as_string(hide_password=False)
 
 
 def provision_roles(settings: DatabaseSettings) -> None:
     """Idempotent: creates the roles if missing and resets their passwords."""
-    logins = {
-        OWNER_ROLE: settings.owner_password,
-        APP_ROLE: settings.app_password,
-        SUPPORT_ROLE: settings.support_password,
-    }
     with psycopg.connect(settings.admin_url, autocommit=True) as conn:
         existing = {row[0] for row in conn.execute("SELECT rolname FROM pg_roles")}
-        for role, password in logins.items():
+        for role, password in settings.passwords().items():
             verb = "ALTER" if role in existing else "CREATE"
             conn.execute(
                 sql.SQL(verb + " ROLE {} LOGIN PASSWORD {}").format(

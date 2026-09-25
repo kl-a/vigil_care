@@ -17,8 +17,8 @@ class OcrPage(PracticeEntity):
 
     __tablename__ = "ocr_page"
     __extra_args__ = (
-        practice_fk("document_id", "document", ondelete="CASCADE"),
-        practice_fk("redaction_job_file_id", "redaction_job_file", ondelete="CASCADE"),
+        practice_fk("document_id", "document"),
+        practice_fk("redaction_job_file_id", "redaction_job_file"),
         CheckConstraint("num_nonnulls(document_id, redaction_job_file_id) = 1", name="one_parent"),
         CheckConstraint("page_number >= 1", name="page_number_positive"),
     )

@@ -469,7 +469,7 @@ def create_line_of_therapy_rule() -> None:
         """
     )
     op.execute(
-        "CREATE CONSTRAINT TRIGGER line_of_therapy_rule"
+        "CREATE CONSTRAINT TRIGGER oncology_line_of_therapy_rule"
         " AFTER INSERT OR UPDATE ON oncology_course_detail DEFERRABLE INITIALLY DEFERRED"
         " FOR EACH ROW EXECUTE FUNCTION oncology_check_line_of_therapy()"
     )
@@ -482,6 +482,7 @@ def create_line_of_therapy_rule() -> None:
 
 def downgrade() -> None:
     op.execute("DROP TRIGGER oncology_line_of_therapy_rule ON treatment_course")
+    op.execute("DROP TRIGGER oncology_line_of_therapy_rule ON oncology_course_detail")
     op.drop_constraint('fk_cancer_type_deleted_by_user_id', 'cancer_type', type_='foreignkey')
     op.drop_constraint('fk_eviq_refresh_log_deleted_by_user_id', 'eviq_refresh_log', type_='foreignkey')
     op.drop_constraint('fk_treatment_protocol_deleted_by_user_id', 'treatment_protocol', type_='foreignkey')

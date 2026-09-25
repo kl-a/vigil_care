@@ -5,45 +5,25 @@ Modules) so that `Base.metadata` holds every table. Runtime code reaches modules
 module registry (design doc §4.1).
 """
 
-from app.audit import models as audit_models
+# Imported for their side effect: each models module registers its tables on Base.metadata.
+import app.audit.models  # noqa: F401
+import app.llm.models  # noqa: F401
+import app.modules.accounts.models  # noqa: F401
+import app.modules.clinical.models  # noqa: F401
+import app.modules.deid.models  # noqa: F401
+import app.modules.documents.models  # noqa: F401
+import app.modules.extraction.models  # noqa: F401
+import app.modules.matching.models  # noqa: F401
+import app.modules.medications.models  # noqa: F401
+import app.modules.ocr.models  # noqa: F401
+import app.modules.patients.models  # noqa: F401
+import app.modules.pbs.models  # noqa: F401
+import app.modules.practice.models  # noqa: F401
+import app.modules.registry.models  # noqa: F401
+import app.modules.reports.models  # noqa: F401
+import app.modules.trials.models  # noqa: F401
+import app.orchestrator.models  # noqa: F401
+import app.specialties.oncology.models  # noqa: F401
 from app.core.base_model import Base
-from app.llm import models as llm_models
-from app.modules.accounts import models as accounts_models
-from app.modules.clinical import models as clinical_models
-from app.modules.deid import models as deid_models
-from app.modules.documents import models as documents_models
-from app.modules.extraction import models as extraction_models
-from app.modules.matching import models as matching_models
-from app.modules.medications import models as medications_models
-from app.modules.ocr import models as ocr_models
-from app.modules.patients import models as patients_models
-from app.modules.pbs import models as pbs_models
-from app.modules.practice import models as practice_models
-from app.modules.registry import models as registry_models
-from app.modules.reports import models as reports_models
-from app.modules.trials import models as trials_models
-from app.orchestrator import models as orchestrator_models
-from app.specialties.oncology import models as oncology_models
-
-MODEL_MODULES = (
-    practice_models,
-    accounts_models,
-    patients_models,
-    registry_models,
-    documents_models,
-    ocr_models,
-    extraction_models,
-    audit_models,
-    clinical_models,
-    medications_models,
-    pbs_models,
-    trials_models,
-    matching_models,
-    deid_models,
-    llm_models,
-    reports_models,
-    orchestrator_models,
-    oncology_models,
-)
 
 metadata = Base.metadata

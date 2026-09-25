@@ -17,7 +17,7 @@ import uuid
 from collections.abc import Iterable
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
 from sqlalchemy import (
     CheckConstraint,
@@ -80,7 +80,10 @@ def _check_allowed_values(column: Column[Any], table: Table) -> None:
         )
 
 
-def practice_fk(column: str, parent: str, ondelete: str = "RESTRICT") -> ForeignKeyConstraint:
+OnDelete = Literal["RESTRICT", "CASCADE", "SET NULL"]
+
+
+def practice_fk(column: str, parent: str, ondelete: OnDelete = "RESTRICT") -> ForeignKeyConstraint:
     """Composite FK from a Practice-data table to another: the parent must be in the same Practice.
 
     `SET NULL` nulls only the referencing column, never `practice_id`.

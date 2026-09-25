@@ -1,8 +1,6 @@
 from collections.abc import Callable
-from typing import Any
-
 import psycopg
-from sqlalchemy import create_engine, event
+from sqlalchemy import ColumnElement, create_engine, event
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import ORMExecuteState, Session, sessionmaker, with_loader_criteria
 
@@ -36,7 +34,10 @@ def _exclude_soft_deleted(state: ORMExecuteState) -> None:
     """Default queries exclude soft-deleted rows (design doc §6.2)."""
     if state.is_select and not state.is_column_load and not state.is_relationship_load:
         if not state.execution_options.get(INCLUDE_DELETED, False):
-            criteria: Any = lambda cls: cls.deleted_at.is_(None)  # noqa: E731
             state.statement = state.statement.options(
-                with_loader_criteria(Entity, criteria, include_aliases=True)
+                with_loader_criteria(Entity, _not_deleted, include_aliases=True)
             )
+
+
+def _not_deleted(entity: type[Entity]) -> ColumnElement[bool]:
+    return entity.deleted_at.is_(None)

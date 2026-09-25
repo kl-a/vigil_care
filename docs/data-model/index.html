@@ -2495,7 +2495,7 @@ const DATA = [
      "practice_id"
     ],
     "composite": true,
-    "onDelete": "CASCADE",
+    "onDelete": "RESTRICT",
     "table": "document"
    },
    {
@@ -2512,7 +2512,7 @@ const DATA = [
      "practice_id"
     ],
     "composite": true,
-    "onDelete": "CASCADE",
+    "onDelete": "RESTRICT",
     "table": "redaction_job_file"
    }
   ],
@@ -2795,7 +2795,7 @@ const DATA = [
      "practice_id"
     ],
     "composite": true,
-    "onDelete": "CASCADE",
+    "onDelete": "RESTRICT",
     "table": "extraction"
    },
    {
@@ -7410,6 +7410,15 @@ const DATA = [
    },
    {
     "allowed": [],
+    "default": "now()",
+    "name": "changed_at",
+    "nullable": false,
+    "references": null,
+    "standard": false,
+    "type": "timestamp with time zone"
+   },
+   {
+    "allowed": [],
     "default": null,
     "name": "reason",
     "nullable": true,
@@ -9529,7 +9538,7 @@ const DATA = [
      "practice_id"
     ],
     "composite": true,
-    "onDelete": "CASCADE",
+    "onDelete": "RESTRICT",
     "table": "redaction_log"
    }
   ],

@@ -104,10 +104,37 @@ def test_every_foreign_key_is_indexed(table: Table) -> None:
         assert fk.column_keys[0] in leading, f"{table.name}.{fk.column_keys[0]} has no index"
 
 
+# Design doc §6.2: the only cascades. Everything else is RESTRICT, or SET NULL for optional Providers.
+ALLOWED_CASCADES = {
+    ("extraction", "document_id"),
+    ("match_result", "match_run_id"),
+    ("criterion_evaluation", "match_result_id"),
+    ("job_step", "job_id"),
+}
+
+
 @pytest.mark.parametrize("table", TABLES, ids=lambda t: t.name)
 def test_every_foreign_key_has_explicit_on_delete(table: Table) -> None:
     for fk in table.foreign_key_constraints:
         assert fk.ondelete, f"{table.name}.{fk.column_keys} has no ON DELETE"
+
+
+def test_only_the_listed_foreign_keys_cascade() -> None:
+    cascades = {
+        (t.name, fk.column_keys[0])
+        for t in TABLES
+        for fk in t.foreign_key_constraints
+        if fk.ondelete == "CASCADE"
+    }
+    assert cascades == ALLOWED_CASCADES
+
+
+def test_set_null_is_only_for_optional_providers_and_reference_links() -> None:
+    for table in TABLES:
+        for fk in table.foreign_key_constraints:
+            if fk.ondelete and fk.ondelete.startswith("SET NULL"):
+                assert fk.referred_table.name in {"provider", "pbs_item", "treatment_protocol"}, table.name
+                assert table.columns[fk.column_keys[0]].nullable, table.name
 
 
 def test_core_tables_never_reference_oncology_tables() -> None:

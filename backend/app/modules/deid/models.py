@@ -87,7 +87,7 @@ class RedactionEntity(PracticeEntity):
 
     __tablename__ = "redaction_entity"
     __extra_args__ = (
-        practice_fk("redaction_log_id", "redaction_log", ondelete="CASCADE"),
+        practice_fk("redaction_log_id", "redaction_log"),
         CheckConstraint("page_number >= 1", name="page_number_positive"),
         CheckConstraint("confidence IS NULL OR (confidence >= 0 AND confidence <= 1)", name="confidence_range"),
     )
