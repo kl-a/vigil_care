@@ -1,11 +1,15 @@
+"use client";
+
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { screenForPath } from "@/lib/screens";
 import { isShipped } from "@/lib/stages";
+import { useViewer } from "./shell/ViewerProvider";
 
 /** Stand-in for a screen that later tickets will build (docs/frontend-design.md §8). */
 export function ScreenPlaceholder({ path, children }: { path: string; children?: ReactNode }) {
-  const screen = screenForPath(path);
+  const { modules } = useViewer();
+  const screen = screenForPath(path, modules);
   if (!screen) notFound();
   return (
     <div data-screen-label={screen.title} className="flex w-full max-w-[1600px] flex-col gap-3.5 px-5 pb-8 pt-3">

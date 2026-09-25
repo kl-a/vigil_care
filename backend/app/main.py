@@ -1,11 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import health
 from app.core.config import Settings, refuse_unsafe_startup
 from app.core.database import DatabaseCheck, postgres_check, session_factory
+from app.core.permissions import NotAllowed
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
+from app.modules.practice import router as practice
+from app.modules.registry import router as specialty_modules
 
 SESSION_HOURS = 12
 
@@ -34,9 +38,17 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
         max_age=SESSION_HOURS * 3600,
         same_site="lax",
     )
+    app.add_exception_handler(NotAllowed, _not_allowed)
     app.include_router(health.router)
     app.include_router(accounts.router)
     app.include_router(users_router.router)
+    app.include_router(practice.router)
+    app.include_router(specialty_modules.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)
     return app
+
+
+async def _not_allowed(request: Request, error: Exception) -> JSONResponse:
+    """A service refused for the actor's Job Title (design doc §6.4)."""
+    return JSONResponse({"detail": str(error)}, status_code=status.HTTP_403_FORBIDDEN)

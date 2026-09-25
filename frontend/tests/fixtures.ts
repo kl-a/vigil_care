@@ -1,5 +1,7 @@
 import type { CurrentUser, DevLoginChoice } from "@/lib/session";
 import type { JobTitle } from "@/lib/jobTitles";
+import type { ModuleConfiguration } from "@/lib/modules/types";
+import oncologyActive from "./contracts/oncology-active.json";
 
 const NAMES: Record<JobTitle, string> = {
   clinician: "Dr Alex Rivera",
@@ -23,3 +25,6 @@ export function choiceFor(jobTitle: JobTitle): DevLoginChoice {
   const { id, display_name, job_title, practice_name } = userWith(jobTitle);
   return { id, display_name, job_title, practice_name };
 }
+
+/** GET /modules/active with Oncology on, exactly as the backend Builder returns it (checked by backend/tests/test_frontend_contract.py). */
+export const ONCOLOGY_ON: ModuleConfiguration = oncologyActive;

@@ -60,7 +60,6 @@ services:
       context: ./frontend
       args:
         NEXT_PUBLIC_VIGIL_ENV: ${VIGIL_ENV:-dev}
-        NEXT_PUBLIC_VIGIL_ACTIVE_MODULES: ${VIGIL_ACTIVE_MODULES:-oncology}
         # The frontend proxies /api to the backend (keeps the session cookie same-origin).
         VIGIL_API_URL: http://backend:8000
     ports: ["${VIGIL_FRONTEND_PORT:-3000}:3000"]

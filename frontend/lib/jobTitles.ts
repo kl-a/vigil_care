@@ -17,6 +17,21 @@ export function seesPatientData(jobTitle: JobTitle): boolean {
   return jobTitle !== "developer_admin";
 }
 
+/**
+ * UI mirrors of two §6.4 rows, so the screen doesn't offer what the backend would refuse. The backend
+ * (core/permissions.py) is the authority; these only decide what to show.
+ */
+
+/** Change Settings. */
+export function canChangeSettings(jobTitle: JobTitle): boolean {
+  return jobTitle === "clinician" || jobTitle === "developer_admin";
+}
+
+/** Activate / deactivate Specialty Modules: developer admins only. */
+export function canSwitchModules(jobTitle: JobTitle): boolean {
+  return jobTitle === "developer_admin";
+}
+
 /** Home: the Dashboard for staff once it ships (Stage 5); until then, and always for developer admins, System status. */
 export function homePath(jobTitle: JobTitle): string {
   return seesPatientData(jobTitle) && isShipped(DASHBOARD_STAGE) ? "/dashboard" : "/system";
@@ -24,4 +39,9 @@ export function homePath(jobTitle: JobTitle): string {
 
 export function isKnownJobTitle(value: unknown): value is JobTitle {
   return typeof value === "string" && (JOB_TITLES as readonly string[]).includes(value);
+}
+
+/** How a signed-off change names the User: "Dr Alex Rivera (Clinician)". */
+export function signOffName(user: { display_name: string; job_title: JobTitle }): string {
+  return `${user.display_name} (${JOB_TITLE_LABEL[user.job_title]})`;
 }

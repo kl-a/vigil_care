@@ -58,6 +58,16 @@ def may(job_title: JobTitle, permission: Permission) -> bool:
     return job_title in PERMISSIONS[permission]
 
 
+class NotAllowed(PermissionError):
+    """The actor's Job Title doesn't have the permission. The API answers 403 with the message."""
+
+
+def require(job_title: JobTitle, permission: Permission, message: str = "Not available for your Job Title.") -> None:
+    """Services call this before acting (design doc §6.4: enforced in the service layer)."""
+    if not may(job_title, permission):
+        raise NotAllowed(message)
+
+
 @dataclass(frozen=True)
 class FactRight:
     """Who may verify one fact kind, and whether they must re-authenticate first (clinician-only rows)."""

@@ -286,7 +286,7 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | Open Items | Extra Open Item types | Biomarker discordance |
 
 2. **Module registry.** The Core discovers modules only through the registry and **never imports a module**. Modules may import the Core's public service interfaces, never another module.
-3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers.
+3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers. *(Built with each extension point's first behaviour; the Treatment Options lookup in Stage 11. The contract, registry and Builder exist from Stage 1, #15.)*
 4. **Per-Practice activation.** A Practice may have several modules active. Only a **developer admin** switches modules on or off, in Settings, and each change is recorded as a Verification. Deactivating a module hides its sections and stops its extraction, but its **data is kept and never deleted**. A Document whose Document Type belongs to an inactive module becomes a **Held Document**. Users aren't restricted by module in the MVP. A **Builder** assembles each Practice's active configuration (extension points, sections, vocabularies) from its enabled modules at startup.
 5. **Portability rule.** Each concept (e.g. Line of Therapy, Response Assessment) is implemented as **one self-contained unit** (its tables, schemas, extraction prompt, rules, evaluators and UI section), reached only through its own interface. That way, moving a concept from Oncology to the Core, or to another module, is a mechanical move, not a rewrite. Tests target the unit's interface so they move with it.
 
@@ -345,10 +345,12 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 
 ```mermaid
 erDiagram
-    PRACTICE ||--o{ USER : employs
+    PRACTICE ||--o{ PRACTICE_MEMBERSHIP : employs
+    USER ||--o{ PRACTICE_MEMBERSHIP : "belongs through"
+    PRACTICE ||--o{ SITE : "sees Patients at"
     PRACTICE ||--o{ PROVIDER : directory
     PRACTICE ||--o{ PATIENT : holds
-    USER }o--o| PROVIDER : "is also"
+    PRACTICE_MEMBERSHIP }o--o| PROVIDER : "is also"
     PATIENT ||--|| PATIENT_IDENTITY : identified_by
     PATIENT ||--o{ CARE_TEAM_MEMBER : has
     PROVIDER ||--o{ CARE_TEAM_MEMBER : serves_as
@@ -424,9 +426,9 @@ erDiagram
 
 | Group | `practice_id` | Tables |
 |---|---|---|
-| **Practice data** | `NOT NULL` FK → `practice`, on child rows too | `user`, `provider`, `practice_module`, `patient`, `identity.patient_identity`, `care_team_member`, `document`, `ocr_page`, `extraction`, `extracted_fact`, `verification`, every Clinical Record table (Core and Oncology), `medication_change_log`, `next_step`, `match_run`, `match_result`, `criterion_evaluation`, `redaction_job`, `redaction_job_file`, `redaction_log`, `redaction_entity`, `report`, `export` |
+| **Practice data** | `NOT NULL` FK → `practice`, on child rows too | `practice_membership`, `site`, `provider`, `practice_module`, `patient`, `identity.patient_identity`, `care_team_member`, `document`, `ocr_page`, `extraction`, `extracted_fact`, `verification`, every Clinical Record table (Core and Oncology), `medication_change_log`, `next_step`, `match_run`, `match_result`, `criterion_evaluation`, `redaction_job`, `redaction_job_file`, `redaction_log`, `redaction_entity`, `report`, `export` |
 | **Support data** | Nullable (null = system-wide, e.g. a Refresh) | `job`, `pipeline_run`, `llm_call_log`, `cloud_request` (null only for public text, e.g. parsing a trial's criteria). `job_step` has none; it's reached through its `job`. |
-| **Shared reference data** | None | `practice` itself, `specialty_module`, `job_kind`, `fact_kind`, `document_type`, `cancer_type`, `treatment_protocol`, `protocol_drug`, `drug_reference`, `pbs_item`, `pbs_refresh_log`, `eviq_refresh_log`, `trial`, `trial_site`, `trial_snapshot`, `trial_criterion`, `llm_cache` |
+| **Shared reference data** | None | `practice` itself, `user` (a person, who may belong to several Practices; see Practice Memberships below), `specialty_module`, `job_kind`, `fact_kind`, `document_type`, `cancer_type`, `treatment_protocol`, `protocol_drug`, `drug_reference`, `pbs_item`, `pbs_refresh_log`, `eviq_refresh_log`, `trial`, `trial_site`, `trial_snapshot`, `trial_criterion`, `llm_cache` |
 
 - **Composite FKs and a nullable `practice_id`.** A composite FK isn't checked when `practice_id` is null. So `cloud_request` also has plain FKs to `document` and `user`, plus a CHECK: a Patient payload (masked image or pseudonymised text) needs both `practice_id` and `document_id`, and a public-text payload has no `document_id`.
 - **A child row can't point at another Practice's parent.** Every Practice-data table has `UNIQUE (id, practice_id)`. Every FK from one Practice-data table to another is **composite**, `(parent_id, practice_id) → parent(id, practice_id)`, so the database rejects a mismatch. Examples: a Condition belongs to the same Practice as its Patient, and a Verification to the same Practice as its User.
@@ -585,8 +587,10 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `practice` | A Practice using Vigil. One row in the MVP. | `name`, `address`, `phone`, `fax`, `email`, `abn` (nullable), `lat`, `lng` (for trial site distances) |
-| `user` | A person who logs into Vigil | `practice_id`, `username`, `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (FK, nullable: the User's own Provider record), `is_active`, `last_login_at` |
+| `practice` | A Practice using Vigil. One row in the MVP; the operator adds more with a command (revisit-later #13). | `name`, `address` (registered), `phone`, `fax`, `email`, `abn` (nullable). *Planned (Sites ticket): `lat`/`lng` move to its primary Site.* |
+| `site` *(planned: Sites ticket, Stage 2)* | A place where the Practice sees Patients | `practice_id`, `name`, `address`, `lat`, `lng` (for trial-site distances), `is_primary` (exactly one per Practice) |
+| `user` | A person who logs into Vigil, with one login across Practices. *(Planned: Practice Memberships ticket, Stage 1; until then `practice_id`, `job_title`, `provider_id`, `is_active` and `last_login_at` live here.)* | `username` (**unique across Vigil**), `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at` |
+| `practice_membership` *(planned: Practice Memberships ticket, Stage 1)* | A User's standing at one Practice | `practice_id`, `user_id`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (nullable: their own Provider entry in this Practice's directory), `is_active`, `last_login_at`. Unique `(practice_id, user_id)`. Every Practice-scoped reference to a User (uploaded by, signed off by, deleted by, …) is a composite FK `(user_id, practice_id)` → `practice_membership(user_id, practice_id)`, so only a member of a Practice can act in it. |
 | `provider` | A clinician in the Practice's directory, internal or external | `practice_id` (whose directory), `title`, `first_name`, `last_name`, `provider_number` (nullable), `specialty`, `is_internal`, `organisation` (for external), `phone`, `email`, `fax`, `notes` |
 | `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`), `sex`, `created_at`. No real identity here. |
 | `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
@@ -710,7 +714,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution, Response Assessment overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
-| **Manage Users** (create, deactivate, reset password/2FA, change Job Title) | ✅ | ❌ | ✅ | ✅ |
+| **Manage Users** (create, deactivate, reset password/2FA, change Job Title) at this Practice: its Practice Memberships only | ✅ | ❌ | ✅ | ✅ |
 | **Activate / deactivate Specialty Modules** for the Practice | ❌ | ❌ | ❌ | ✅ |
 | Change Settings | ✅ | ❌ | ❌ | ✅ |
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
@@ -1074,8 +1078,8 @@ PATCH  /users/{id}                          Update Job Title / deactivate (reaso
 POST   /users/{id}/reset-2fa
 
 # Practice, Providers & Care Team
-GET    /practice                            Practice details
-PATCH  /practice
+GET    /practice                            The signed-in User's Practice details (everyone signed in)
+PATCH  /practice                            Change them (clinician, developer admin; Verification with before/after)
 POST   /providers                           Create Provider (internal or external)
 GET    /providers
 GET    /providers/{id}
@@ -1193,6 +1197,7 @@ GET    /exports                             Export history
 
 # Specialty Modules
 GET    /modules                             Installed modules + active flag for this Practice
+GET    /modules/active                      This Practice's active modules, their UI sections and Patient tabs (from the Builder)
 PATCH  /modules/{key}                       Activate/deactivate (developer admin; Verification)
 
 # System
@@ -1385,7 +1390,8 @@ vigil/
 > - `data/` is gitignored; `prompts/` and `eval/reference_set/` are version-controlled (synthetic only; never commit real data).
 > - `.env` is gitignored; `.env.example` is committed with placeholders.
 > - All models inherit `core.base_model.Entity` (UUID `id`, `created_at`, `updated_at`, soft-delete columns) through exactly one of `PracticeEntity`, `SupportEntity` or `SharedEntity` (§6.2 Practice scoping). Each module's tables are in its own `models.py`.
-> - Routers call only their own module's service layer. Services accept and return Pydantic schemas, never SQLAlchemy models.
+> - Routers call only their own module's service layer. Services accept and return Pydantic schemas, never SQLAlchemy models (the Builder's immutable `PracticeConfiguration` is also fine: it isn't a database model).
+> - **Signing in is shared:** every module's routes use `SignedIn` and `Db` from `modules/accounts/dependencies.py`, the accounts module's public interface. Services refuse with `core.permissions.NotAllowed` (via `require`), which the app turns into 403.
 
 ---
 
@@ -1463,6 +1469,7 @@ flowchart LR
 - **Practice details** in Settings.
 - **Specialty Modules** in Settings: the module contract, registry and Builder (§4.1). A developer admin switches Oncology on or off, and its sections appear or disappear.
 - **Stage flags:** only built screens appear in the navigation, plus a **System status** page (health).
+- **Practice Memberships** (data model only): a User is one person with one login, holding a Membership in each Practice they work at (Job Title, active, own Provider entry). The session has a current Practice; the dev login lists each Membership. Screens for choosing, switching and managing across Practices come later (revisit-later #23, #24).
 
 **Stage demo:** log in as the clinician, then the secretary, then the developer admin, and watch the navigation change (the developer admin has no Patient screens and gets a 403). Add a User and change a Job Title, then show the Verification it recorded. Switch Oncology off and back on.
 
@@ -1478,6 +1485,7 @@ flowchart LR
 - **Soft-deleting a Patient:** requires a reason and writes a Verification.
 - **Provider directory:** list, search, filter, create, edit, soft-delete.
 - **Care Team** on the Patient Overview, and each Provider's Patients.
+- **Sites:** the places the Practice sees Patients (name, address, location, one primary), managed in Settings; the Practice's location moves to its primary Site.
 - Demo data adds synthetic Patients, Providers and Care Teams.
 
 **Stage demo:** find Jane Citizen (synthetic), edit her details and show the audit entry. Show that the identifying fields are ciphertext in the database. Add her treating oncologist and referring GP.

@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.audit import service as audit
-from app.core.permissions import Permission, may
+from app.core.permissions import require
 from app.core.seams.identity import DevLogin, DevLoginCredentials, LoginRefused
 from app.core.vocabulary import JOB_TITLES
 from app.modules.accounts.models import User
@@ -84,15 +84,6 @@ USER_SUBJECT = "user"
 NO_PASSWORD = "!no-password-until-enrolment"
 
 
-class NotAllowed(PermissionError):
-    """The actor's Job Title doesn't have this permission (design doc §6.4)."""
-
-
-def _require(actor: CurrentUser, permission: Permission) -> None:
-    if not may(actor.job_title, permission):
-        raise NotAllowed("Not available for your Job Title.")
-
-
 class UserNotFound(LookupError):
     """No such User in the actor's Practice (other Practices' Users are invisible)."""
 
@@ -125,13 +116,13 @@ def _in_practice(db: Session, practice_id: uuid.UUID, user_id: uuid.UUID) -> Use
 
 
 def list_users(db: Session, actor: CurrentUser) -> list[UserRow]:
-    _require(actor, "manage_users")
+    require(actor.job_title, "manage_users")
     users = db.scalars(select(User).where(User.practice_id == actor.practice_id).order_by(User.display_name))
     return [_row(u) for u in users]
 
 
 def user_detail(db: Session, actor: CurrentUser, user_id: uuid.UUID) -> UserDetail:
-    _require(actor, "manage_users")
+    require(actor.job_title, "manage_users")
     user = _in_practice(db, actor.practice_id, user_id)
     entries = audit.history(db, actor.practice_id, USER_SUBJECT, user_id)
     authors = db.execute(select(User.id, User.display_name).where(User.id.in_({e.user_id for e in entries})))
@@ -153,7 +144,7 @@ def user_detail(db: Session, actor: CurrentUser, user_id: uuid.UUID) -> UserDeta
 
 
 def create_user(db: Session, actor: CurrentUser, new: NewUser) -> UserRow:
-    _require(actor, "manage_users")
+    require(actor.job_title, "manage_users")
     taken = select(User.id).where(User.practice_id == actor.practice_id, User.username == new.username)
     if db.scalars(taken.execution_options(include_deleted=True)).first() is not None:
         raise UsernameTaken(f"The username {new.username} is already in use in this Practice.")
@@ -173,7 +164,7 @@ def create_user(db: Session, actor: CurrentUser, new: NewUser) -> UserRow:
 
 
 def change_user(db: Session, actor: CurrentUser, user_id: uuid.UUID, change: UserChange) -> UserRow:
-    _require(actor, "manage_users")
+    require(actor.job_title, "manage_users")
     user = _in_practice(db, actor.practice_id, user_id)
     if user.id == actor.id and (change.job_title is not None or change.is_active is not None):
         raise CantChangeYourself("You can't change your own Job Title or deactivate yourself; ask another User.")

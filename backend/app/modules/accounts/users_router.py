@@ -11,7 +11,6 @@ from app.modules.accounts.schemas import NewUser, UserChange, UserDetail, UserRo
 router = APIRouter(prefix="/users", tags=["users"])
 
 _STATUS: dict[type[Exception], int] = {
-    service.NotAllowed: status.HTTP_403_FORBIDDEN,
     service.UserNotFound: status.HTTP_404_NOT_FOUND,
     service.UsernameTaken: status.HTTP_409_CONFLICT,
     service.CantChangeYourself: status.HTTP_409_CONFLICT,

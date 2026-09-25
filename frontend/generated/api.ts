@@ -89,6 +89,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Modules */
+        get: operations["list_modules_modules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/modules/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active Configuration */
+        get: operations["active_configuration_modules_active_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/modules/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set Module Active */
+        patch: operations["set_module_active_modules__key__patch"];
+        trace?: never;
+    };
+    "/practice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Practice Details */
+        get: operations["practice_details_practice_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Practice */
+        patch: operations["change_practice_practice_patch"];
+        trace?: never;
+    };
     "/users": {
         parameters: {
             query?: never;
@@ -129,6 +198,40 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * ActiveConfiguration
+         * @description What the frontend shows for this Practice: active modules, their sections and Patient tabs.
+         */
+        ActiveConfiguration: {
+            /** Active Modules */
+            active_modules: string[];
+            /** Patient Tabs */
+            patient_tabs: components["schemas"]["ActiveTabOut"][];
+            /** Sections */
+            sections: components["schemas"]["ActiveSectionOut"][];
+        };
+        /** ActiveSectionOut */
+        ActiveSectionOut: {
+            /** Id */
+            id: string;
+            /** Module */
+            module: string;
+            /** Order */
+            order: number;
+            /** Slot */
+            slot: string;
+            /** Title */
+            title: string;
+        };
+        /** ActiveTabOut */
+        ActiveTabOut: {
+            /** Label */
+            label: string;
+            /** Module */
+            module: string;
+            /** Segment */
+            segment: string;
+        };
         /**
          * CurrentUser
          * @description The signed-in User, as the frontend sees them.
@@ -242,6 +345,24 @@ export interface components {
             /** Reauthenticated */
             reauthenticated: boolean;
         };
+        /** ModuleChange */
+        ModuleChange: {
+            /** Is Active */
+            is_active: boolean;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** ModuleStatus */
+        ModuleStatus: {
+            /** Display Name */
+            display_name: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Key */
+            key: string;
+            /** Version */
+            version: string;
+        };
         /** NewUser */
         NewUser: {
             /** Display Name */
@@ -253,6 +374,55 @@ export interface components {
             job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
             /** Username */
             username: string;
+        };
+        /**
+         * PracticeChange
+         * @description Only the fields sent are changed. Empty text clears an optional field.
+         */
+        PracticeChange: {
+            /** Abn */
+            abn?: string | null;
+            /** Address */
+            address?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lng */
+            lng?: number | null;
+            /** Name */
+            name?: string | null;
+            /** Phone */
+            phone?: string | null;
+        };
+        /**
+         * PracticeDetails
+         * @description The Practice's details (design doc §5 screen 19). Location is for trial-site distances.
+         */
+        PracticeDetails: {
+            /** Abn */
+            abn: string | null;
+            /** Address */
+            address: string | null;
+            /** Email */
+            email: string | null;
+            /** Fax */
+            fax: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Lat */
+            lat: number | null;
+            /** Lng */
+            lng: number | null;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string | null;
         };
         /**
          * UserChange
@@ -446,6 +616,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    list_modules_modules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuleStatus"][];
+                };
+            };
+        };
+    };
+    active_configuration_modules_active_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActiveConfiguration"];
+                };
+            };
+        };
+    };
+    set_module_active_modules__key__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModuleChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuleStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    practice_details_practice_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PracticeDetails"];
+                };
+            };
+        };
+    };
+    change_practice_practice_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PracticeChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PracticeDetails"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

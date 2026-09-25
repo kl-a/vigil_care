@@ -1,0 +1,56 @@
+{
+  "active_modules": [
+    "oncology"
+  ],
+  "sections": [
+    {
+      "module": "oncology",
+      "id": "response-assessments",
+      "slot": "clinical-data-tabs",
+      "title": "Response Assessments",
+      "order": 10
+    },
+    {
+      "module": "oncology",
+      "id": "biomarkers",
+      "slot": "clinical-data-tabs",
+      "title": "Biomarkers",
+      "order": 20
+    },
+    {
+      "module": "oncology",
+      "id": "performance-status",
+      "slot": "clinical-data-tabs",
+      "title": "Performance Status",
+      "order": 30
+    },
+    {
+      "module": "oncology",
+      "id": "cns",
+      "slot": "clinical-data-tabs",
+      "title": "CNS",
+      "order": 40
+    },
+    {
+      "module": "oncology",
+      "id": "cancer-diagnoses",
+      "slot": "patient-overview",
+      "title": "Cancer Diagnoses",
+      "order": 10
+    },
+    {
+      "module": "oncology",
+      "id": "diagnosis",
+      "slot": "patient-summary",
+      "title": "Diagnosis",
+      "order": 20
+    }
+  ],
+  "patient_tabs": [
+    {
+      "module": "oncology",
+      "segment": "treatment-options",
+      "label": "Treatment Options"
+    }
+  ]
+}
