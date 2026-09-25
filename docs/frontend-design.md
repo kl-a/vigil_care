@@ -104,7 +104,12 @@ Contrast must meet **WCAG 2.2 AA** in both themes.
 | Settings | ✅ | ❌ | ❌ | ✅ |
 | System status | ✅ | ✅ | ✅ | ✅ (their home page) |
 
-The scaffold should include a **role switcher** (dev-only affordance in the top bar) to preview each Job Title's navigation.
+The scaffold should include a **role switcher** (dev-only affordance in the top bar) to preview each Job Title's navigation. *From Stage 1 this becomes the dev login: you pick a seeded User, so permissions are real, not previewed.*
+
+**Growing the UI stage by stage (design doc §15):**
+- **Stage flags.** Each screen and Patient tab has the build stage that ships it. The navigation shows only screens whose stage has shipped. In dev, a **"Show upcoming screens"** toggle reveals the rest as placeholders labelled with their stage. The table above is the end state.
+- **Section by section.** Screens with sections (Patient Summary, Patient Overview, Clinical Data, the Dashboard) render only the sections whose data exists. The Patient Summary in Stage 5, for example, has Registration, Diagnosis, Treatment and Medical History; Most Recent Results arrive with labs. Sections come from the section registry, so the Oncology module adds its own.
+- **Stage demos.** Each stage ends with a scripted demo against the synthetic demo Practice (§10), so every screen needs realistic empty, loading and populated states from the start.
 
 ## 6. Voice & terminology
 
@@ -157,7 +162,7 @@ Build each as a reusable component in the scaffold, with a **component gallery p
 
 Numbering follows design doc §5. For each screen: purpose, layout, key content, actions, and states the scaffold must show. **Use the synthetic data in §10.**
 
-### Phase 1 screens (build these first; ticket #11 onwards needs them)
+### Account screens (the Login screen's real 2FA flow ships in Stage 12; until then only the dev login is used)
 
 **1. Login**
 - Centred card: username, password → then the 6-digit 2FA code.

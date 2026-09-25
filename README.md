@@ -38,7 +38,7 @@ Next.js 14 + TypeScript + Tailwind/shadcn/ui · Python 3.12 + FastAPI · Postgre
 
 ## Work tracking
 
-Work is tracked in [GitHub Issues](https://github.com/kl-a/vigil_care/issues). The spec for the first milestone (Phase 0 + 1: scaffold, logins, Practice and Patients) is [#1](https://github.com/kl-a/vigil_care/issues/1), and its tickets are linked from there. Start with [#11](https://github.com/kl-a/vigil_care/issues/11), the walking skeleton.
+Work is tracked in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one **milestone per build stage** (design doc §15). Every stage ends with a demo of something stakeholders can see. The spec for Stages 1–3 (front door, Patients, PBS & Support Views) is [#1](https://github.com/kl-a/vigil_care/issues/1).
 
 ## Getting started
 
