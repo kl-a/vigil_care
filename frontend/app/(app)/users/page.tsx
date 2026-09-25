@@ -2,27 +2,21 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
+import { useSignedInUser } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { JobTitleChip } from "@/components/users/JobTitleChip";
 import { ChangeJobTitleDialog, LinkProviderDialog, SetActiveDialog } from "@/components/users/UserDialogs";
 import { messageOf } from "@/lib/api";
 import { JOB_TITLES, JOB_TITLE_LABEL, signOffName, type JobTitle } from "@/lib/jobTitles";
-import { isVisible } from "@/lib/stages";
 import { changeUser, createUser, formatWhen, listUsers, type UserChange, type UserRow } from "@/lib/users";
 
 type Dialog = { kind: "job_title" | "active" | "provider"; user: UserRow } | null;
-
-/** Linking a User to their Provider record arrives with the Provider directory (#7, Stage 2). */
-const PROVIDER_LINKS = { stage: 2, built: true };
 
 
 /** User Management (design doc §5 screen 18). Clinicians, secretaries and developer admins (§6.4). */
 export default function UserManagementPage() {
   const me = useSignedInUser();
-  const { showUpcoming } = useViewer();
-  const canLinkProviders = isVisible(PROVIDER_LINKS, showUpcoming);
   const [users, setUsers] = useState<UserRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -80,9 +74,7 @@ export default function UserManagementPage() {
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{formatWhen(user.last_login_at)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right">
                     <span className="inline-flex gap-2">
-                      {canLinkProviders && (
-                        <button onClick={() => setDialog({ kind: "provider", user })} className="text-xs font-medium text-primary">Link Provider</button>
-                      )}
+                      <button onClick={() => setDialog({ kind: "provider", user })} className="text-xs font-medium text-primary">Link Provider</button>
                       {user.id === me.id ? (
                         <span className="text-xs text-muted-foreground">You</span>
                       ) : (

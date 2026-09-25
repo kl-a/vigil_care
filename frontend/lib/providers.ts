@@ -32,6 +32,7 @@ export function listProviders(filters: ProviderFilters = {}): Promise<ProviderRo
   return request<ProviderRow[]>(`/providers${query ? `?${query}` : ""}`);
 }
 
+export const fetchProvider = (id: string) => request<ProviderRow>(`/providers/${id}`);
 export const addProvider = (provider: NewProvider) =>
   request<ProviderRow>("/providers", { method: "POST", body: JSON.stringify(provider) });
 export const changeProvider = (id: string, change: ProviderChange) =>

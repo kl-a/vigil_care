@@ -21,14 +21,15 @@ ProviderSpecialty = Literal[
     "other",
 ]
 PROVIDER_SPECIALTIES: tuple[str, ...] = get_args(ProviderSpecialty)
-CARE_TEAM_ROLES = (
+CareTeamRole = Literal[
     "treating_oncologist",
     "referring_gp",
     "referring_specialist",
     "surgeon",
     "radiation_oncologist",
     "trial_site_contact",
-)
+]
+CARE_TEAM_ROLES: tuple[str, ...] = get_args(CareTeamRole)
 
 
 class Practice(SharedEntity):
@@ -96,11 +97,18 @@ class CareTeamMember(PracticeEntity):
         practice_fk("patient_id", "patient"),
         # Required, so RESTRICT rather than SET NULL.
         practice_fk("provider_id", "provider"),
+        # At most one primary member per Patient; the service moves it when another is chosen.
+        Index(
+            "uq_care_team_member_patient_id_primary",
+            "patient_id",
+            unique=True,
+            postgresql_where=text("is_primary AND deleted_at IS NULL"),
+        ),
     )
 
     patient_id: Mapped[uuid.UUID] = mapped_column(index=True)
     provider_id: Mapped[uuid.UUID] = mapped_column(index=True)
-    role: Mapped[str] = mapped_column(info=allowed(*CARE_TEAM_ROLES))
+    role: Mapped[CareTeamRole] = mapped_column(Text, info=allowed(*CARE_TEAM_ROLES))
     is_primary: Mapped[bool] = mapped_column(server_default=text("false"))
     start_date: Mapped[date | None]
     end_date: Mapped[date | None]

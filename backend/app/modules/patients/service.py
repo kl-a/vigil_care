@@ -10,7 +10,6 @@ import base64
 import json
 import uuid
 from typing import Any, NoReturn
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import Select, or_, select, text
 from sqlalchemy.orm import Session
@@ -19,6 +18,7 @@ from app.audit import service as audit
 from app.audit.service import Actor
 from app.core.crypto import FieldCipher
 from app.core.changes import blank_to_none, changed_fields
+from app.core.clock import practice_date
 from app.core.permissions import require
 from app.core.vocabulary import JOB_TITLE_LABEL
 from app.modules.accounts.service import display_names
@@ -37,10 +37,6 @@ PATIENT_SUBJECT = "patient"
 ENCRYPTED = ("medicare_number", "ihi", "address", "phone", "mobile", "email", "next_of_kin_phone")
 REQUIRED = ("given_name", "family_name")
 PSEUDONYM_PREFIX = "VG-"
-
-
-# Dates people read are the Practice's (Australia; one time zone until Sites span more than one).
-PRACTICE_TIME_ZONE = ZoneInfo("Australia/Sydney")
 
 
 class PatientNotFound(LookupError):
@@ -127,13 +123,18 @@ def _explain_missing(db: Session, actor: Actor, patient_id: uuid.UUID) -> NoRetu
     if removal is not None:
         name = display_names(db, {removal.user_id}).get(removal.user_id, "Unknown User")
         by = f"{name} ({JOB_TITLE_LABEL[removal.job_title_at_time]})"
-    when = removed.deleted_at.astimezone(PRACTICE_TIME_ZONE).strftime("%-d %b %Y")
-    raise PatientRemoved(f"This Patient was removed by {by} on {when}: {removed.deleted_reason}")
+    raise PatientRemoved(f"This Patient was removed by {by} on {practice_date(removed.deleted_at)}: {removed.deleted_reason}")
 
 
 def _next_pseudonym(db: Session) -> str:
     number = db.scalar(text("SELECT nextval('patient_pseudonym_seq')"))
     return f"{PSEUDONYM_PREFIX}{number:04d}"
+
+
+def patient_names(db: Session, practice_id: uuid.UUID, patient_ids: set[uuid.UUID]) -> dict[uuid.UUID, str]:
+    """Live (not removed) Patients' names, for other modules' screens (a Provider's Patients, Care Teams)."""
+    rows = db.execute(_patients(practice_id).where(Patient.id.in_(patient_ids)))
+    return {patient.id: display_name(identity) for patient, identity in rows}
 
 
 def list_patients(db: Session, actor: Actor, q: str | None = None) -> list[PatientRow]:

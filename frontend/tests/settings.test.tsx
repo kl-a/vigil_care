@@ -51,15 +51,7 @@ describe("Settings", () => {
     expect(await screen.findByText(/in the audit trail under your name/)).toBeInTheDocument();
   });
 
-  it("keeps Sites hidden until Stage 2 ships, unless upcoming screens are shown", async () => {
-    renderAs("clinician");
-    await screen.findByLabelText("Phone");
-    expect(screen.queryByRole("heading", { name: "Sites" })).not.toBeInTheDocument();
-  });
-
-  describe("Sites (Stage 2, shown as upcoming)", () => {
-    beforeEach(() => window.localStorage.setItem("vigil.showUpcoming", "true"));
-
+  describe("Sites", () => {
     it("lists the Practice's Sites with the primary marked", async () => {
       renderAs("clinician");
       const list = await screen.findByRole("list", { name: "Sites" });

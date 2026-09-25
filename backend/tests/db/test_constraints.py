@@ -310,3 +310,13 @@ def test_a_practice_has_at_most_one_primary_site(seed: Seed, rejects: Rejects) -
     seed.site(seed.practice(), is_primary=True)
     with rejects(UniqueViolation):
         seed.site(practice, name="Second rooms", is_primary=True)
+
+
+def test_a_patient_has_at_most_one_primary_care_team_member(seed: Seed, rejects: Rejects) -> None:
+    ids = seed.everyone()
+    oncologist, gp = seed.provider(ids["practice"]), seed.provider(ids["practice"], specialty="general_practice")
+    member = dict(practice_id=ids["practice"], patient_id=ids["patient"])
+    seed.insert("care_team_member", provider_id=oncologist, role="treating_oncologist", is_primary=True, **member)
+    seed.insert("care_team_member", provider_id=gp, role="referring_gp", **member)
+    with rejects(UniqueViolation):
+        seed.insert("care_team_member", provider_id=gp, role="referring_gp", is_primary=True, **member)

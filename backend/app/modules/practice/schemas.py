@@ -1,10 +1,11 @@
 import uuid
+from datetime import date
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, StringConstraints, field_validator
+from pydantic import BaseModel, Field, StringConstraints, field_validator, model_validator
 
 from app.core.fields import Email, Text
-from app.modules.practice.models import ProviderSpecialty
+from app.modules.practice.models import CareTeamRole, ProviderSpecialty
 
 
 
@@ -119,3 +120,59 @@ class ProviderChange(BaseModel):
     email: Email | None = None
     fax: Text | None = None
     notes: Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)] | None = None
+
+
+Notes = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)]
+
+
+class CareTeamRow(BaseModel):
+    """A Provider in a Patient's Care Team (#9). Ended memberships are past (`is_current` false)."""
+
+    id: uuid.UUID
+    provider_id: uuid.UUID
+    provider_name: str
+    role: CareTeamRole
+    is_primary: bool
+    start_date: date | None
+    end_date: date | None
+    notes: str | None
+    is_current: bool
+
+
+class NewCareTeamMember(BaseModel):
+    provider_id: uuid.UUID
+    role: CareTeamRole
+    is_primary: bool = False
+    start_date: date | None = None
+    end_date: date | None = None
+    notes: Notes | None = None
+
+    @model_validator(mode="after")
+    def _ends_after_it_starts(self) -> "NewCareTeamMember":
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError("A Care Team membership can't end before it starts.")
+        return self
+
+
+class CareTeamChange(BaseModel):
+    """Only the fields sent are changed. Ending a membership is setting its `end_date`; the primary is moved
+    by choosing another member, never unset."""
+
+    role: CareTeamRole | None = None
+    is_primary: Literal[True] | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    notes: Notes | None = None
+
+
+class ProviderPatientRow(BaseModel):
+    """A Patient a Provider is involved with, and in what role (Provider page, #9)."""
+
+    care_team_member_id: uuid.UUID
+    patient_id: uuid.UUID
+    patient_name: str
+    role: CareTeamRole
+    is_primary: bool
+    start_date: date | None
+    end_date: date | None
+    is_current: bool

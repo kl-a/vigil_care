@@ -13,9 +13,10 @@ import {
   type PatientDetail,
 } from "@/lib/patients";
 import { formatWhen } from "@/lib/users";
+import { CareTeam } from "./CareTeam";
 import { usePatient } from "./PatientContext";
 
-/** Patient Overview (design doc §5 screen 4). Stage 2: Patient Identity; later stages add Conditions, Care Team, modules' sections. */
+/** Patient Overview (design doc §5 screen 4). Stage 2: Patient Identity and Care Team; later stages add Conditions and modules' sections. */
 export function PatientOverview() {
   const router = useRouter();
   const me = useSignedInUser();
@@ -49,6 +50,7 @@ export function PatientOverview() {
           Shown in full inside Vigil only. It never leaves the Practice; De-identified Exports use the Pseudonym {patient.pseudonym} instead.
         </p>
       </section>
+      <CareTeam />
       <SectionSlot slot="patient-overview" />
       <section aria-labelledby="identity-trail" className="flex flex-col gap-2">
         <h2 id="identity-trail" className="m-0 text-sm font-semibold">Audit trail</h2>
