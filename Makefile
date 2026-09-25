@@ -29,7 +29,7 @@ typecheck:
 	cd backend && .venv/bin/mypy
 	cd frontend && npm run typecheck
 
-gates: ## Run the quality gates (test environment only; fails the build on any gate failure)
+gates: ## Run the quality gates (test environment only; needs `make test-db`; fails the build on any gate failure)
 	VIGIL_ENV=test $(BACKEND_PY) eval/gates.py
 
 migrate: ## Provision database roles and migrate the dev database to head

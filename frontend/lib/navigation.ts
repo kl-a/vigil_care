@@ -59,6 +59,14 @@ export function navItemForPath(pathname: string): NavItem | undefined {
   return [...MAIN_NAV, ...ADMIN_NAV].find((item) => item.href === `/${first}`);
 }
 
+/** A developer admin's Dashboard is System status instead of Open Items (design doc §6.4). */
+const STAND_INS: Partial<Record<JobTitle, Record<string, string>>> = { developer_admin: { "/dashboard": "/system" } };
+
+/** Where a Job Title goes instead of a screen that has a stand-in for them. */
+export function standInFor(pathname: string, jobTitle: JobTitle): string | undefined {
+  return STAND_INS[jobTitle]?.[pathname];
+}
+
 /** Whether a Job Title may open a path. Unknown paths are left to the router's 404. */
 export function canAccess(pathname: string, jobTitle: JobTitle): boolean {
   const item = navItemForPath(pathname);

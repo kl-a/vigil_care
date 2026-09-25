@@ -1,6 +1,6 @@
 # Quality Gates
 
-What must pass before any change to a model, prompt, OCR engine or pipeline is deployed. Everything runs against the **Reference Set** (see [CONTEXT.md](../CONTEXT.md)). The set contains only synthetic documents, annotated independently by Dr De Souza and an in-house User. Disagreements between the two are resolved before the set is locked.
+What must pass before any change to a model, prompt, OCR engine or pipeline is deployed. The document gates run against the **Reference Set** (see [CONTEXT.md](../CONTEXT.md)). The set contains only synthetic documents, annotated independently by Dr De Souza and an in-house User. Disagreements between the two are resolved before the set is locked.
 
 ## What the Reference Set contains
 
@@ -17,6 +17,9 @@ What must pass before any change to a model, prompt, OCR engine or pipeline is d
 | PII detection, cloud-eligible | On readable documents, 100% of planted PII is either masked or sent to manual redaction. Nothing may escalate to the cloud until this passes. |
 | PII detection, local only | A lower target is acceptable for processing that never leaves the Practice Boundary. *(Threshold still to be set.)* |
 | Masking leak tests | Zero PII can be recovered from any masked output. |
+| No Patient data in support data | A synthetic Patient with a distinctive name and identifiers goes through the Patient flows (create, edit identity, Care Team, remove), a Job about them fails with their name in the error, and a Refresh runs. None of their values appears in any support endpoint's output (every route tagged `support`, read as staff and as a developer admin) or in the application logs (design doc §6.4). |
+
+`make gates` runs every gate in the test environment (`VIGIL_ENV=test`). The Reference Set gates arrive with the document pipeline. The no-Patient-data gate is the backend test `backend/tests/api/test_no_patient_data_in_support.py`, which runs against a freshly migrated database in the test Postgres, so start it first with `make test-db`. The same test also runs with the backend tests.
 
 ## Masking leak tests
 

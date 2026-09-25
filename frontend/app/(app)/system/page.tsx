@@ -1,26 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { StatusPill, type Tone } from "@/components/ui/StatusPill";
 import { messageOf } from "@/lib/api";
+import { Check } from "@/components/system/Check";
 import { Refreshes } from "@/components/system/Refreshes";
+import { Jobs, PipelineRuns, QueueTile, RefreshHistory } from "@/components/system/SupportViews";
 import { fetchHealth, type Health } from "@/lib/system";
 
-function Check({ label, value, tone, detail }: { label: string; value: string; tone: Tone; detail: string }) {
-  return (
-    <div className="flex flex-col gap-1.5 rounded-md border border-border bg-card p-4">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <StatusPill tone={tone}>{value}</StatusPill>
-      <span className="text-xs text-muted-foreground">{detail}</span>
-    </div>
-  );
-}
-
-/** System status (support view, design doc §6.4): open to every Job Title; IDs and states only, never Patient data. */
+/**
+ * System status and the Support Views (design doc §6.4): open to every Job Title, and the developer admin's home
+ * and Dashboard. Health, the job queue, Refreshes, Jobs and pipeline runs: IDs and states only, never Patient data.
+ */
 export default function SystemStatusPage() {
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
+  // Bumped to reload the Support Views: "Check again", or a Refresh started or moving on.
+  const [version, setVersion] = useState(0);
+  const changed = useCallback(() => setVersion((v) => v + 1), []);
 
   const check = useCallback(() => {
     fetchHealth()
@@ -37,7 +34,7 @@ export default function SystemStatusPage() {
         <h1 className="m-0 text-xl font-semibold">System status</h1>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {checkedAt && <span>Checked {checkedAt.toLocaleTimeString("en-AU")}</span>}
-          <button onClick={check} className="h-7 rounded-md border border-border px-2 text-xs text-foreground hover:bg-muted">Check again</button>
+          <button onClick={() => { check(); changed(); }} className="h-7 rounded-md border border-border px-2 text-xs text-foreground hover:bg-muted">Check again</button>
         </div>
       </div>
       {error && <p role="alert" className="m-0 rounded-md border border-neg-bd bg-neg-bg p-3 text-[13px] text-neg">The backend isn&apos;t answering. {error}</p>}
@@ -47,7 +44,7 @@ export default function SystemStatusPage() {
           <p className="m-0 text-[13px]">
             {health.status === "ok" ? "Everything Vigil needs is running." : "Vigil is degraded: see below."}
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Check
               label="Database"
               value={health.database === "ok" ? "OK" : "Unreachable"}
@@ -60,6 +57,7 @@ export default function SystemStatusPage() {
               tone={health.vlm_worker === "configured" ? "pos" : "neu"}
               detail="Reads hard pages locally. Not needed until documents are processed (Stage 8)."
             />
+            <QueueTile version={version} />
             <Check
               label="Environment"
               value={health.environment.toUpperCase()}
@@ -69,7 +67,10 @@ export default function SystemStatusPage() {
           </div>
         </>
       )}
-      <Refreshes />
+      <Refreshes onChange={changed} />
+      <Jobs version={version} />
+      <RefreshHistory version={version} />
+      <PipelineRuns version={version} />
     </div>
   );
 }

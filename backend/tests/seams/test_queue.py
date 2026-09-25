@@ -18,6 +18,7 @@ from app.core.seams.queue import (
     JobQueue,
     NewJob,
     NotIdsOnly,
+    QueueDepth,
     UnknownJobKind,
     ModuleInactive,
 )
@@ -176,3 +177,39 @@ def test_the_latest_job_of_a_kind(queue: JobQueue, kind: str) -> None:
     newest = queue.enqueue(NewJob(kind=kind))
     latest = queue.latest(kind)
     assert latest is not None and latest.id == newest
+
+
+# --- What the Support Views read (#10): recent Jobs and the queue's depth, system-wide plus one Practice's ---
+
+
+def test_recent_jobs_are_system_wide_and_the_practices_own(queue: JobQueue, kind: str, seeded: Seed) -> None:
+    ours, theirs = seeded.practice(), seeded.practice()
+    system = queue.enqueue(NewJob(kind=kind))
+    document = str(uuid.uuid4())
+    mine = queue.enqueue(NewJob(kind=kind, practice_id=ours, payload={"document_id": document}))
+    queue.enqueue(NewJob(kind=kind, practice_id=theirs))
+    recent = queue.recent(ours, kinds=[kind])
+    assert [job.id for job in recent] == [mine, system]  # newest first
+    assert recent[0].payload == {"document_id": document}
+    assert [job.id for job in queue.recent(ours, kinds=[kind], limit=1)] == [mine]
+    assert [job.id for job in queue.recent(None, kinds=[kind])] == [system]
+
+
+def test_recent_jobs_carry_their_steps_outputs(queue: JobQueue, kind: str) -> None:
+    job_id = queue.enqueue(NewJob(kind=kind))
+    queue.claim("w", kinds=[kind])
+    queue.step_done(job_id, "fetch", {"item_count": 3, "schedule_date": "2026-09-01"})
+    [job] = queue.recent(None, kinds=[kind])
+    assert [(s.name, s.output) for s in job.steps] == [("fetch", {"item_count": 3, "schedule_date": "2026-09-01"})]
+
+
+def test_the_queues_depth(queue: JobQueue, kind: str, seeded: Seed) -> None:
+    ours = seeded.practice()
+    queue.enqueue(NewJob(kind=kind))
+    queue.enqueue(NewJob(kind=kind, practice_id=ours))
+    queue.enqueue(NewJob(kind=kind, practice_id=seeded.practice()))
+    running = queue.enqueue(NewJob(kind=kind, priority=9, max_attempts=1))
+    queue.claim("w", kinds=[kind])
+    assert queue.depth(ours, kinds=[kind]) == QueueDepth(queued=2, running=1, failed_last_day=0)
+    queue.fail(running, "source_unreachable")
+    assert queue.depth(ours, kinds=[kind]) == QueueDepth(queued=2, running=0, failed_last_day=1)

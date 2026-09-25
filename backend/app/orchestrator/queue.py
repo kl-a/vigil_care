@@ -5,11 +5,11 @@ short transaction.
 """
 
 import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import timedelta
 from typing import Any
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import ColumnElement, func, or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.seams.queue import (
@@ -18,6 +18,7 @@ from app.core.seams.queue import (
     JobStatus,
     ModuleInactive,
     NewJob,
+    QueueDepth,
     StepStatus,
     UnknownJob,
     UnknownJobKind,
@@ -133,6 +134,35 @@ class DbJobQueue:
             job = db.scalars(select(Job).where(Job.kind == kind).order_by(Job.created_at.desc(), Job.id).limit(1)).first()
             return _status(db, job) if job else None
 
+    def recent(self, practice_id: uuid.UUID | None, kinds: Sequence[str] | None = None, limit: int = 100) -> list[JobStatus]:
+        with self._sessions() as db:
+            query = select(Job).where(_visible_to(practice_id)).order_by(Job.created_at.desc(), Job.id).limit(limit)
+            if kinds is not None:
+                query = query.where(Job.kind.in_(kinds))
+            jobs = list(db.scalars(query))
+            steps: dict[uuid.UUID, list[JobStep]] = {job.id: [] for job in jobs}
+            for step in db.scalars(select(JobStep).where(JobStep.job_id.in_(steps)).order_by(JobStep.sequence)):
+                steps[step.job_id].append(step)
+            return [_status_of(job, steps[job.id]) for job in jobs]
+
+    def depth(self, practice_id: uuid.UUID | None, kinds: Sequence[str] | None = None) -> QueueDepth:
+        with self._sessions() as db:
+            since = func.now() - timedelta(days=1)
+            query = select(
+                func.count().filter(Job.status == "queued"),
+                func.count().filter(Job.status == "running"),
+                func.count().filter((Job.status == "failed") & (Job.finished_at >= since)),
+            ).where(_visible_to(practice_id))
+            if kinds is not None:
+                query = query.where(Job.kind.in_(kinds))
+            queued, running, failed = db.execute(query).one()
+            return QueueDepth(queued=queued, running=running, failed_last_day=failed)
+
+
+def _visible_to(practice_id: uuid.UUID | None) -> ColumnElement[bool]:
+    """System-wide Jobs, and `practice_id`'s own."""
+    return or_(Job.practice_id.is_(None), Job.practice_id == practice_id)
+
 
 def _may_run(db: Session, module_key: str | None, practice_id: uuid.UUID | None) -> bool:
     """Core Job Kinds always may; a module's may for system-wide Jobs, or where the module is active."""
@@ -142,7 +172,10 @@ def _may_run(db: Session, module_key: str | None, practice_id: uuid.UUID | None)
 
 
 def _status(db: Session, job: Job) -> JobStatus:
-    steps = db.scalars(select(JobStep).where(JobStep.job_id == job.id).order_by(JobStep.sequence))
+    return _status_of(job, db.scalars(select(JobStep).where(JobStep.job_id == job.id).order_by(JobStep.sequence)))
+
+
+def _status_of(job: Job, steps: Iterable[JobStep]) -> JobStatus:
     return JobStatus(
         id=job.id,
         kind=job.kind,
@@ -153,5 +186,9 @@ def _status(db: Session, job: Job) -> JobStatus:
         created_at=job.created_at,
         finished_at=job.finished_at,
         last_error=job.last_error,
-        steps=[StepStatus(name=s.name, status=s.status, started_at=s.started_at, finished_at=s.finished_at) for s in steps],
+        steps=[
+            StepStatus(name=s.name, status=s.status, started_at=s.started_at, finished_at=s.finished_at, output=dict(s.output))
+            for s in steps
+        ],
+        payload=dict(job.payload),
     )

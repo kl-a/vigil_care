@@ -1205,13 +1205,21 @@ GET    /modules                             Installed modules + active flag for 
 GET    /modules/active                      This Practice's active modules, their UI sections and Patient tabs (from the Builder)
 PATCH  /modules/{key}                       Activate/deactivate (developer admin; Verification)
 
-# System
-GET    /pipeline-runs
+# System (Support Views: tagged "support", IDs only, every Job Title; system-wide rows + this Practice's)
+GET    /pipeline-runs                       Recent runs: kind, status, timings, IDs-only inputs, error code
 GET    /pipeline-runs/{id}
+GET    /jobs                                Recent Jobs (?kind=): Job Kind, status, attempts, steps with IDs-only outputs
+GET    /jobs/{id}                           One Job's progress
+GET    /queue                               Queue depth: queued, running, failed in the last day
+GET    /refreshes                           Each Refresh and its last Job
+POST   /refreshes                           Start a Refresh (developer admin)
+GET    /refreshes/history                   Recent Refresh Jobs, with their counts
 GET    /document-types                      Registry (read-only in the MVP)
 GET    /cloud-requests                      Ledger (what left the Practice Boundary, when, by whom)
 GET    /health                              DB, VLM worker, LLM connectivity, last refresh dates, last backup + restore test
 ```
+
+Every Support View route is tagged `support` in the OpenAPI schema. The no-Patient-data test (a quality gate, [quality-gates.md](quality-gates.md)) reads every route with that tag, so a new Support View is covered as soon as it's tagged. A pipeline run's `inputs`, `versions` and `error_detail` are shown only as IDs, counts, flags, dates and short codes; anything else is shown as "withheld".
 
 Every mutating pipeline endpoint returns a `pipeline_run_id`. The frontend polls `GET /pipeline-runs/{id}` or subscribes via `WS /pipeline-runs/{id}/stream`.
 
@@ -1310,7 +1318,7 @@ vigil/
 │   │   │   ├── queue.py             # DbJobQueue: claims with FOR UPDATE SKIP LOCKED, retries, resumes
 │   │   │   ├── handlers.py          # A Job Kind's steps; schedules (PBS monthly, eviQ/trials weekly; backup)
 │   │   │   ├── worker.py            # The worker service: runs Jobs, enqueues scheduled ones
-│   │   │   ├── service.py, router.py  # Refreshes (start: developer admin) and Job progress
+│   │   │   ├── service.py, router.py  # Support Views: Jobs, queue depth, pipeline runs, Refreshes (start: developer admin)
 │   │   │   └── pipelines.py         # Ingestion, redaction job, matching, reporting (later stages)
 │   │   │
 │   │   ├── modules/
@@ -1352,7 +1360,7 @@ vigil/
 │   │   │                            # eviQ Treatment Options, oncology trial vocabulary, UI section manifests
 │   │   │                            # (one self-contained unit per concept: portability rule, §4.1)
 │   │   │
-│   │   ├── audit/                   # pipeline_run, llm_call_log, llm_cache, verification
+│   │   ├── audit/                   # pipeline_run (pipeline_runs.py: read for the Support Views), llm_call_log, llm_cache, verification
 │   │   ├── db/                      # Tooling: all-models metadata, role provisioning + migrate, `make erd` generator
 │   │   └── main.py
 │   │
