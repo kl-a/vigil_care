@@ -4,7 +4,7 @@ jobs so the worker can run them. Each Job Kind here is also registered by a migr
 
 from app.db import metadata  # noqa: F401  (every table, so the worker's rows resolve their foreign keys)
 from app.modules.pbs import refresh as pbs_refresh
-from app.orchestrator.handlers import JobRegistry
+from app.core.jobs import JobRegistry
 
 
 def registry() -> JobRegistry:

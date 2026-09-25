@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSignedInUser } from "@/components/shell/ViewerProvider";
 import { messageOf } from "@/lib/api";
+import { canStartRefresh } from "@/lib/jobTitles";
 import { fetchJob, isActive, listRefreshes, startRefresh, type JobView, type RefreshView } from "@/lib/jobs";
 import { formatWhen } from "@/lib/users";
 import { RunStatus } from "./parts";
@@ -16,7 +17,7 @@ const POLL_MS = 1000;
  */
 export function Refreshes({ onChange = () => {} }: { onChange?: () => void }) {
   const me = useSignedInUser();
-  const canStart = me.job_title === "developer_admin";
+  const canStart = canStartRefresh(me.job_title);
   const [refreshes, setRefreshes] = useState<RefreshView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 

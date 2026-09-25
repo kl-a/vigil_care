@@ -14,7 +14,7 @@ from app.db.provision import APP_ROLE, OWNER_ROLE, DatabaseSettings
 from app.modules.pbs import refresh as pbs_refresh
 from app.modules.pbs.api_client import PbsApiClient
 from app.modules.pbs.schedule import ScheduleSource, SourceUnreachable
-from app.orchestrator.handlers import JobHandler, JobRegistry
+from app.core.jobs import JobHandler, JobRegistry
 from app.orchestrator.queue import DbJobQueue
 from app.orchestrator.worker import Worker
 from tests.conftest import make_settings
@@ -23,17 +23,21 @@ RECORDING = Path(__file__).with_name("pbs_api.json")
 
 
 class RecordedPbsApi:
-    """Replays the recorded responses; a request that wasn't recorded fails the test. `down` paths are unreachable."""
+    """Replays the recorded responses; a request that wasn't recorded fails the test. `down` paths are unreachable;
+    `broken` paths answer with something the client can't read."""
 
-    def __init__(self, down: Collection[str] = ()) -> None:
+    def __init__(self, down: Collection[str] = (), broken: Collection[str] = ()) -> None:
         self._responses = json.loads(RECORDING.read_text(encoding="utf-8"))["responses"]
         self.down = set(down)
+        self.broken = set(broken)
         self.calls: list[str] = []
 
     def __call__(self, path: str, params: Mapping[str, str | int]) -> Mapping[str, Any]:
         self.calls.append(path)
         if path in self.down or "*" in self.down:
             raise SourceUnreachable("pbs_api_unreachable")
+        if path in self.broken:
+            return {"data": [{"unexpected": "shape"}]}
         wanted = {key: str(value) for key, value in params.items()}
         for response in self._responses:
             if response["path"] == path and {k: str(v) for k, v in response["params"].items()} == wanted:

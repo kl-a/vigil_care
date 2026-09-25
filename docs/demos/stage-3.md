@@ -4,7 +4,7 @@
 
 **Before the demo**
 1. `scripts/run-local.sh` (it migrates the database, loads the demo data and starts the backend, the **worker** and the frontend). Or, with the stack already up: `make demo-data`.
-2. Load the PBS Schedule once beforehand: sign in as Casey Dev → System status → **Start Refresh** on the PBS Refresh. With the public API key it takes about 3 minutes (the API allows one request every 20 seconds). Offline, on a fresh database, the bundled sample loads instead, clearly marked.
+2. Make sure the PBS Schedule is loaded: on a fresh database the worker starts the monthly PBS Refresh by itself as soon as it runs (it's due on the 1st, and has never run). Check System status → Refreshes shows it Succeeded; it takes about 3 minutes with the public API key (one request every 20 seconds). Offline, on a fresh database, the bundled Sample Schedule loads instead, clearly marked.
 
 **The story:** Vigil keeps its own copy of public reference data, refreshed by background Jobs, and the people who support it can see everything that runs, without ever seeing a Patient.
 

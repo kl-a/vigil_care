@@ -1308,6 +1308,7 @@ vigil/
 │   │   │   ├── vocabulary.py        # Value sets shared by several modules (Job Titles, intents, statuses)
 │   │   │   ├── permissions.py       # can_verify(user, fact_kind), Job Title rules (§6.4)
 │   │   │   ├── crypto.py            # FieldCipher: AES-256-GCM with keys from the key interface
+│   │   │   ├── jobs.py              # A Job Kind's steps and schedules (modules import these; PBS monthly, …)
 │   │   │   └── seams/               # ─── Swappable infrastructure (ADR 0003) ───
 │   │   │       ├── storage.py       # LocalDiskStorage → BlobStorage later
 │   │   │       ├── keys.py          # LocalKeystore → KeyVault later
@@ -1324,7 +1325,6 @@ vigil/
 │   │   │
 │   │   ├── orchestrator/
 │   │   │   ├── queue.py             # DbJobQueue: claims with FOR UPDATE SKIP LOCKED, retries, resumes
-│   │   │   ├── handlers.py          # A Job Kind's steps; schedules (PBS monthly, eviQ/trials weekly; backup)
 │   │   │   ├── worker.py            # The worker service: runs Jobs, enqueues scheduled ones
 │   │   │   ├── service.py, router.py  # Support Views: Jobs, queue depth, pipeline runs, Refreshes (start: developer admin)
 │   │   │   └── pipelines.py         # Ingestion, redaction job, matching, reporting (later stages)

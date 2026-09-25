@@ -5,7 +5,7 @@ scheduled Jobs (e.g. the monthly PBS Refresh) when they fall due.
 import logging
 import uuid
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import psycopg
@@ -14,7 +14,7 @@ import pytest
 from app.core.database import session_factory
 from app.core.seams.queue import NewJob
 from app.db.provision import APP_ROLE, DatabaseSettings
-from app.orchestrator.handlers import JobContext, JobFailed, JobHandler, JobRegistry, Schedule, monthly
+from app.core.jobs import JobContext, JobFailed, JobHandler, JobRegistry, Schedule, monthly
 from app.orchestrator.queue import DbJobQueue
 from app.orchestrator.worker import Worker
 from tests.conftest import make_settings
@@ -117,6 +117,8 @@ def test_a_scheduled_job_is_enqueued_once_when_due(queue: DbJobQueue, kind: str,
 
     assert w.enqueue_due() == [kind]  # never run: due now
     assert w.enqueue_due() == []  # already enqueued this month
+    # Next month, while that one is still waiting, no second copy piles up.
+    assert w.enqueue_due(now=datetime.now(UTC) + timedelta(days=40)) == []
     latest = queue.latest(kind)
     assert latest is not None and latest.status == "queued"
 

@@ -21,6 +21,7 @@ from app.orchestrator.models import JobKind
 from app.orchestrator.schemas import JobView, QueueDepthView, RefreshView
 
 REFRESH_PREFIX = "refresh_"
+ACTIVE = ("queued", "running")
 RECENT = 100
 
 
@@ -30,6 +31,10 @@ class JobNotFound(LookupError):
 
 class PipelineRunNotFound(LookupError):
     """No such pipeline run, or it belongs to another Practice."""
+
+
+class RefreshAlreadyRunning(ValueError):
+    """One at a time: a second copy would only repeat the first."""
 
 
 class NotARefresh(ValueError):
@@ -65,6 +70,9 @@ def start_refresh(db: Session, queue: JobQueue, actor: Actor, kind: str) -> JobV
     require(actor.job_title, "start_refresh")
     if kind not in {k.key for k in _refresh_kinds(db)}:
         raise NotARefresh(f"{kind} isn't a Refresh.")
+    latest = queue.latest(kind)
+    if latest is not None and latest.status in ACTIVE:
+        raise RefreshAlreadyRunning("This Refresh is already queued or running.")
     return _view(queue.status(queue.enqueue(NewJob(kind=kind))))
 
 

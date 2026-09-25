@@ -32,8 +32,8 @@ def kind(db: psycopg.Connection[dict[str, Any]]) -> str:
     return key
 
 
-def refresher(database: DatabaseSettings, kind: str, down: tuple[str, ...] = ()) -> PbsRefresher:
-    return PbsRefresher(database, kind, RecordedPbsApi(down=down))
+def refresher(database: DatabaseSettings, kind: str, down: tuple[str, ...] = (), broken: tuple[str, ...] = ()) -> PbsRefresher:
+    return PbsRefresher(database, kind, RecordedPbsApi(down=down, broken=broken))
 
 
 def logs(db: psycopg.Connection[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -115,15 +115,36 @@ def test_a_failed_refresh_keeps_the_previous_schedule(
     assert len(items(db, loaded["id"])) == 18  # the sample didn't replace the real schedule
 
 
-def test_a_refresh_that_fails_while_storing_logs_the_failure_with_its_schedule_date(
+def test_the_api_going_down_while_storing_with_no_schedule_yet_loads_the_sample(
     database: DatabaseSettings, db: psycopg.Connection[dict[str, Any]], kind: str
 ) -> None:
     job = refresher(database, kind, down=("/items",)).run()
+    assert job.status == "succeeded"
+    [log] = logs(db)
+    assert (log["status"], log["source"], log["error_detail"]) == ("partial", "sample", "pbs_api_unreachable")
+    assert log["item_count"] > 0
+
+
+def test_the_api_going_down_while_storing_keeps_the_previous_schedule_and_logs_the_date(
+    database: DatabaseSettings, db: psycopg.Connection[dict[str, Any]], kind: str
+) -> None:
+    refresher(database, kind).run()
+    job = refresher(database, kind, down=("/items",)).run()
     assert (job.status, job.last_error) == ("queued", "pbs_api_unreachable")
     assert [(step.name, step.status) for step in job.steps][0] == ("fetch", "succeeded")
-    [failed] = logs(db)
+    loaded, failed = logs(db)
     assert (failed["status"], failed["schedule_date"]) == ("failed", date(2026, 9, 1))
-    assert db.execute("SELECT count(*) AS n FROM pbs_item").fetchone() == {"n": 0}
+    assert len(items(db, loaded["id"])) == 18
+
+
+def test_an_unexpected_failure_is_still_logged_so_the_lookup_can_warn(
+    database: DatabaseSettings, db: psycopg.Connection[dict[str, Any]], kind: str
+) -> None:
+    refresher(database, kind).run()
+    job = refresher(database, kind, broken=("/items",)).run()
+    assert job.status == "queued" and (job.last_error or "").startswith("unexpected_error:")
+    _, failed = logs(db)
+    assert failed["status"] == "failed" and failed["error_detail"].startswith("unexpected_error:")
 
 
 def test_the_pbs_refresh_runs_monthly_on_the_first() -> None:

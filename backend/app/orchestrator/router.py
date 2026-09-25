@@ -10,13 +10,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.audit.schemas import PipelineRunView
+from app.core.permissions import SUPPORT_TAG
 from app.core.seams.queue import JobQueue
 from app.modules.accounts.dependencies import Db, SignedIn
 from app.orchestrator import service
 from app.orchestrator.schemas import JobView, QueueDepthView, RefreshView, StartRefresh
 
-SUPPORT = "support"
-router = APIRouter(tags=[SUPPORT])
+router = APIRouter(tags=[SUPPORT_TAG])
 
 
 def job_queue(request: Request) -> JobQueue:
@@ -43,6 +43,8 @@ def start_refresh(body: StartRefresh, actor: SignedIn, db: Db, queue: Queue) -> 
         return service.start_refresh(db, queue, actor, body.kind)
     except service.NotARefresh as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from None
+    except service.RefreshAlreadyRunning as error:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from None
 
 
 @router.get("/jobs")

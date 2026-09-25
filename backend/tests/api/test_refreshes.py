@@ -8,6 +8,12 @@ from tests.api.conftest import SignIn
 from tests.db.seed import Seed
 
 
+@pytest.fixture(autouse=True)
+def no_refresh_running(committed: Seed) -> None:
+    """The test database is shared and has no worker: settle any Refresh other tests left queued."""
+    committed.conn.execute("UPDATE job SET status = 'cancelled' WHERE kind LIKE 'refresh_%' AND status IN ('queued', 'running')")
+
+
 def test_a_developer_admin_starts_a_refresh_and_follows_the_job(sign_in: SignIn) -> None:
     client, _ = sign_in("developer_admin")
     started = client.post("/refreshes", json={"kind": "refresh_pbs"})
@@ -46,3 +52,12 @@ def test_another_practices_jobs_are_invisible(sign_in: SignIn, committed: Seed) 
     theirs = committed.insert("job", kind=kind, practice_id=committed.practice())
     assert client.get(f"/jobs/{theirs}").status_code == 404
     assert client.get(f"/jobs/{uuid.uuid4()}").status_code == 404
+
+
+def test_a_refresh_already_queued_or_running_isnt_started_twice(sign_in: SignIn) -> None:
+    client, _ = sign_in("developer_admin")
+    first = client.post("/refreshes", json={"kind": "refresh_pbs"})
+    assert first.status_code == 201
+    again = client.post("/refreshes", json={"kind": "refresh_pbs"})
+    assert again.status_code == 409
+    assert again.json()["detail"] == "This Refresh is already queued or running."

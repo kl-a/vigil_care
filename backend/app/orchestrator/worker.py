@@ -16,7 +16,7 @@ from typing import Any
 from app.core.config import Settings
 from app.core.database import session_factory
 from app.core.seams.queue import JobQueue, NewJob
-from app.orchestrator.handlers import JobContext, JobFailed, JobRegistry
+from app.core.jobs import JobContext, JobFailed, JobRegistry
 from app.orchestrator.queue import DbJobQueue
 
 log = logging.getLogger("vigil.worker")
@@ -69,6 +69,8 @@ class Worker:
         enqueued = []
         for schedule in self._registry.schedules:
             latest = self._queue.latest(schedule.kind)
+            if latest is not None and latest.status in ("queued", "running"):
+                continue  # still waiting or running: no second copy
             if latest is None or latest.created_at < schedule.due(now):
                 self._queue.enqueue(NewJob(kind=schedule.kind))
                 enqueued.append(schedule.kind)

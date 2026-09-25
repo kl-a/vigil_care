@@ -16,9 +16,9 @@ from fastapi.testclient import TestClient
 from app.core.database import session_factory
 from app.core.seams.queue import NewJob
 from app.db.provision import APP_ROLE, DatabaseSettings
-from app.orchestrator.handlers import JobContext, JobHandler, JobRegistry
+from app.core.jobs import JobContext, JobHandler, JobRegistry
 from app.orchestrator.queue import DbJobQueue
-from app.orchestrator.router import SUPPORT
+from app.core.permissions import SUPPORT_TAG as SUPPORT
 from app.orchestrator.worker import Worker
 from tests.api.conftest import SignIn
 from tests.conftest import make_settings

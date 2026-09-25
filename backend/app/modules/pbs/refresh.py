@@ -21,8 +21,8 @@ from app.modules.pbs.models import PbsItem, PbsRefreshLog
 from app.modules.pbs.sample import SampleSchedule
 from app.modules.pbs.schedule import Schedule as PbsSchedule
 from app.modules.pbs.schedule import ScheduleRef, ScheduleSource, SourceUnreachable
-from app.modules.pbs.service import current_refresh
-from app.orchestrator.handlers import JobContext, JobFailed, JobHandler, Schedule, monthly
+from app.modules.pbs.logs import has_api_schedule
+from app.core.jobs import JobContext, JobFailed, JobHandler, Schedule, Step, monthly
 
 KIND = "refresh_pbs"
 MONTHLY = Schedule(KIND, due=monthly(day=1))
@@ -46,32 +46,55 @@ def handler(api: SourceFactory = api_source, sample: SourceFactory = sample_sour
         try:
             ref = api(ctx.settings).current()
         except SourceUnreachable as unreachable:
-            with ctx.sessions.begin() as db:
-                current = current_refresh(db)
-                keep_current = current is not None and current.source == "pbs_api"
-                if keep_current:
-                    _log_failure(db, unreachable.code)
-            if keep_current:
-                raise JobFailed(unreachable.code) from None
-            ref = sample(ctx.settings).current()
-            return {"source": "sample", "schedule_date": ref.schedule_date.isoformat(), "reason": unreachable.code}
+            return _sample_or_fail(ctx, unreachable.code)
         return {"source": "pbs_api", "schedule_code": ref.schedule_code, "schedule_date": ref.schedule_date.isoformat()}
+
+    def _sample_or_fail(ctx: JobContext, code: str, schedule_date: date | None = None) -> Mapping[str, Any]:
+        """With a schedule from the API already loaded, this attempt fails and that schedule stays visible;
+        with none, the bundled sample stands in (demos work offline)."""
+        with ctx.sessions.begin() as db:
+            keep_current = has_api_schedule(db)
+            if keep_current:
+                _log_failure(db, code, schedule_date)
+        if keep_current:
+            raise JobFailed(code)
+        ref = sample(ctx.settings).current()
+        return {"source": "sample", "schedule_date": ref.schedule_date.isoformat(), "reason": code}
 
     def store(ctx: JobContext) -> Mapping[str, Any]:
         found = ctx.outputs["fetch"]
-        source = api(ctx.settings) if found["source"] == "pbs_api" else sample(ctx.settings)
         ref = ScheduleRef(schedule_code=int(found.get("schedule_code") or 0), schedule_date=date.fromisoformat(found["schedule_date"]))
-        try:
-            schedule = source.fetch(ref)
-        except SourceUnreachable as unreachable:
-            with ctx.sessions.begin() as db:
-                _log_failure(db, unreachable.code, ref.schedule_date)
-            raise JobFailed(unreachable.code) from None
+        if found["source"] == "pbs_api":
+            try:
+                schedule = api(ctx.settings).fetch(ref)
+            except SourceUnreachable as unreachable:
+                # The API went down between the steps: the same rule as when it can't be reached at all.
+                found = _sample_or_fail(ctx, unreachable.code, ref.schedule_date)
+                ref = ScheduleRef(schedule_code=0, schedule_date=date.fromisoformat(found["schedule_date"]))
+                schedule = sample(ctx.settings).fetch(ref)
+        else:
+            schedule = sample(ctx.settings).fetch(ref)
         with ctx.sessions.begin() as db:
             log = _store(db, schedule, reason=found.get("reason"))
             return {"status": log.status, "source": log.source, "schedule_date": ref.schedule_date.isoformat(), "item_count": log.item_count}
 
-    return JobHandler(KIND, steps=(("fetch", fetch), ("store", store)))
+    return JobHandler(KIND, steps=(("fetch", _logged(fetch)), ("store", _logged(store))))
+
+
+def _logged(step: Step) -> Step:
+    """Every failed attempt is in the refresh log, even an unexpected one (by type only), so the lookup can warn."""
+
+    def run(ctx: JobContext) -> Mapping[str, Any]:
+        try:
+            return step(ctx)
+        except JobFailed:
+            raise
+        except Exception as error:
+            with ctx.sessions.begin() as db:
+                _log_failure(db, f"unexpected_error:{type(error).__name__.lower()}")
+            raise
+
+    return run
 
 
 def _store(db: Session, schedule: PbsSchedule, reason: str | None) -> PbsRefreshLog:

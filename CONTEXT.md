@@ -194,6 +194,10 @@ _Avoid_: Job type, task type
 A Job that updates Vigil's copy of external reference data (PBS Schedule, eviQ Treatment Protocols, trial registries), started on a schedule or by a developer admin.
 _Avoid_: Sync, import
 
+**Sample Schedule**:
+The small bundled copy of the PBS Schedule (a few oncology drugs) that a PBS Refresh loads when the PBS Schedule API can't be reached and no real schedule has ever loaded, so demos work offline. Always shown as sample data, not for clinical use; the next successful Refresh replaces it.
+_Avoid_: Mock data, fallback data
+
 **Support View**:
 A screen or endpoint for configuring and troubleshooting Vigil (health, Jobs, pipeline runs, Refresh history, cloud request metadata). Contains IDs only, never Patient data, so developer admins may use it.
 _Avoid_: Admin panel, logs (as the general term)

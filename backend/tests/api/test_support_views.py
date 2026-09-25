@@ -72,9 +72,12 @@ def test_the_queues_depth_counts_this_practices_jobs_and_system_wide_ones(sign_i
     assert set(after) == {"queued", "running", "failed_last_day"}
 
 
-def test_refresh_history_lists_refresh_jobs_newest_first(sign_in: SignIn) -> None:
+def test_refresh_history_lists_refresh_jobs_newest_first(sign_in: SignIn, committed: Seed) -> None:
     client, _ = sign_in("developer_admin")
+    settle = "UPDATE job SET status = 'succeeded' WHERE kind LIKE 'refresh_%' AND status IN ('queued', 'running')"
+    committed.conn.execute(settle)  # the shared test database has no worker: settle other tests' Refreshes
     first = client.post("/refreshes", json={"kind": "refresh_pbs"}).json()
+    committed.conn.execute(settle)  # one Refresh at a time: the first finishes before the second starts
     second = client.post("/refreshes", json={"kind": "refresh_pbs"}).json()
     history = client.get("/refreshes/history").json()
     assert all(job["kind"].startswith("refresh_") for job in history)
