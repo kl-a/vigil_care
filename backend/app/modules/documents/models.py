@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import CheckConstraint, ForeignKey, Index, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, SharedEntity, allowed, practice_fk
+from app.core.base_model import PracticeEntity, SharedEntity, allowed, member_fk, practice_fk
 
 DOCUMENT_STATUSES = (
     "uploaded",
@@ -46,8 +46,8 @@ class Document(PracticeEntity):
     __tablename__ = "document"
     __extra_args__ = (
         practice_fk("patient_id", "patient"),
-        practice_fk("uploaded_by_user_id", "user"),
-        practice_fk("held_by_user_id", "user"),
+        member_fk("uploaded_by_user_id"),
+        member_fk("held_by_user_id"),
         UniqueConstraint("patient_id", "original_sha256"),
         CheckConstraint("(status = 'held') = (hold_reason IS NOT NULL)", name="hold_reason_when_held"),
         CheckConstraint("page_count IS NULL OR page_count >= 1", name="page_count_positive"),

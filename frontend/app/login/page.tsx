@@ -39,11 +39,14 @@ function NotYet() {
   );
 }
 
+/** A User at two Practices is two choices. */
+const membershipKey = (choice: DevLoginChoice) => `${choice.id}:${choice.practice_id}`;
+
 function DevLogin() {
   const router = useRouter();
   const { session, signIn } = useViewer();
   const [choices, setChoices] = useState<Choices>({ status: "loading" });
-  const [signingIn, setSigningIn] = useState<string | null>(null);
+  const [signingIn, setSigningIn] = useState<string | null>(null); // the chosen Membership's key
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,10 +60,10 @@ function DevLogin() {
   }, []);
 
   async function choose(user: DevLoginChoice) {
-    setSigningIn(user.id);
+    setSigningIn(membershipKey(user));
     setError(null);
     try {
-      const signedInUser = await devLogin(user.id);
+      const signedInUser = await devLogin(user.id, user.practice_id);
       signIn(signedInUser);
       router.replace(homePath(signedInUser.job_title));
     } catch (reason) {
@@ -88,7 +91,7 @@ function DevLogin() {
       {choices.status === "ready" && choices.users.length > 0 && (
         <ul aria-label="Users" className="m-0 flex list-none flex-col gap-1.5 p-0">
           {choices.users.map((user) => (
-            <li key={user.id}>
+            <li key={membershipKey(user)}>
               <button
                 onClick={() => choose(user)}
                 disabled={signingIn !== null}
@@ -99,7 +102,7 @@ function DevLogin() {
                   <span className="text-[11px] text-muted-foreground">{user.practice_name}</span>
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {signingIn === user.id ? "Signing in…" : JOB_TITLE_LABEL[user.job_title]}
+                  {signingIn === membershipKey(user) ? "Signing in…" : JOB_TITLE_LABEL[user.job_title]}
                 </span>
               </button>
             </li>

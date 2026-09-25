@@ -234,7 +234,7 @@ export interface components {
         };
         /**
          * CurrentUser
-         * @description The signed-in User, as the frontend sees them.
+         * @description The signed-in User, acting in one Practice: `job_title` is the one they hold there.
          */
         CurrentUser: {
             /** Display Name */
@@ -259,7 +259,7 @@ export interface components {
         };
         /**
          * DevLoginChoice
-         * @description A User who can be chosen at the dev login.
+         * @description One active Practice Membership that can be chosen at the dev login.
          */
         DevLoginChoice: {
             /** Display Name */
@@ -274,11 +274,21 @@ export interface components {
              * @enum {string}
              */
             job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
+            /**
+             * Practice Id
+             * Format: uuid
+             */
+            practice_id: string;
             /** Practice Name */
             practice_name: string;
         };
         /** DevLoginRequest */
         DevLoginRequest: {
+            /**
+             * Practice Id
+             * Format: uuid
+             */
+            practice_id: string;
             /**
              * User Id
              * Format: uuid
@@ -363,10 +373,13 @@ export interface components {
             /** Version */
             version: string;
         };
-        /** NewUser */
+        /**
+         * NewUser
+         * @description Someone with a login at another Practice is added by username alone; a new login needs a display name.
+         */
         NewUser: {
             /** Display Name */
-            display_name: string;
+            display_name?: string | null;
             /**
              * Job Title
              * @enum {string}
@@ -463,7 +476,7 @@ export interface components {
         };
         /**
          * UserRow
-         * @description A User as User Management lists them.
+         * @description A User as User Management lists them: their Membership at the current Practice.
          */
         UserRow: {
             /** Display Name */

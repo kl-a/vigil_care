@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import CheckConstraint, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, allowed, practice_fk
+from app.core.base_model import PracticeEntity, allowed, member_fk, practice_fk
 
 REDACTION_PURPOSES = ("trial_portal", "referral", "other")
 REDACTION_JOB_STATUSES = ("draft", "processing", "in_review", "complete", "failed")
@@ -34,7 +34,7 @@ class RedactionJob(PracticeEntity):
     __tablename__ = "redaction_job"
     __extra_args__ = (
         practice_fk("patient_id", "patient"),
-        practice_fk("created_by_user_id", "user"),
+        member_fk("created_by_user_id"),
     )
 
     patient_id: Mapped[uuid.UUID | None] = mapped_column(index=True)
@@ -65,7 +65,7 @@ class RedactionLog(PracticeEntity):
     __extra_args__ = (
         practice_fk("document_id", "document"),
         practice_fk("redaction_job_file_id", "redaction_job_file"),
-        practice_fk("reviewed_by_user_id", "user"),
+        member_fk("reviewed_by_user_id"),
         CheckConstraint("num_nonnulls(document_id, redaction_job_file_id) = 1", name="one_parent"),
         CheckConstraint("entity_count >= 0", name="entity_count"),
     )

@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import CheckConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, allowed, practice_fk
+from app.core.base_model import PracticeEntity, allowed, member_fk, practice_fk
 from app.core.vocabulary import VERIFYING_JOB_TITLES
 
 REPORT_TYPES = ("treatment_summary", "trial_match", "patient_summary_snapshot", "combined")
@@ -38,7 +38,7 @@ class Export(PracticeEntity):
         practice_fk("report_id", "report"),
         practice_fk("redaction_job_id", "redaction_job"),
         practice_fk("recipient_provider_id", "provider", ondelete="SET NULL"),
-        practice_fk("signed_off_by_user_id", "user"),
+        member_fk("signed_off_by_user_id"),
         CheckConstraint("num_nonnulls(patient_id, redaction_job_id) >= 1", name="has_subject"),
     )
 

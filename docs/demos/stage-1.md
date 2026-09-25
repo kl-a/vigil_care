@@ -4,7 +4,7 @@
 
 **Before the demo**
 1. `scripts/run-local.sh` (it migrates the database and loads the synthetic demo Practice). Or, with the stack already up: `make demo-data`.
-2. Open http://localhost:3000. You should see the **Dev login** with four Users of *Harbourside Oncology (synthetic)*.
+2. Open http://localhost:3000. You should see the **Dev login** with four Users of *Harbourside Oncology (synthetic)*, and Dr Alex Rivera again under *Northside Oncology (synthetic)*.
 
 **The story:** everyone signs in as themselves, and Vigil shows each person only what their Job Title allows.
 
@@ -27,5 +27,9 @@
 | 13 | Log out, choose Jordan Park (Secretary). | No Settings in the sidebar: only clinicians and developer admins change them. | #14 |
 | 14 | As Casey Dev, open **Settings** → Specialty Modules. Oncology is **On**. | Vigil is a general Core with Specialty Modules; Oncology is the first. Only a developer admin switches them. | #15 |
 | 15 | Tick **Show upcoming screens**, open a Patient (e.g. `/patients/demo/summary`, as Dr Rivera) and note the Diagnosis section and the Treatment Options tab. Then, as Casey Dev, **Switch Oncology off** (sign-off, reason "Showing the Core"). | Back as Dr Rivera: the Oncology sections and the Treatment Options tab are gone; the Core screens still work. Switch it back on and they return: nothing was deleted. | #15 |
+
+| 16 | Log out. Point at Dr Alex Rivera listed twice on the dev login: Harbourside and Northside. Choose **Dr Alex Rivera, Northside Oncology**. | One person, one login, a Practice Membership at each Practice. The top bar's Practice is Northside; Users shows only Northside's people, and Oncology is off here because each Practice has its own modules. | #24 |
+| 17 | Still as Dr Rivera at Northside: **Users** → **New User**, enter only the username `jordan.park`, Job Title Secretary → Add User. | Jordan already has a login (at Harbourside), so their own name comes with it and nothing about Harbourside shows here. Log out: Jordan is now listed under both Practices. | #24 |
+| 18 | Choose Casey Dev (Harbourside) → Users → **Deactivate** Dr Rivera, reason "Moved to Northside". Log out. | Dr Rivera is gone from Harbourside on the dev login but still listed at Northside: deactivating affects only one Practice. Reactivate them afterwards. | #24 |
 
 **If something goes wrong:** the dev login says "No Users yet" → run `make demo-data`. It says the dev login isn't available → set `VIGIL_DEV_LOGIN_ENABLED=true` in `.env` (dev only) and restart.

@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 from fastapi.testclient import TestClient
 
+from tests.api.conftest import dev_login
 from tests.db.seed import Seed
 
 PUBLIC_PATHS = {"/health", "/auth/dev-login/users", "/auth/dev-login"}
@@ -19,6 +20,7 @@ def test_the_dev_login_lists_active_users_with_their_job_titles(api: Callable[..
     chosen = next(u for u in users if u["id"] == str(clinician))
     assert chosen["display_name"] == "Dr Alex Rivera"
     assert chosen["job_title"] == "clinician"
+    assert chosen["practice_id"] == str(practice)
     assert chosen["practice_name"] == "Synthetic Oncology Practice"
     assert "Former Secretary" not in {u["display_name"] for u in users}
 
@@ -28,7 +30,7 @@ def test_choosing_a_user_starts_a_session_as_that_user(api: Callable[..., TestCl
     secretary = committed.user(practice, job_title="secretary", display_name="Jordan Park")
     client = api()
 
-    login = client.post("/auth/dev-login", json={"user_id": str(secretary)})
+    login = dev_login(client, secretary, practice)
     assert login.status_code == 200
 
     me = client.get("/auth/me").json()
@@ -46,8 +48,8 @@ def test_a_deactivated_or_unknown_user_cant_be_chosen(api: Callable[..., TestCli
     practice = committed.practice()
     inactive = committed.user(practice, is_active=False)
     client = api()
-    assert client.post("/auth/dev-login", json={"user_id": str(inactive)}).status_code == 401
-    assert client.post("/auth/dev-login", json={"user_id": "00000000-0000-0000-0000-000000000000"}).status_code == 401
+    assert dev_login(client, inactive, practice).status_code == 401
+    assert dev_login(client, "00000000-0000-0000-0000-000000000000", practice).status_code == 401
     assert client.get("/auth/me").status_code == 401
 
 
@@ -55,15 +57,16 @@ def test_a_user_deactivated_mid_session_is_signed_out(api: Callable[..., TestCli
     practice = committed.practice()
     user = committed.user(practice)
     client = api()
-    client.post("/auth/dev-login", json={"user_id": str(user)})
-    committed.conn.execute('UPDATE "user" SET is_active = false WHERE id = %s', [user])
+    dev_login(client, user, practice)
+    committed.conn.execute("UPDATE practice_membership SET is_active = false WHERE user_id = %s", [user])
     assert client.get("/auth/me").status_code == 401
 
 
 def test_logging_out_ends_the_session(api: Callable[..., TestClient], committed: Seed) -> None:
-    user = committed.user(committed.practice())
+    practice = committed.practice()
+    user = committed.user(practice)
     client = api()
-    client.post("/auth/dev-login", json={"user_id": str(user)})
+    dev_login(client, user, practice)
     assert client.post("/auth/logout").status_code == 204
     assert client.get("/auth/me").status_code == 401
 
@@ -71,7 +74,7 @@ def test_logging_out_ends_the_session(api: Callable[..., TestClient], committed:
 def test_the_dev_login_doesnt_exist_outside_dev(api: Callable[..., TestClient]) -> None:
     client = api(environment="test", dev_login_enabled=False)
     assert client.get("/auth/dev-login/users").status_code == 404
-    assert client.post("/auth/dev-login", json={"user_id": "00000000-0000-0000-0000-000000000000"}).status_code == 404
+    assert dev_login(client, "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000").status_code == 404
 
 
 def test_the_dev_login_doesnt_exist_when_disabled_in_dev(api: Callable[..., TestClient]) -> None:

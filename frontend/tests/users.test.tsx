@@ -88,6 +88,17 @@ describe("User Management", () => {
     await waitFor(() => expect(users.createUser).toHaveBeenCalledWith({ display_name: "Riley Hart (synthetic)", username: "riley.hart", job_title: "clinician" }));
   });
 
+  it("adds someone who already uses Vigil at another Practice by username alone", async () => {
+    users.createUser.mockResolvedValue(row({ id: "u-2" }));
+    await renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "New User" }));
+    const form = screen.getByRole("form", { name: "New User" });
+    fireEvent.change(within(form).getByLabelText("Username"), { target: { value: "alex.rivera" } });
+    fireEvent.change(within(form).getByLabelText("Job Title"), { target: { value: "clinician" } });
+    fireEvent.submit(form);
+    await waitFor(() => expect(users.createUser).toHaveBeenCalledWith({ username: "alex.rivera", job_title: "clinician" }));
+  });
+
   it("shows why the backend refused", async () => {
     users.listUsers.mockRejectedValue(new Error("Not available for your Job Title."));
     await renderPage();
