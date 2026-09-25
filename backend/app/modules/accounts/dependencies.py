@@ -1,12 +1,14 @@
 """The accounts module's public FastAPI dependencies. Every other module's routes use `SignedIn`."""
 
 import uuid
+from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.database import db_session
+from app.core.permissions import Permission, may
 from app.modules.accounts import service
 from app.modules.accounts.schemas import CurrentUser
 
@@ -26,3 +28,14 @@ def current_user(request: Request, db: Db) -> CurrentUser:
 
 
 SignedIn = Annotated[CurrentUser, Depends(current_user)]
+
+
+def requires(permission: Permission) -> Callable[[CurrentUser], CurrentUser]:
+    """A dependency: 403 unless the signed-in User's Job Title has this permission (design doc §6.4)."""
+
+    def check(user: SignedIn) -> CurrentUser:
+        if not may(user.job_title, permission):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Not available for your Job Title.")
+        return user
+
+    return check

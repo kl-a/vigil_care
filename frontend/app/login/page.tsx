@@ -4,13 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EnvironmentBadge } from "@/components/shell/EnvironmentBadge";
 import { useViewer } from "@/components/shell/ViewerProvider";
+import { messageOf } from "@/lib/api";
 import { ENVIRONMENT } from "@/lib/environment";
 import { JOB_TITLE_LABEL, homePath } from "@/lib/jobTitles";
 import { devLogin, fetchDevLoginChoices, type DevLoginChoice } from "@/lib/session";
-
-function messageOf(reason: unknown): string {
-  return reason instanceof Error ? reason.message : String(reason);
-}
 
 type Choices = { status: "loading" } | { status: "ready"; users: DevLoginChoice[] } | { status: "error"; message: string };
 

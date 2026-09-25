@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { JobTitle } from "@/lib/jobTitles";
-import { navItemForPath, navigationFor, type NavItem } from "@/lib/navigation";
+import { navItemForPath, navigationFor, stageOf, type NavItem } from "@/lib/navigation";
+import { isShipped, isVisible } from "@/lib/stages";
 import { NAV_ICONS } from "./icons";
 
 function NavLink({ item, current, expanded }: { item: NavItem; current: boolean; expanded: boolean }) {
@@ -16,12 +17,15 @@ function NavLink({ item, current, expanded }: { item: NavItem; current: boolean;
     >
       <Icon aria-hidden className="h-[15px] w-[15px] flex-none" />
       {expanded && <span className="flex-1 whitespace-nowrap">{item.label}</span>}
+      {expanded && !isShipped(stageOf(item)) && (
+        <span title={`Coming in Stage ${stageOf(item)}`} className="rounded bg-dev-bg px-1 font-mono text-[10px] text-dev">S{stageOf(item)}</span>
+      )}
     </Link>
   );
 }
 
-export function Sidebar({ jobTitle, pathname, expanded }: { jobTitle: JobTitle; pathname: string; expanded: boolean }) {
-  const { main, admin } = navigationFor(jobTitle);
+export function Sidebar({ jobTitle, pathname, expanded, showUpcoming }: { jobTitle: JobTitle; pathname: string; expanded: boolean; showUpcoming: boolean }) {
+  const { main, admin } = navigationFor(jobTitle, (stage) => isVisible(stage, showUpcoming));
   const currentId = navItemForPath(pathname)?.id;
   return (
     <nav

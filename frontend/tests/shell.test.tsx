@@ -29,12 +29,12 @@ describe("app shell", () => {
   beforeEach(() => { window.localStorage.clear(); replace.mockClear(); });
 
   it("shows the signed-in User, the environment badge and the screen content", async () => {
-    await renderShell("/dashboard", signedInAs("clinician"));
+    await renderShell("/system", signedInAs("clinician"));
     expect(screen.getByText("DEV")).toBeInTheDocument();
     expect(screen.getByText("Dr Alex Rivera")).toBeInTheDocument();
     expect(screen.getByText("Clinician")).toBeInTheDocument();
     expect(screen.getByText("screen content")).toBeInTheDocument();
-    expect(mainNav().getByRole("link", { name: "Patients" })).toBeInTheDocument();
+    expect(mainNav().getByRole("link", { name: "Users" })).toBeInTheDocument();
   });
 
   it("has no Preview as: the Job Title comes from the session", async () => {
@@ -43,8 +43,8 @@ describe("app shell", () => {
   });
 
   it("marks the current section in the navigation", async () => {
-    await renderShell("/patients/jane/summary", signedInAs("secretary"));
-    expect(mainNav().getByRole("link", { name: "Patients" })).toHaveAttribute("aria-current", "page");
+    await renderShell("/users/42", signedInAs("secretary"));
+    expect(mainNav().getByRole("link", { name: "Users" })).toHaveAttribute("aria-current", "page");
   });
 
   it("gives a developer admin a 403 on Patient screens and no Patient navigation", async () => {

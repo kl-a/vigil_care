@@ -5,6 +5,7 @@ from app.api import health
 from app.core.config import Settings, refuse_unsafe_startup
 from app.core.database import DatabaseCheck, postgres_check, session_factory
 from app.modules.accounts import router as accounts
+from app.modules.accounts import users_router
 
 SESSION_HOURS = 12
 
@@ -35,6 +36,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     )
     app.include_router(health.router)
     app.include_router(accounts.router)
+    app.include_router(users_router.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)
     return app

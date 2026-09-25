@@ -1,10 +1,7 @@
-import type { components } from "@/generated/api";
+import { API, type Schemas } from "./api";
 
-export type CurrentUser = components["schemas"]["CurrentUser"];
-export type DevLoginChoice = components["schemas"]["DevLoginChoice"];
-
-/** Backend calls go through the Next.js `/api` proxy, so the session cookie stays same-origin. */
-const API = "/api";
+export type CurrentUser = Schemas["CurrentUser"];
+export type DevLoginChoice = Schemas["DevLoginChoice"];
 
 async function call(path: string, init?: RequestInit): Promise<Response> {
   return fetch(`${API}${path}`, { credentials: "same-origin", ...init });

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { screenForPath } from "@/lib/screens";
+import { isShipped } from "@/lib/stages";
 
 /** Stand-in for a screen that later tickets will build (docs/frontend-design.md §8). */
 export function ScreenPlaceholder({ path, children }: { path: string; children?: ReactNode }) {
@@ -13,7 +14,9 @@ export function ScreenPlaceholder({ path, children }: { path: string; children?:
         {screen.number !== undefined && <span className="font-mono text-xs text-muted-foreground">Screen {screen.number}</span>}
       </div>
       <p className="m-0 text-[13px] text-muted-foreground">{screen.purpose}</p>
-      <div className="rounded-md border border-dashed border-border bg-card p-6 text-[13px] text-muted-foreground">Coming soon.</div>
+      <div className="rounded-md border border-dashed border-border bg-card p-6 text-[13px] text-muted-foreground">
+        {isShipped(screen.stage) ? `Being built in Stage ${screen.stage}.` : `Coming in Stage ${screen.stage}.`}
+      </div>
       {children}
     </div>
   );

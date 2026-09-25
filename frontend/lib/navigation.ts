@@ -1,4 +1,5 @@
 import type { JobTitle } from "./jobTitles";
+import { screenForPath } from "./screens";
 
 export type NavIcon =
   | "layout-dashboard" | "users" | "inbox" | "file-text" | "eye-off" | "folder-kanban"
@@ -39,8 +40,17 @@ function allows(item: NavItem, jobTitle: JobTitle): boolean {
   return item.jobTitles.includes(jobTitle);
 }
 
-export function navigationFor(jobTitle: JobTitle): { main: NavItem[]; admin: NavItem[] } {
-  return { main: MAIN_NAV.filter((item) => allows(item, jobTitle)), admin: ADMIN_NAV.filter((item) => allows(item, jobTitle)) };
+/** The stage that ships a nav item's screen (design doc §15). */
+export function stageOf(item: NavItem): number {
+  const screen = screenForPath(item.href);
+  if (!screen) throw new Error(`No screen for nav item ${item.href}`);
+  return screen.stage;
+}
+
+/** The items a Job Title may use, limited to screens `visible` accepts (by stage). */
+export function navigationFor(jobTitle: JobTitle, visible: (stage: number) => boolean = () => true): { main: NavItem[]; admin: NavItem[] } {
+  const show = (item: NavItem) => allows(item, jobTitle) && visible(stageOf(item));
+  return { main: MAIN_NAV.filter(show), admin: ADMIN_NAV.filter(show) };
 }
 
 /** The nav item a path belongs to: its first segment ("/patients/x/summary" → patients). */

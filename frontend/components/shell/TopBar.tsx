@@ -15,7 +15,7 @@ function initials(name: string): string {
 
 export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const router = useRouter();
-  const { signOut, theme, toggleTheme } = useViewer();
+  const { signOut, theme, toggleTheme, showUpcoming, toggleShowUpcoming } = useViewer();
   const user = useSignedInUser();
   const jobTitle = user.job_title;
 
@@ -45,6 +45,12 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       )}
       <div className="flex-1" />
       <EnvironmentBadge environment={ENVIRONMENT} />
+      {ENVIRONMENT === "dev" && (
+        <label className="flex h-8 flex-none cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md border border-dashed border-dev/50 px-2 text-xs text-dev">
+          <input type="checkbox" checked={showUpcoming} onChange={toggleShowUpcoming} className="accent-current" />
+          Show upcoming screens
+        </label>
+      )}
       <button aria-label="Toggle dark theme" onClick={toggleTheme} className="flex h-8 w-8 items-center justify-center rounded-md border border-border">
         {theme === "dark" ? <Sun aria-hidden className="h-[15px] w-[15px]" /> : <Moon aria-hidden className="h-[15px] w-[15px]" />}
       </button>

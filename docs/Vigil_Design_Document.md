@@ -1068,8 +1068,9 @@ GET    /auth/me                             The signed-in User (name, Job Title,
 GET    /auth/dev-login/users                DEV ONLY: active Users you can sign in as
 POST   /auth/dev-login                      DEV ONLY: sign in as a chosen User (routes not registered elsewhere; startup fails if enabled)
 GET    /users                               List Users (Job Title, 2FA status, active)
-POST   /users                               Create User
-PATCH  /users/{id}                          Update Job Title / deactivate / link Provider
+POST   /users                               Create User (records the Job Title granted as a Verification)
+GET    /users/{id}                          One User and their audit trail (Verifications about them)
+PATCH  /users/{id}                          Update Job Title / deactivate (reason required) / reactivate / link Provider
 POST   /users/{id}/reset-2fa
 
 # Practice, Providers & Care Team

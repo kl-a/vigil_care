@@ -10,7 +10,7 @@ export const oncologyManifest: ModuleManifest = {
   patientTabs: [{
     segment: "treatment-options",
     label: "Treatment Options",
-    screen: { number: 11, title: "Treatment Options", purpose: "Standard-of-care options for one Cancer Diagnosis (eviQ + PBS)." },
+    screen: { number: 11, title: "Treatment Options", purpose: "Standard-of-care options for one Cancer Diagnosis (eviQ + PBS).", stage: 11 },
   }],
   sections: [
     { id: "cancer-diagnoses", slot: "patient-overview", title: "Cancer Diagnoses", order: 10,
