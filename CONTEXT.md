@@ -17,8 +17,12 @@ _Avoid_: Plugin (in domain language), department, add-on, section
 ### Patients & privacy
 
 **Practice**:
-A clinical practice using Vigil; the organisation that holds its Patients' records. The MVP serves one Practice.
+A clinical practice using Vigil; the organisation that holds its Patients' records. It may see Patients at several Sites. The MVP serves one Practice, but a User may belong to several.
 _Avoid_: Tenant, clinic, customer (in domain language)
+
+**Site**:
+A place where a Practice sees Patients (e.g. its rooms in Kogarah and a hospital clinic). Every Site belongs to one Practice and shares its Patients and records; one is the primary Site. Distances to trial sites are measured from each Site.
+_Avoid_: Location (unqualified), branch, clinic, Practice (for a second address of the same Practice)
 
 **Patient**:
 The actual person under the practice's care; the root of every clinical record.
@@ -39,11 +43,15 @@ _Avoid_: The device, local machine, on-prem, Practice Environment
 ### People
 
 **User**:
-A person who operates Vigil: a clinician, trial coordinator, secretary or developer admin. Every action in Vigil is attributed to a User.
+A person who operates Vigil, with one login. They work in a Practice through a Practice Membership, and may hold Memberships in several Practices; they act as one Practice at a time. Every action in Vigil is attributed to a User.
 _Avoid_: Account, operator
 
+**Practice Membership**:
+A User's standing at one Practice: their Job Title there, whether they're active there, and their own Provider entry in that Practice's directory. Each Practice manages only its own Memberships; deactivating someone at one Practice leaves their other Memberships alone.
+_Avoid_: Account, role, access (unqualified)
+
 **Job Title**:
-A User's role: clinician, trial coordinator, secretary or developer admin. Recorded as it stood at the time of every Verification. A developer admin configures and supports Vigil (Users, settings, troubleshooting) but can never see Patient data or verify anything.
+A User's role at a Practice (held on their Practice Membership): clinician, trial coordinator, secretary or developer admin. Recorded as it stood at the time of every Verification. A developer admin configures and supports Vigil (Users, settings, troubleshooting) but can never see Patient data or verify anything.
 _Avoid_: Role (reserved for Care Team roles), permission level
 
 **Provider**:
