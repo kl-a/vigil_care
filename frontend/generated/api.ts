@@ -169,7 +169,8 @@ export interface paths {
         get: operations["patient_detail_patients__patient_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Remove Patient */
+        delete: operations["remove_patient_patients__patient_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1236,6 +1237,39 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PatientDetail"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_patient_patients__patient_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

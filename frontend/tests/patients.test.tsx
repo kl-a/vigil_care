@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ usePathname: () => "/patients", useRouter: () => ({ replace: vi.fn(), push }), notFound: vi.fn() }));
 
-const patients = vi.hoisted(() => ({ listPatients: vi.fn(), fetchPatient: vi.fn(), createPatient: vi.fn(), changeIdentity: vi.fn() }));
+const patients = vi.hoisted(() => ({ listPatients: vi.fn(), fetchPatient: vi.fn(), createPatient: vi.fn(), changeIdentity: vi.fn(), removePatient: vi.fn() }));
 vi.mock("@/lib/patients", async (importOriginal) => ({ ...(await importOriginal<object>()), ...patients }));
 
 import PatientsPage from "@/app/(app)/patients/page";
@@ -128,6 +128,26 @@ describe("Patient header and Overview", () => {
     expect(latest).toHaveTextContent("Mobile: 0491 570 100 → 0491 570 156");
     expect(latest).toHaveTextContent("Jordan Park (synthetic) (Secretary)");
     expect(created).toHaveTextContent("Patient created");
+  });
+
+  it("removes a Patient with a reason, then goes back to the Patient List", async () => {
+    patients.removePatient.mockResolvedValue(undefined);
+    renderPatient();
+    fireEvent.click(await screen.findByRole("button", { name: "Remove Patient" }));
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveTextContent("Nothing is erased");
+    const confirm = within(dialog).getByRole("button", { name: "Remove Patient" });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText("Reason (required)"), { target: { value: "Duplicate record" } });
+    fireEvent.click(confirm);
+    await waitFor(() => expect(patients.removePatient).toHaveBeenCalledWith("pt-1", "Duplicate record"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/patients"));
+  });
+
+  it("says who removed a Patient and why when their page is opened", async () => {
+    patients.fetchPatient.mockRejectedValue(new Error("This Patient was removed by Jordan Park (synthetic) (Secretary) on 25 Sep 2026: Duplicate record"));
+    renderPatient();
+    expect(await screen.findByRole("alert")).toHaveTextContent("removed by Jordan Park (synthetic) (Secretary) on 25 Sep 2026: Duplicate record");
   });
 
   it("says so when the Patient doesn't exist", async () => {

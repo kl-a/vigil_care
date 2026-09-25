@@ -9,7 +9,8 @@ the clear.
 import base64
 import json
 import uuid
-from typing import Any
+from typing import Any, NoReturn
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import Select, or_, select, text
 from sqlalchemy.orm import Session
@@ -19,6 +20,7 @@ from app.audit.service import Actor
 from app.core.crypto import FieldCipher
 from app.core.changes import blank_to_none, changed_fields
 from app.core.permissions import require
+from app.core.vocabulary import JOB_TITLE_LABEL
 from app.modules.accounts.service import display_names
 from app.modules.patients.models import Patient
 from app.modules.patients.models import PatientIdentity
@@ -37,8 +39,16 @@ REQUIRED = ("given_name", "family_name")
 PSEUDONYM_PREFIX = "VG-"
 
 
+# Dates people read are the Practice's (Australia; one time zone until Sites span more than one).
+PRACTICE_TIME_ZONE = ZoneInfo("Australia/Sydney")
+
+
 class PatientNotFound(LookupError):
     """No such Patient in the actor's Practice."""
+
+
+class PatientRemoved(LookupError):
+    """The Patient was soft-deleted (#17): says who removed them, when and why."""
 
 
 def field_context(field: str, patient_id: uuid.UUID) -> str:
@@ -100,8 +110,25 @@ def _patients(practice_id: uuid.UUID) -> Select[Patient, PatientIdentity]:
 def _patient(db: Session, actor: Actor, patient_id: uuid.UUID) -> tuple[Patient, PatientIdentity]:
     row = db.execute(_patients(actor.practice_id).where(Patient.id == patient_id)).one_or_none()
     if row is None:
-        raise PatientNotFound()
+        _explain_missing(db, actor, patient_id)
     return row[0], row[1]
+
+
+def _explain_missing(db: Session, actor: Actor, patient_id: uuid.UUID) -> NoReturn:
+    removed = db.scalars(
+        select(Patient)
+        .where(Patient.id == patient_id, Patient.practice_id == actor.practice_id, Patient.deleted_at.is_not(None))
+        .execution_options(include_deleted=True)
+    ).one_or_none()
+    if removed is None or removed.deleted_at is None:
+        raise PatientNotFound()
+    removal = next((e for e in audit.history(db, actor.practice_id, PATIENT_SUBJECT, patient_id) if e.action == "delete"), None)
+    by = "someone"
+    if removal is not None:
+        name = display_names(db, {removal.user_id}).get(removal.user_id, "Unknown User")
+        by = f"{name} ({JOB_TITLE_LABEL[removal.job_title_at_time]})"
+    when = removed.deleted_at.astimezone(PRACTICE_TIME_ZONE).strftime("%-d %b %Y")
+    raise PatientRemoved(f"This Patient was removed by {by} on {when}: {removed.deleted_reason}")
 
 
 def _next_pseudonym(db: Session) -> str:
@@ -194,3 +221,10 @@ def change_identity(db: Session, cipher: FieldCipher, actor: Actor, patient_id: 
             _store(cipher, identity, field, value)
         db.flush()
     return patient_detail(db, cipher, actor, patient.id)
+
+
+def remove_patient(db: Session, actor: Actor, patient_id: uuid.UUID, reason: str) -> None:
+    """Soft delete (#17): hidden from lists and search, never erased; the reason is on the Verification."""
+    require(actor.job_title, "verify_patient_identity")
+    patient, _ = _patient(db, actor, patient_id)
+    audit.soft_delete(db, actor, patient, subject_table=PATIENT_SUBJECT, reason=reason)

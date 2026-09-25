@@ -36,6 +36,10 @@ export const createPatient = (patient: NewPatient) =>
 export const changeIdentity = (id: string, change: IdentityChange) =>
   request<PatientDetail>(`/patients/${id}/identity`, { method: "PATCH", body: JSON.stringify(change) });
 
+/** Soft delete (#17): hidden from lists and search, never erased. */
+export const removePatient = (id: string, reason: string) =>
+  request<void>(`/patients/${id}`, { method: "DELETE", body: JSON.stringify({ reason }) });
+
 /** "03/04/1962 (64)": Australian date order, with age in whole years. */
 export function formatDob(dob: string | null | undefined, today: Date = new Date()): string {
   if (!dob) return "—";
