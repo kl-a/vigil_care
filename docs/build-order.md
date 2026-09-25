@@ -50,8 +50,8 @@
 | 1 | [#8](https://github.com/kl-a/vigil_care/issues/8) | Patients with encrypted Patient Identity (includes the key interface) | #6, #24 | ✅ Done ([PR #28](https://github.com/kl-a/vigil_care/pull/28)) |
 | 1 | [#7](https://github.com/kl-a/vigil_care/issues/7) | Provider directory | #6, #24 | ✅ Done ([PR #28](https://github.com/kl-a/vigil_care/pull/28)) |
 | 1 | [#25](https://github.com/kl-a/vigil_care/issues/25) | Sites: where a Practice sees Patients | #14, #24 | ✅ Done ([PR #28](https://github.com/kl-a/vigil_care/pull/28)) |
-| 2 | [#17](https://github.com/kl-a/vigil_care/issues/17) | Soft-delete a Patient | #8 | 🔨 Built (`stage-2-finish`) |
-| 2 | [#9](https://github.com/kl-a/vigil_care/issues/9) | Care Team | #8, #7 | 🔨 Built (`stage-2-finish`) |
+| 2 | [#17](https://github.com/kl-a/vigil_care/issues/17) | Soft-delete a Patient | #8 | ✅ Done ([PR #29](https://github.com/kl-a/vigil_care/pull/29)) |
+| 2 | [#9](https://github.com/kl-a/vigil_care/issues/9) | Care Team | #8, #7 | ✅ Done ([PR #29](https://github.com/kl-a/vigil_care/pull/29)) |
 
 ### Stage 3 · PBS & Support Views
 
@@ -61,7 +61,7 @@ This stage can run alongside Stage 2.
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | ⏭️ Ready |
+| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | 🔨 Built (`stage-3`) |
 | 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | ⏳ Blocked |
 | 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | ⏳ Blocked |
 | 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | ⏳ Blocked |
@@ -95,14 +95,14 @@ flowchart LR
     T16[#16 built screens only ✅] --> S1((Stage 1 demo))
     T14 --> S1
     T15 --> S1
-    T24 --> T8[#8 Patients ✅] --> T17[#17 soft delete 🔨]
+    T24 --> T8[#8 Patients ✅] --> T17[#17 soft delete ✅]
     T24 --> T7[#7 Providers ✅]
     T24 --> T25[#25 Sites ✅] --> S2
-    T8 --> T9[#9 Care Team 🔨]
+    T8 --> T9[#9 Care Team ✅]
     T7 --> T9
     T17 --> S2((Stage 2 demo))
     T9 --> S2
-    T24 --> T18[#18 job queue] --> T19[#19 PBS Refresh] --> T20[#20 PBS Lookup]
+    T24 --> T18[#18 job queue 🔨] --> T19[#19 PBS Refresh] --> T20[#20 PBS Lookup]
     T18 --> T10[#10 Support Views]
     T20 --> S3((Stage 3 demo))
     T10 --> S3

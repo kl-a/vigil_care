@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { StatusPill, type Tone } from "@/components/ui/StatusPill";
 import { messageOf } from "@/lib/api";
+import { Refreshes } from "@/components/system/Refreshes";
 import { fetchHealth, type Health } from "@/lib/system";
 
 function Check({ label, value, tone, detail }: { label: string; value: string; tone: Tone; detail: string }) {
@@ -68,6 +69,7 @@ export default function SystemStatusPage() {
           </div>
         </>
       )}
+      <Refreshes />
     </div>
   );
 }

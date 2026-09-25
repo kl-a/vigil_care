@@ -178,8 +178,7 @@ def test_the_oncology_module_and_fact_kinds_are_registered(app_db: Any) -> None:
 
 
 def test_a_job_of_an_unknown_kind_is_rejected(seed: Seed, rejects: Rejects) -> None:
-    seed.insert("job_kind", key="refresh_pbs", description="Refresh the PBS Schedule")
-    seed.insert("job", kind="refresh_pbs")
+    seed.insert("job", kind="refresh_pbs")  # registered by migration 0007
     with rejects(ForeignKeyViolation):
         seed.insert("job", kind="mine_bitcoin")
 

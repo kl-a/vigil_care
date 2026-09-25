@@ -89,6 +89,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Job Status */
+        get: operations["job_status_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/modules": {
         parameters: {
             query?: never;
@@ -294,6 +311,24 @@ export interface paths {
         get: operations["provider_patients_providers__provider_id__patients_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/refreshes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Refreshes */
+        get: operations["list_refreshes_refreshes_get"];
+        put?: never;
+        /** Start Refresh */
+        post: operations["start_refresh_refreshes_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -674,6 +709,47 @@ export interface components {
             /** Reason */
             reason: string | null;
         };
+        /** JobStepView */
+        JobStepView: {
+            /** Finished At */
+            finished_at: string | null;
+            /** Name */
+            name: string;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+        };
+        /**
+         * JobView
+         * @description A Job's progress, as Support Views show it: IDs, kinds, states, counts and timings only (§6.4).
+         */
+        JobView: {
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Last Error */
+            last_error: string | null;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Status */
+            status: string;
+            /** Steps */
+            steps: components["schemas"]["JobStepView"][];
+        };
         /** ModuleChange */
         ModuleChange: {
             /** Is Active */
@@ -989,6 +1065,17 @@ export interface components {
             title: string | null;
         };
         /**
+         * RefreshView
+         * @description A Refresh Job Kind and its most recent run.
+         */
+        RefreshView: {
+            /** Description */
+            description: string;
+            /** Kind */
+            kind: string;
+            last_job: components["schemas"]["JobView"] | null;
+        };
+        /**
          * Removal
          * @description Soft-deleting anything needs a reason (design doc §6.2).
          */
@@ -1032,6 +1119,11 @@ export interface components {
             lng: number | null;
             /** Name */
             name: string;
+        };
+        /** StartRefresh */
+        StartRefresh: {
+            /** Kind */
+            kind: string;
         };
         /**
          * UserChange
@@ -1232,6 +1324,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    job_status_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1812,6 +1935,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProviderPatientRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_refreshes_refreshes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshView"][];
+                };
+            };
+        };
+    };
+    start_refresh_refreshes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartRefresh"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"];
                 };
             };
             /** @description Validation Error */

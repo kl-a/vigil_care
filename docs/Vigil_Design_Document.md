@@ -618,7 +618,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `fact_kind` | Every kind of Extracted Fact, and who contributed it | `key` (unique, e.g. `lab_result`, `biomarker`), `module_key` (FK → `specialty_module.key`, null = Core), `record_table` (the Clinical Record table an accepted fact lands in) |
-| `job_kind` | Every Job Kind. A Job of an unknown kind is rejected by the database. | `key` (unique, e.g. `ingest_document`, `refresh_pbs`), `module_key` (FK, null = Core), `description` |
+| `job_kind` | Every Job Kind. A Job of an unknown kind is rejected by the database. Registered by migrations (the Core's in 0007; each module's in its own), and each has a handler in `app/jobs.py`. A key starting `refresh_` is a Refresh, which a developer admin can start. | `key` (unique, e.g. `ingest_document`, `refresh_pbs`), `module_key` (FK, null = Core), `description` |
 | `job` | One Job on the durable queue (§3). **Payload holds IDs only.** | `kind` (FK → `job_kind.key`), `status`, `practice_id` (nullable: null = system-wide, e.g. a Refresh), `payload` (JSONB, IDs only), `priority`, `attempts`, `max_attempts`, `run_after`, `locked_at`, `locked_by` (worker ID), `last_error` (IDs only), `pipeline_run_id` (nullable), `finished_at`. The queue refuses to enqueue or run a Job whose Job Kind's module isn't active for its Practice. |
 | `job_step` | One resumable step of a Job | `job_id` (`ON DELETE CASCADE`), `sequence`, `name`, `status`, `started_at`, `finished_at`, `output` (JSONB, IDs only), `error_detail` (IDs only) |
 
@@ -1295,7 +1295,7 @@ vigil/
 │   │   │   └── seams/               # ─── Swappable infrastructure (ADR 0003) ───
 │   │   │       ├── storage.py       # LocalDiskStorage → BlobStorage later
 │   │   │       ├── keys.py          # LocalKeystore → KeyVault later
-│   │   │       ├── queue.py         # DbJobQueue → managed queue later
+│   │   │       ├── queue.py         # JobQueue interface (IDs-only payloads); a managed queue later
 │   │   │       ├── identity.py      # LocalAccounts (+TOTP) / DevLogin → Entra ID later
 │   │   │       └── vlm_worker.py    # HTTP client for the VLM worker
 │   │   │
@@ -1307,9 +1307,11 @@ vigil/
 │   │   │   └── versioning.py
 │   │   │
 │   │   ├── orchestrator/
-│   │   │   ├── pipelines.py         # Ingestion, redaction job, matching, reporting
-│   │   │   ├── jobs.py
-│   │   │   └── scheduler.py         # PBS / eviQ / trial refresh; backup
+│   │   │   ├── queue.py             # DbJobQueue: claims with FOR UPDATE SKIP LOCKED, retries, resumes
+│   │   │   ├── handlers.py          # A Job Kind's steps; schedules (PBS monthly, eviQ/trials weekly; backup)
+│   │   │   ├── worker.py            # The worker service: runs Jobs, enqueues scheduled ones
+│   │   │   ├── service.py, router.py  # Refreshes (start: developer admin) and Job progress
+│   │   │   └── pipelines.py         # Ingestion, redaction job, matching, reporting (later stages)
 │   │   │
 │   │   ├── modules/
 │   │   │   ├── accounts/            # User, Practice Membership, login, 2FA, reauth

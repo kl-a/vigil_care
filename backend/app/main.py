@@ -13,6 +13,8 @@ from app.modules.patients import router as patients
 from app.modules.practice import router as practice
 from app.modules.practice import care_team_router, providers_router, sites_router
 from app.modules.registry import router as specialty_modules
+from app.orchestrator import router as jobs
+from app.orchestrator.queue import DbJobQueue
 
 SESSION_HOURS = 12
 
@@ -34,6 +36,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.state.database_check = database_check or postgres_check(settings.database_url)
     app.state.sessionmaker = session_factory(settings.database_url)
     app.state.field_cipher = FieldCipher(keystore(settings))
+    app.state.job_queue = DbJobQueue(app.state.sessionmaker)
     # Signed cookie holding only the User id and the Practice they act in.
     # Stage 13 adds the inactivity lock and HTTPS-only cookies.
     app.add_middleware(
@@ -53,6 +56,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(providers_router.router)
     app.include_router(patients.router)
     app.include_router(care_team_router.router)
+    app.include_router(jobs.router)
     app.include_router(specialty_modules.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)
