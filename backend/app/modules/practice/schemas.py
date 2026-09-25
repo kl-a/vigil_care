@@ -3,6 +3,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
+from app.modules.practice.models import ProviderSpecialty
+
 Text = Annotated[str, StringConstraints(strip_whitespace=True, max_length=200)]
 
 
@@ -69,3 +71,54 @@ class SiteChange(BaseModel):
     lat: Latitude | None = None
     lng: Longitude | None = None
     is_primary: Literal[True] | None = None
+
+
+Email = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^([^@\s]+@[^@\s]+\.[^@\s]+)?$")]
+
+
+class ProviderRow(BaseModel):
+    """A clinician in the Practice's directory (#7): internal, or an external referrer, specialist or contact."""
+
+    id: uuid.UUID
+    display_name: str
+    title: str | None
+    first_name: str
+    last_name: str
+    provider_number: str | None
+    specialty: ProviderSpecialty
+    is_internal: bool
+    organisation: str | None
+    phone: str | None
+    email: str | None
+    fax: str | None
+    notes: str | None
+
+
+class NewProvider(BaseModel):
+    title: Text | None = None
+    first_name: Name
+    last_name: Name
+    provider_number: Text | None = None
+    specialty: ProviderSpecialty
+    is_internal: bool = False
+    organisation: Text | None = None
+    phone: Text | None = None
+    email: Email | None = None
+    fax: Text | None = None
+    notes: Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)] | None = None
+
+
+class ProviderChange(BaseModel):
+    """Only the fields sent are changed. Empty text clears an optional field."""
+
+    title: Text | None = None
+    first_name: Name | None = None
+    last_name: Name | None = None
+    provider_number: Text | None = None
+    specialty: ProviderSpecialty | None = None
+    is_internal: bool | None = None
+    organisation: Text | None = None
+    phone: Text | None = None
+    email: Email | None = None
+    fax: Text | None = None
+    notes: Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)] | None = None

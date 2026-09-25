@@ -23,12 +23,13 @@ from app.core.database import session_factory
 from app.core.vocabulary import JobTitle
 from app.db import metadata  # noqa: F401  (registers every table, so foreign keys resolve)
 from app.modules.accounts.models import PracticeMembership, User
-from app.modules.practice.models import Practice, Site
+from app.modules.practice.models import Practice, Provider, ProviderSpecialty, Site
 from app.modules.registry.models import PracticeModule
 
 NAMESPACE = uuid.UUID("5b0f3c1e-0d6a-4a5e-9c1b-7a1d2c3e4f50")
 PRACTICE_ID = uuid.uuid5(NAMESPACE, "practice")  # Harbourside, the main demo Practice
 NORTHSIDE_ID = uuid.uuid5(NAMESPACE, "practice:northside")
+HARBOURSIDE_NAME = "Harbourside Oncology (synthetic)"
 # Not a password hash: nobody can sign in with a password until Stage 13, and then only after enrolment.
 NO_PASSWORD = "!demo-user-dev-login-only"
 
@@ -58,6 +59,31 @@ DEVELOPER_ADMIN = next(user for user in USERS if user.job_title == "developer_ad
 CLINICIAN = next(user for user in USERS if user.job_title == "clinician")
 
 
+@dataclass(frozen=True)
+class DemoProvider:
+    title: str | None
+    first_name: str
+    last_name: str
+    specialty: ProviderSpecialty
+    organisation: str
+    is_internal: bool = False
+    notes: str | None = None
+
+    @property
+    def id(self) -> uuid.UUID:
+        return uuid.uuid5(NAMESPACE, f"provider:{self.first_name}:{self.last_name}")
+
+
+# Frontend brief §10, plus Dr Rivera's own entry. Provider numbers are left blank: real ones identify real people.
+TREATING_ONCOLOGIST = DemoProvider("Dr", "Alex", "Rivera (synthetic)", "medical_oncology", HARBOURSIDE_NAME, is_internal=True)
+PROVIDERS = (
+    TREATING_ONCOLOGIST,
+    DemoProvider("Dr", "Morgan", "Grey (synthetic)", "general_practice", "Example Family Practice", notes="Referring GP"),
+    DemoProvider("Dr", "Taylor", "Quinn (synthetic)", "surgery", "Example Hospital"),
+    DemoProvider(None, "Riley", "Hart (synthetic)", "other", "Example Cancer Centre", notes="Trial-site contact"),
+)
+
+
 def load(settings: Settings) -> None:
     if settings.environment != "dev":
         raise DemoDataRefused(f"Demo data is for dev only, not '{settings.environment}'.")
@@ -71,13 +97,16 @@ def load(settings: Settings) -> None:
         _membership(db, NORTHSIDE_ID, CLINICIAN, "clinician")
         for site in SITES:
             _site(db, site)
+        for provider in PROVIDERS:
+            _provider(db, provider)
+        _link_own_provider(db, CLINICIAN, TREATING_ONCOLOGIST)
         _activate_oncology(db)
 
 
 # Frontend brief §10. 02 5550 xxxx is reserved for fiction, example.com never resolves, and an ABN of all
 # zeros is never issued.
 HARBOURSIDE = {
-    "name": "Harbourside Oncology (synthetic)",
+    "name": HARBOURSIDE_NAME,
     "address": "1 Example St, Sydney NSW 2000",
     "phone": "02 5550 0100",
     "fax": "02 5550 0101",
@@ -144,6 +173,33 @@ def _site(db: Session, site: DemoSite) -> None:
         )
     )
     db.flush()
+
+
+def _provider(db: Session, provider: DemoProvider) -> None:
+    if db.get(Provider, provider.id) is not None:
+        return
+    db.add(
+        Provider(
+            id=provider.id,
+            practice_id=PRACTICE_ID,
+            title=provider.title,
+            first_name=provider.first_name,
+            last_name=provider.last_name,
+            specialty=provider.specialty,
+            is_internal=provider.is_internal,
+            organisation=provider.organisation,
+            notes=provider.notes,
+        )
+    )
+    db.flush()
+
+
+def _link_own_provider(db: Session, user: DemoUser, provider: DemoProvider) -> None:
+    membership = db.scalars(
+        select(PracticeMembership).where(PracticeMembership.practice_id == PRACTICE_ID, PracticeMembership.user_id == user.id)
+    ).one()
+    if membership.provider_id is None:
+        membership.provider_id = provider.id
 
 
 def _user(db: Session, user: DemoUser) -> None:

@@ -54,9 +54,9 @@ class Seed:
 
     def provider(self, practice_id: uuid.UUID, **values: Any) -> uuid.UUID:
         values.setdefault("specialty", "medical_oncology")
-        return self.insert(
-            "provider", practice_id=practice_id, first_name="Syn", last_name="Thetic", **values
-        )
+        values.setdefault("first_name", "Syn")
+        values.setdefault("last_name", "Thetic")
+        return self.insert("provider", practice_id=practice_id, **values)
 
     def patient(self, practice_id: uuid.UUID, **values: Any) -> uuid.UUID:
         values.setdefault("pseudonym", f"VG-{uuid.uuid4().hex[:8]}")

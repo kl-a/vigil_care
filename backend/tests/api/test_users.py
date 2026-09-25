@@ -128,3 +128,33 @@ def test_job_titles_and_usernames_are_validated(sign_in: SignIn) -> None:
     assert client.post("/users", json=new_user(job_title="superuser")).status_code == 422
     assert client.post("/users", json=new_user(username="Has Spaces")).status_code == 422
     assert client.post("/users", json=new_user(display_name=" ")).status_code == 422
+
+
+def test_a_user_is_linked_to_their_own_provider_record(sign_in: SignIn, committed: Seed) -> None:
+    client, ids = sign_in("developer_admin")
+    doctor = client.post("/users", json=new_user(job_title="clinician")).json()
+    provider = committed.provider(ids["practice"], title="Dr", first_name="Riley", last_name="Hart")
+
+    linked = client.patch(f"/users/{doctor['id']}", json={"provider_id": str(provider)})
+    assert linked.status_code == 200
+    assert (linked.json()["provider_id"], linked.json()["provider_name"]) == (str(provider), "Dr Riley Hart")
+    latest = client.get(f"/users/{doctor['id']}").json()["history"][0]
+    assert (latest["before"], latest["after"]) == ({"provider_id": None}, {"provider_id": str(provider)})
+
+    unlinked = client.patch(f"/users/{doctor['id']}", json={"provider_id": None})
+    assert (unlinked.json()["provider_id"], unlinked.json()["provider_name"]) == (None, None)
+
+
+def test_you_may_link_your_own_provider_record(sign_in: SignIn, committed: Seed) -> None:
+    client, ids = sign_in("clinician")
+    provider = committed.provider(ids["practice"])
+    assert client.patch(f"/users/{ids['user']}", json={"provider_id": str(provider)}).status_code == 200
+
+
+def test_only_this_practices_live_providers_can_be_linked(sign_in: SignIn, committed: Seed) -> None:
+    client, ids = sign_in("secretary")
+    user = client.post("/users", json=new_user()).json()
+    elsewhere = committed.provider(committed.practice())
+    refused = client.patch(f"/users/{user['id']}", json={"provider_id": str(elsewhere)})
+    assert refused.status_code == 422
+    assert refused.json()["detail"] == "No such Provider in this Practice."

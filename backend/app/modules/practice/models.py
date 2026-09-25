@@ -3,13 +3,14 @@
 import uuid
 from datetime import date
 from decimal import Decimal
+from typing import Literal, get_args
 
-from sqlalchemy import Index, text
+from sqlalchemy import Index, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import PracticeEntity, SharedEntity, allowed, practice_fk
 
-PROVIDER_SPECIALTIES = (
+ProviderSpecialty = Literal[
     "medical_oncology",
     "radiation_oncology",
     "surgery",
@@ -18,7 +19,8 @@ PROVIDER_SPECIALTIES = (
     "pathology",
     "radiology",
     "other",
-)
+]
+PROVIDER_SPECIALTIES: tuple[str, ...] = get_args(ProviderSpecialty)
 CARE_TEAM_ROLES = (
     "treating_oncologist",
     "referring_gp",
@@ -79,7 +81,7 @@ class Provider(PracticeEntity):
     first_name: Mapped[str]
     last_name: Mapped[str]
     provider_number: Mapped[str | None]
-    specialty: Mapped[str] = mapped_column(info=allowed(*PROVIDER_SPECIALTIES))
+    specialty: Mapped[ProviderSpecialty] = mapped_column(Text, info=allowed(*PROVIDER_SPECIALTIES))
     is_internal: Mapped[bool] = mapped_column(server_default=text("false"))
     organisation: Mapped[str | None]
     phone: Mapped[str | None]

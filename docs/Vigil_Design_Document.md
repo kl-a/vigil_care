@@ -718,6 +718,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
 | **Manage Users** (create, deactivate, reset password/2FA, change Job Title) at this Practice: its Practice Memberships only | ✅ | ❌ | ✅ | ✅ |
+| **Manage the Provider directory** (add, edit, soft-delete Providers). Everyone signed in reads it, so User Management can link a User to their own Provider. | ✅ | ✅ | ✅ | ❌ |
 | **Activate / deactivate Specialty Modules** for the Practice | ❌ | ❌ | ❌ | ✅ |
 | Change Settings | ✅ | ❌ | ❌ | ✅ |
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |

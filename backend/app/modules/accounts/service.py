@@ -23,6 +23,7 @@ from app.modules.accounts.schemas import (
     UserDetail,
     UserRow,
 )
+from app.modules.practice.providers import provider_names
 from app.modules.practice.service import practice_names
 
 
@@ -115,11 +116,15 @@ class DisplayNameNeeded(ValueError):
     """A brand new login needs a display name; someone with a login elsewhere brings their own."""
 
 
+class NoSuchProvider(ValueError):
+    """The Provider to link isn't a live Provider in this Practice's directory."""
+
+
 class CantChangeYourself(ValueError):
     """Your own Job Title and active status are changed by someone else, so nobody locks themselves out."""
 
 
-def _row(user: User, membership: PracticeMembership) -> UserRow:
+def _row(user: User, membership: PracticeMembership, provider_name: str | None = None) -> UserRow:
     return UserRow(
         id=user.id,
         username=user.username,
@@ -128,7 +133,18 @@ def _row(user: User, membership: PracticeMembership) -> UserRow:
         is_active=membership.is_active,
         last_login_at=membership.last_login_at,
         provider_id=membership.provider_id,
+        provider_name=provider_name,
     )
+
+
+def _rows(db: Session, practice_id: uuid.UUID, rows: list[tuple[User, PracticeMembership]]) -> list[UserRow]:
+    """With each linked Provider's name (none if that Provider has since been removed)."""
+    linked = {membership.provider_id for _, membership in rows if membership.provider_id is not None}
+    names = provider_names(db, practice_id, linked) if linked else {}
+    return [
+        _row(user, membership, names.get(membership.provider_id) if membership.provider_id else None)
+        for user, membership in rows
+    ]
 
 
 def _membership(db: Session, practice_id: uuid.UUID, user_id: uuid.UUID) -> PracticeMembership:
@@ -144,7 +160,7 @@ def list_users(db: Session, actor: CurrentUser) -> list[UserRow]:
     """The current Practice's Memberships. Nothing about anyone's other Practices."""
     require(actor.job_title, "manage_users")
     rows = db.execute(_memberships().where(PracticeMembership.practice_id == actor.practice_id).order_by(User.display_name))
-    return [_row(user, membership) for user, membership in rows]
+    return _rows(db, actor.practice_id, [(user, membership) for user, membership in rows])
 
 
 def user_detail(db: Session, actor: CurrentUser, user_id: uuid.UUID) -> UserDetail:
@@ -168,7 +184,8 @@ def user_detail(db: Session, actor: CurrentUser, user_id: uuid.UUID) -> UserDeta
         )
         for e in entries
     ]
-    return UserDetail(**_row(user, membership).model_dump(), history=history)
+    [row] = _rows(db, actor.practice_id, [(user, membership)])
+    return UserDetail(**row.model_dump(), history=history)
 
 
 def create_user(db: Session, actor: CurrentUser, new: NewUser) -> UserRow:
@@ -212,8 +229,16 @@ def change_user(db: Session, actor: CurrentUser, user_id: uuid.UUID, change: Use
     if change.is_active is not None and change.is_active != membership.is_active:
         _record_change(db, actor, user, {"is_active": membership.is_active}, {"is_active": change.is_active}, reason)
         membership.is_active = change.is_active
+    # Sent as null to unlink, so it's "was it sent", not "is it None".
+    if "provider_id" in change.model_fields_set and change.provider_id != membership.provider_id:
+        if change.provider_id is not None and not provider_names(db, actor.practice_id, {change.provider_id}):
+            raise NoSuchProvider("No such Provider in this Practice.")
+        before, after = (str(p) if p else None for p in (membership.provider_id, change.provider_id))
+        _record_change(db, actor, user, {"provider_id": before}, {"provider_id": after}, reason)
+        membership.provider_id = change.provider_id
     db.flush()
-    return _row(user, membership)
+    [row] = _rows(db, actor.practice_id, [(user, membership)])
+    return row
 
 
 def _record_change(

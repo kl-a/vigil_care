@@ -10,6 +10,8 @@ const users = vi.hoisted(() => ({
   fetchUser: vi.fn(),
 }));
 vi.mock("@/lib/users", async (importOriginal) => ({ ...(await importOriginal<object>()), ...users }));
+const providers = vi.hoisted(() => ({ listProviders: vi.fn() }));
+vi.mock("@/lib/providers", async (importOriginal) => ({ ...(await importOriginal<object>()), ...providers }));
 
 import UserManagementPage from "@/app/(app)/users/page";
 import UserPage from "@/app/(app)/users/[id]/page";
@@ -20,7 +22,7 @@ import { userWith } from "./fixtures";
 const me = userWith("secretary");
 const row = (overrides: Partial<UserRow>): UserRow => ({
   id: "u-1", username: "sam.lee", display_name: "Sam Lee (synthetic)", job_title: "trial_coordinator",
-  is_active: true, last_login_at: null, provider_id: null, ...overrides,
+  is_active: true, last_login_at: null, provider_id: null, provider_name: null, ...overrides,
 });
 
 async function renderPage(ui = <UserManagementPage />) {
@@ -30,6 +32,7 @@ async function renderPage(ui = <UserManagementPage />) {
 describe("User Management", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     users.listUsers.mockResolvedValue([row({}), row({ id: me.id, username: "jordan.park", display_name: me.display_name, job_title: "secretary" })]);
     users.changeUser.mockResolvedValue(row({}));
   });
@@ -97,6 +100,33 @@ describe("User Management", () => {
     fireEvent.change(within(form).getByLabelText("Job Title"), { target: { value: "clinician" } });
     fireEvent.submit(form);
     await waitFor(() => expect(users.createUser).toHaveBeenCalledWith({ username: "alex.rivera", job_title: "clinician" }));
+  });
+
+  it("shows each User's linked Provider record by name", async () => {
+    users.listUsers.mockResolvedValue([row({ provider_id: "p-1", provider_name: "Dr Riley Hart" })]);
+    await renderPage();
+    expect((await screen.findByText("Sam Lee (synthetic)")).closest("tr")).toHaveTextContent("Dr Riley Hart");
+  });
+
+  it("links a User to their own Provider record (Stage 2, shown as upcoming)", async () => {
+    window.localStorage.setItem("vigil.showUpcoming", "true");
+    providers.listProviders.mockResolvedValue([
+      { id: "p-1", display_name: "Dr Riley Hart", title: "Dr", first_name: "Riley", last_name: "Hart", provider_number: null, specialty: "medical_oncology", is_internal: true, organisation: null, phone: null, email: null, fax: null, notes: null },
+    ]);
+    await renderPage();
+    const sam = (await screen.findByText("Sam Lee (synthetic)")).closest("tr")!;
+    fireEvent.click(within(sam).getByRole("button", { name: "Link Provider" }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.change(await within(dialog).findByLabelText("Provider record"), { target: { value: "p-1" } });
+    fireEvent.click(within(dialog).getByRole("checkbox"));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Link" }));
+    await waitFor(() => expect(users.changeUser).toHaveBeenCalledWith("u-1", { provider_id: "p-1" }));
+  });
+
+  it("hides linking until Stage 2 ships", async () => {
+    await renderPage();
+    const sam = (await screen.findByText("Sam Lee (synthetic)")).closest("tr")!;
+    expect(within(sam).queryByRole("button", { name: "Link Provider" })).not.toBeInTheDocument();
   });
 
   it("shows why the backend refused", async () => {

@@ -14,6 +14,7 @@ function describe(entry: HistoryEntry): string {
   if (!entry.before && typeof after.job_title === "string") return `Added as ${label(after.job_title)}`;
   if ("job_title" in after) return `Job Title changed from ${label(before.job_title)} to ${label(after.job_title)}`;
   if ("is_active" in after) return after.is_active ? "Reactivated" : "Deactivated";
+  if ("provider_id" in after) return after.provider_id ? "Linked to a Provider record" : "Unlinked from their Provider record";
   return entry.action;
 }
 
@@ -45,7 +46,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
           <dl className="m-0 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1 text-[13px]">
             <dt className="text-muted-foreground">Username</dt><dd className="m-0 font-mono">{user.username}</dd>
             <dt className="text-muted-foreground">Last login</dt><dd className="m-0">{formatWhen(user.last_login_at)}</dd>
-            <dt className="text-muted-foreground">Provider record</dt><dd className="m-0">{user.provider_id ? "Linked" : "Not linked"}</dd>
+            <dt className="text-muted-foreground">Provider record</dt><dd className="m-0">{user.provider_name ?? "Not linked"}</dd>
           </dl>
           <section className="flex flex-col gap-2">
             <h2 className="m-0 text-sm font-semibold">Audit trail</h2>

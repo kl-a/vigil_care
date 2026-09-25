@@ -38,6 +38,16 @@ def _counts(database: DatabaseSettings) -> dict[str, Any]:
             "job_titles": conn.execute(
                 "SELECT array_agg(job_title ORDER BY job_title) FROM practice_membership WHERE practice_id = %s", [practice]
             ).fetchone(),
+            "providers": conn.execute(
+                "SELECT array_agg(specialty || CASE WHEN is_internal THEN ' (internal)' ELSE '' END ORDER BY specialty) FROM provider"
+                " WHERE practice_id = %s AND last_name LIKE '%%(synthetic)'",
+                [practice],
+            ).fetchone(),
+            "linked": conn.execute(
+                'SELECT p.last_name FROM practice_membership m JOIN "user" u ON u.id = m.user_id'
+                " JOIN provider p ON p.id = m.provider_id WHERE m.practice_id = %s AND u.username = 'alex.rivera'",
+                [practice],
+            ).fetchone(),
             "oncology": conn.execute("SELECT is_active FROM practice_module WHERE practice_id = %s AND module_key = 'oncology'", [practice]).fetchone(),
             "activations": conn.execute("SELECT count(*) FROM verification WHERE practice_id = %s AND action = 'activate_module'", [practice]).fetchone(),
         }
@@ -55,6 +65,8 @@ def test_demo_data_loads_two_practices_one_user_per_job_title_and_oncology(datab
     assert counts["sites"] == (["Example Hospital clinic", "Harbourside rooms (primary)"],)
     assert counts["unmarked_names"] == (0,)
     assert counts["job_titles"] == (["clinician", "developer_admin", "secretary", "trial_coordinator"],)
+    assert counts["providers"] == (["general_practice", "medical_oncology (internal)", "other", "surgery"],)
+    assert counts["linked"] == ("Rivera (synthetic)",)
     assert counts["oncology"] == (True,)
     assert counts["activations"] == (1,)
 

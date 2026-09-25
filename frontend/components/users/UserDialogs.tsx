@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { SignOffDialog } from "@/components/dialogs/SignOffDialog";
 import { FIELD } from "@/components/ui/styles";
+import { messageOf } from "@/lib/api";
 import { JOB_TITLES, JOB_TITLE_LABEL, type JobTitle } from "@/lib/jobTitles";
+import { listProviders, type ProviderRow } from "@/lib/providers";
 import type { UserChange, UserRow } from "@/lib/users";
 
 interface Props { user: UserRow; actor: string; onSubmit: (change: UserChange) => Promise<void>; onClose: () => void }
@@ -58,5 +60,39 @@ export function SetActiveDialog({ user, actor, onSubmit, onClose }: Props) {
           : "They'll be able to sign in again with their current Job Title."}
       </p>
     </ReasonDialog>
+  );
+}
+
+
+/** Screen 18 "linked Provider" (#7): the User's own entry in the Practice's Provider directory. A sign-off. */
+export function LinkProviderDialog({ user, actor, onSubmit, onClose }: Props) {
+  const [providers, setProviders] = useState<ProviderRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [providerId, setProviderId] = useState(user.provider_id ?? "");
+  useEffect(() => {
+    listProviders().then(setProviders).catch((reason: unknown) => setError(messageOf(reason)));
+  }, []);
+  return (
+    <SignOffDialog
+      title={`Link ${user.display_name} to their Provider record`}
+      actor={actor}
+      confirmLabel={providerId ? "Link" : "Unlink"}
+      canConfirm={providerId !== (user.provider_id ?? "")}
+      onConfirm={() => onSubmit({ provider_id: providerId || null })}
+      onClose={onClose}
+    >
+      <p className="m-0 text-[13px] text-muted-foreground">Their own entry in this Practice&apos;s Provider directory, so letters and Care Teams can name them.</p>
+      {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
+      {providers === null && !error && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Providers…</p>}
+      {providers && (
+        <label className="flex flex-col gap-1 text-xs font-medium">
+          Provider record
+          <select id="link-provider" value={providerId} onChange={(e) => setProviderId(e.target.value)} className={FIELD}>
+            <option value="">Not linked</option>
+            {providers.map((provider) => <option key={provider.id} value={provider.id}>{provider.display_name}</option>)}
+          </select>
+        </label>
+      )}
+    </SignOffDialog>
   );
 }

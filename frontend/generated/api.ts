@@ -158,6 +158,43 @@ export interface paths {
         patch: operations["change_practice_practice_patch"];
         trace?: never;
     };
+    "/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Providers */
+        get: operations["list_providers_providers_get"];
+        put?: never;
+        /** Add Provider */
+        post: operations["add_provider_providers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Provider Detail */
+        get: operations["provider_detail_providers__provider_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Provider */
+        delete: operations["delete_provider_providers__provider_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Provider */
+        patch: operations["change_provider_providers__provider_id__patch"];
+        trace?: never;
+    };
     "/sites": {
         parameters: {
             query?: never;
@@ -409,6 +446,37 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** NewProvider */
+        NewProvider: {
+            /** Email */
+            email?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** First Name */
+            first_name: string;
+            /**
+             * Is Internal
+             * @default false
+             */
+            is_internal: boolean;
+            /** Last Name */
+            last_name: string;
+            /** Notes */
+            notes?: string | null;
+            /** Organisation */
+            organisation?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Provider Number */
+            provider_number?: string | null;
+            /**
+             * Specialty
+             * @enum {string}
+             */
+            specialty: "medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other";
+            /** Title */
+            title?: string | null;
+        };
         /**
          * NewSite
          * @description The first Site is the primary; another becomes primary by choosing it (`SiteChange`).
@@ -480,6 +548,72 @@ export interface components {
             phone: string | null;
         };
         /**
+         * ProviderChange
+         * @description Only the fields sent are changed. Empty text clears an optional field.
+         */
+        ProviderChange: {
+            /** Email */
+            email?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Is Internal */
+            is_internal?: boolean | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Organisation */
+            organisation?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Provider Number */
+            provider_number?: string | null;
+            /** Specialty */
+            specialty?: ("medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other") | null;
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * ProviderRow
+         * @description A clinician in the Practice's directory (#7): internal, or an external referrer, specialist or contact.
+         */
+        ProviderRow: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string | null;
+            /** Fax */
+            fax: string | null;
+            /** First Name */
+            first_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Internal */
+            is_internal: boolean;
+            /** Last Name */
+            last_name: string;
+            /** Notes */
+            notes: string | null;
+            /** Organisation */
+            organisation: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Provider Number */
+            provider_number: string | null;
+            /**
+             * Specialty
+             * @enum {string}
+             */
+            specialty: "medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other";
+            /** Title */
+            title: string | null;
+        };
+        /**
          * Removal
          * @description Soft-deleting anything needs a reason (design doc §6.2).
          */
@@ -526,13 +660,16 @@ export interface components {
         };
         /**
          * UserChange
-         * @description Change a Job Title and/or activate or deactivate. Deactivating needs a reason.
+         * @description Change a Job Title, activate or deactivate, and/or link their own Provider record (null unlinks).
+         *     Deactivating needs a reason.
          */
         UserChange: {
             /** Is Active */
             is_active?: boolean | null;
             /** Job Title */
             job_title?: ("clinician" | "trial_coordinator" | "secretary" | "developer_admin") | null;
+            /** Provider Id */
+            provider_id?: string | null;
             /** Reason */
             reason?: string | null;
         };
@@ -558,6 +695,8 @@ export interface components {
             last_login_at: string | null;
             /** Provider Id */
             provider_id: string | null;
+            /** Provider Name */
+            provider_name: string | null;
             /** Username */
             username: string;
         };
@@ -584,6 +723,8 @@ export interface components {
             last_login_at: string | null;
             /** Provider Id */
             provider_id: string | null;
+            /** Provider Name */
+            provider_name: string | null;
             /** Username */
             username: string;
         };
@@ -835,6 +976,171 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PracticeDetails"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_providers_providers_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                specialty?: ("medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other") | null;
+                internal?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_provider_providers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProvider"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    provider_detail_providers__provider_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_provider_providers__provider_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_provider_providers__provider_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"];
                 };
             };
             /** @description Validation Error */
