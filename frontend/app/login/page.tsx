@@ -8,6 +8,10 @@ import { ENVIRONMENT } from "@/lib/environment";
 import { JOB_TITLE_LABEL, homePath } from "@/lib/jobTitles";
 import { devLogin, fetchDevLoginChoices, type DevLoginChoice } from "@/lib/session";
 
+function messageOf(reason: unknown): string {
+  return reason instanceof Error ? reason.message : String(reason);
+}
+
 type Choices = { status: "loading" } | { status: "ready"; users: DevLoginChoice[] } | { status: "error"; message: string };
 
 export default function LoginPage() {
@@ -40,7 +44,7 @@ function NotYet() {
 
 function DevLogin() {
   const router = useRouter();
-  const { session, signedIn } = useViewer();
+  const { session, signIn } = useViewer();
   const [choices, setChoices] = useState<Choices>({ status: "loading" });
   const [signingIn, setSigningIn] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +56,7 @@ function DevLogin() {
   useEffect(() => {
     fetchDevLoginChoices()
       .then((users) => setChoices({ status: "ready", users }))
-      .catch((reason: unknown) => setChoices({ status: "error", message: reason instanceof Error ? reason.message : String(reason) }));
+      .catch((reason: unknown) => setChoices({ status: "error", message: messageOf(reason) }));
   }, []);
 
   async function choose(user: DevLoginChoice) {
@@ -60,10 +64,10 @@ function DevLogin() {
     setError(null);
     try {
       const signedInUser = await devLogin(user.id);
-      signedIn(signedInUser);
+      signIn(signedInUser);
       router.replace(homePath(signedInUser.job_title));
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      setError(messageOf(reason));
       setSigningIn(null);
     }
   }

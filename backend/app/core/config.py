@@ -1,9 +1,14 @@
+from pathlib import Path
 from typing import Literal
 
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["dev", "test", "prod"]
+
+# The repo-root .env, whatever directory a command runs from (make runs backend commands from backend/).
+# A local .env, if any, wins. In Docker there is no file: settings come from the environment.
+ENV_FILES = (Path(__file__).resolve().parents[3] / ".env", Path(".env"))
 
 # Signs dev session cookies. Refused outside dev, so a real secret must be set there.
 DEV_SESSION_SECRET = "dev-only-session-secret-never-use-outside-dev"
@@ -15,7 +20,7 @@ class StartupRefused(RuntimeError):
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="VIGIL_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="VIGIL_", env_file=ENV_FILES, extra="ignore")
 
     # Read from VIGIL_ENV (the documented name), not the prefix-derived VIGIL_ENVIRONMENT.
     environment: Environment = Field(default="dev", validation_alias=AliasChoices("VIGIL_ENV", "environment"))

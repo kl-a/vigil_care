@@ -80,9 +80,16 @@ def test_the_dev_login_doesnt_exist_when_disabled_in_dev(api: Callable[..., Test
 
 def test_every_endpoint_except_login_and_health_requires_a_session(api: Callable[..., TestClient]) -> None:
     client = api()
-    paths = client.get("/openapi.json").json()["paths"]
+    paths = client.app.openapi()["paths"]  # type: ignore[attr-defined]
     guarded = [(path, method.upper()) for path, methods in paths.items() if path not in PUBLIC_PATHS for method in methods]
     assert guarded, "expected at least /auth/me and /auth/logout"
     for path, method in guarded:
         response = client.request(method, path.replace("{", "").replace("}", ""))
         assert response.status_code == 401, f"{method} {path} answered {response.status_code} without a session"
+
+
+def test_api_docs_exist_only_in_dev(api: Callable[..., TestClient]) -> None:
+    assert api().get("/openapi.json").status_code == 200
+    outside_dev = api(environment="test", dev_login_enabled=False, session_secret="s" * 48)
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        assert outside_dev.get(path).status_code == 404

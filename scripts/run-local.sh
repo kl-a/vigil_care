@@ -197,10 +197,10 @@ $(bold "Vigil is running")
 
 $(bold "Click-through guide (Stage 1 so far; the full script is docs/demos/stage-1.md)")
   1. Open $FRONTEND_URL. The dev login lists the synthetic Harbourside Oncology Users. Choose one:
-       Dr Alex Rivera (Clinician)      → every item
-       Sam Lee (Trial coordinator)     → no Users or Settings
-       Jordan Park (Secretary)         → Users, but no Settings
-       Casey Dev (Developer admin)     → only Users, Settings, System status; no Patient search
+       Dr Alex Rivera (synthetic), Clinician        → every item
+       Sam Lee (synthetic), Trial coordinator       → no Users or Settings
+       Jordan Park (synthetic), Secretary           → Users, but no Settings
+       Casey Dev (synthetic), Developer admin       → only Users, Settings, System status; no Patient search
   2. Log out (top right) and choose someone else to watch the sidebar change.
   3. As Casey Dev, open $FRONTEND_URL/patients/jane/summary: you get "Not available for your Job Title".
   4. As Dr Alex Rivera → Patients → "Jane Citizen (synthetic)" → click through the Patient tabs.

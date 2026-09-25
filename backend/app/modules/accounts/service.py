@@ -5,6 +5,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.seams.identity import DevLogin, DevLoginCredentials, LoginRefused
 from app.core.vocabulary import JOB_TITLES
 from app.modules.accounts.models import User
 from app.modules.accounts.schemas import CurrentUser, DevLoginChoice
@@ -22,7 +23,7 @@ def signed_in_user(db: Session, user_id: uuid.UUID) -> CurrentUser | None:
     return CurrentUser(
         id=user.id,
         display_name=user.display_name,
-        job_title=user.job_title,  # type: ignore[arg-type]  # the database CHECK guarantees a JobTitle
+        job_title=user.job_title,
         practice_id=user.practice_id,
         practice_name=names[user.practice_id],
     )
@@ -35,13 +36,22 @@ def dev_login_choices(db: Session) -> list[DevLoginChoice]:
         DevLoginChoice(
             id=u.id,
             display_name=u.display_name,
-            job_title=u.job_title,  # type: ignore[arg-type]
+            job_title=u.job_title,
             practice_name=names[u.practice_id],
         )
         for u in users
         if u.practice_id in names
     ]
     return sorted(choices, key=lambda c: (c.practice_name, JOB_TITLES.index(c.job_title), c.display_name))
+
+
+def dev_login(db: Session, user_id: uuid.UUID) -> CurrentUser:
+    """Dev only (the route exists only in dev). Raises LoginRefused unless the User is active."""
+    DevLogin(ActiveUsers(db)).authenticate(DevLoginCredentials(user_id))
+    user = signed_in_user(db, user_id)
+    if user is None:
+        raise LoginRefused()
+    return user
 
 
 class ActiveUsers:

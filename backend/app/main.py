@@ -13,7 +13,15 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     settings = settings or Settings()
     refuse_unsafe_startup(settings)
 
-    app = FastAPI(title="Vigil", version="0.1.0")
+    # Interactive API docs are a developer tool: dev only, like the dev login.
+    docs = settings.environment == "dev"
+    app = FastAPI(
+        title="Vigil",
+        version="0.1.0",
+        docs_url="/docs" if docs else None,
+        redoc_url="/redoc" if docs else None,
+        openapi_url="/openapi.json" if docs else None,
+    )
     app.state.settings = settings
     app.state.database_check = database_check or postgres_check(settings.database_url)
     app.state.sessionmaker = session_factory(settings.database_url)

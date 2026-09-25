@@ -16,6 +16,8 @@ from psycopg import sql
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 
+from app.core.config import ENV_FILES
+
 OWNER_ROLE = "vigil_owner"
 APP_ROLE = "vigil_app"
 SUPPORT_ROLE = "vigil_support"
@@ -27,7 +29,7 @@ ALEMBIC_DIR = Path(__file__).resolve().parents[2] / "alembic"
 class DatabaseSettings(BaseSettings):
     """Credentials for provisioning. The dev defaults are for synthetic local databases only."""
 
-    model_config = SettingsConfigDict(env_prefix="VIGIL_DB_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="VIGIL_DB_", env_file=ENV_FILES, extra="ignore")
 
     # A cluster admin, connected to the database to provision.
     admin_url: str = "postgresql://vigil:vigil@localhost:5432/vigil"

@@ -19,7 +19,7 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const user = useSignedInUser();
   const jobTitle = user.job_title;
 
-  async function logOut() {
+  async function handleLogOut() {
     await signOut();
     router.replace("/login");
   }
@@ -57,7 +57,7 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           <span className="text-[11px] text-muted-foreground">{JOB_TITLE_LABEL[jobTitle]}</span>
         </span>
       </div>
-      <button onClick={logOut} className="flex h-8 items-center gap-1.5 rounded-md border border-border px-2 text-xs hover:bg-muted">
+      <button onClick={handleLogOut} className="flex h-8 items-center gap-1.5 rounded-md border border-border px-2 text-xs hover:bg-muted">
         <LogOut aria-hidden className="h-3.5 w-3.5" />
         Log out
       </button>

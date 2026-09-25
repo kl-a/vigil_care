@@ -5,23 +5,21 @@ from pydantic import BaseModel
 from app.core.vocabulary import JobTitle
 
 
-class CurrentUser(BaseModel):
-    """The signed-in User, as the frontend sees them."""
-
+class UserSummary(BaseModel):
     id: uuid.UUID
     display_name: str
     job_title: JobTitle
-    practice_id: uuid.UUID
     practice_name: str
 
 
-class DevLoginChoice(BaseModel):
+class DevLoginChoice(UserSummary):
     """A User who can be chosen at the dev login."""
 
-    id: uuid.UUID
-    display_name: str
-    job_title: JobTitle
-    practice_name: str
+
+class CurrentUser(UserSummary):
+    """The signed-in User, as the frontend sees them."""
+
+    practice_id: uuid.UUID
 
 
 class DevLoginRequest(BaseModel):

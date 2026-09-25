@@ -10,10 +10,10 @@
 
 | # | Do | Point out | Ticket |
 |---|---|---|---|
-| 1 | Choose **Dr Alex Rivera (Clinician)**. | The top bar shows who you are and your Job Title; the orange DEV badge means synthetic data only. Clinicians see every screen. | #13 |
-| 2 | **Log out**, choose **Jordan Park (Secretary)**. | Users is there, Settings isn't. Same app, different Job Title. | #13 |
-| 3 | Log out, choose **Casey Dev (Developer admin)**. | No Patients anywhere: developer admins configure and support Vigil but never see Patient data. Their home is System status. | #13 |
-| 4 | As Casey Dev, paste `/patients/jane/summary` into the address bar. | "Not available for your Job Title": the screen and the API both refuse. | #13 |
+| 1 | Choose **Dr Alex Rivera (synthetic), Clinician**. | The top bar shows who you are and your Job Title; the orange DEV badge means synthetic data only. Clinicians see every screen. | #13 |
+| 2 | **Log out**, choose **Jordan Park (synthetic), Secretary**. | Users is there, Settings isn't. Same app, different Job Title. | #13 |
+| 3 | Log out, choose **Casey Dev (synthetic), Developer admin**. | No Patients anywhere: developer admins configure and support Vigil but never see Patient data. Their home is System status. | #13 |
+| 4 | As Casey Dev, paste `/patients/jane/summary` into the address bar. | "Not available for your Job Title". (From #8 the Patient API refuses too, with a 403.) | #13 |
 
 *Steps for #6 (User Management and the audit trail), #14 (Practice details), #15 (switching Oncology off and on) and #16 (only built screens, System status) are added as those tickets land.*
 

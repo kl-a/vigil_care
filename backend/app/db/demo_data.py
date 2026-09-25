@@ -2,8 +2,8 @@
 
     python -m app.db.demo_data      # or: make demo-data
 
-Every name comes from the frontend brief §10 ("use only this; no real people"). Loading is idempotent:
-rows have fixed ids, and anything already there is left alone. Later stages add Patients, Providers
+Every name comes from the frontend brief §10 ("use only this; no real people"), marked "(synthetic)".
+Loading is idempotent: rows have fixed ids; existing rows are kept (User names are brought up to date). Later stages add Patients, Providers
 and Clinical Records here.
 """
 
@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.audit.models import Verification
 from app.core.config import Settings
 from app.core.database import session_factory
+from app.core.vocabulary import JobTitle
 from app.db import metadata  # noqa: F401  (registers every table, so foreign keys resolve)
 from app.modules.accounts.models import User
 from app.modules.practice.models import Practice
@@ -34,7 +35,7 @@ class DemoDataRefused(RuntimeError):
 class DemoUser:
     username: str
     display_name: str
-    job_title: str
+    job_title: JobTitle
 
     @property
     def id(self) -> uuid.UUID:
@@ -42,12 +43,12 @@ class DemoUser:
 
 
 USERS = (
-    DemoUser("alex.rivera", "Dr Alex Rivera", "clinician"),
-    DemoUser("sam.lee", "Sam Lee", "trial_coordinator"),
-    DemoUser("jordan.park", "Jordan Park", "secretary"),
-    DemoUser("casey.dev", "Casey Dev", "developer_admin"),
+    DemoUser("alex.rivera", "Dr Alex Rivera (synthetic)", "clinician"),
+    DemoUser("sam.lee", "Sam Lee (synthetic)", "trial_coordinator"),
+    DemoUser("jordan.park", "Jordan Park (synthetic)", "secretary"),
+    DemoUser("casey.dev", "Casey Dev (synthetic)", "developer_admin"),
 )
-DEVELOPER_ADMIN = USERS[3]
+DEVELOPER_ADMIN = next(user for user in USERS if user.job_title == "developer_admin")
 
 
 def load(settings: Settings) -> None:
@@ -73,18 +74,21 @@ def _practice(db: Session) -> None:
 
 
 def _user(db: Session, user: DemoUser) -> None:
-    if db.get(User, user.id) is None:
-        db.add(
-            User(
-                id=user.id,
-                practice_id=PRACTICE_ID,
-                username=user.username,
-                display_name=user.display_name,
-                password_hash=NO_PASSWORD,
-                job_title=user.job_title,
-            )
+    existing = db.get(User, user.id)
+    if existing is not None:
+        existing.display_name = user.display_name  # keeps older demo databases in step with the names here
+        return
+    db.add(
+        User(
+            id=user.id,
+            practice_id=PRACTICE_ID,
+            username=user.username,
+            display_name=user.display_name,
+            password_hash=NO_PASSWORD,
+            job_title=user.job_title,
         )
-        db.flush()
+    )
+    db.flush()
 
 
 def _activate_oncology(db: Session) -> None:
@@ -119,7 +123,7 @@ def main() -> None:
     load(Settings())
     print("Loaded the synthetic demo Practice: Harbourside Oncology (synthetic).")
     for user in USERS:
-        print(f"  {user.display_name:<16} {user.job_title}")
+        print(f"  {user.display_name:<28} {user.job_title}")
 
 
 if __name__ == "__main__":

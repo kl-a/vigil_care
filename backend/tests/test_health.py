@@ -34,8 +34,8 @@ def test_health_reports_the_vlm_worker_as_configured_when_a_url_is_set(
     assert client.get("/health").json()["vlm_worker"] == "configured"
 
 
-def test_interactive_api_docs_and_schema_are_reachable(client_factory: Callable[..., TestClient]) -> None:
-    client = client_factory()
+def test_interactive_api_docs_and_schema_are_reachable_in_dev(client_factory: Callable[..., TestClient]) -> None:
+    client = client_factory(environment="dev")
     assert client.get("/docs").status_code == 200
     schema = client.get("/openapi.json").json()
     assert "/health" in schema["paths"]

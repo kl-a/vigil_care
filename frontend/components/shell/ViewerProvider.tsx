@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import type { JobTitle } from "@/lib/jobTitles";
 import { fetchCurrentUser, logout, type CurrentUser } from "@/lib/session";
 
 type Theme = "light" | "dark";
@@ -14,9 +13,9 @@ export type SessionState =
 
 interface Viewer {
   session: SessionState;
-  /** The signed-in User's Job Title; null until someone is signed in. */
-  jobTitle: JobTitle | null;
-  signedIn: (user: CurrentUser) => void;
+  /** Record a session the backend has just started (e.g. after the dev login). */
+  signIn: (user: CurrentUser) => void;
+  /** End the session on the backend and here. */
   signOut: () => Promise<void>;
   theme: Theme;
   toggleTheme: () => void;
@@ -59,7 +58,7 @@ export function ViewerProvider({ children, loadUser = fetchCurrentUser, endSessi
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  const signedIn = useCallback((user: CurrentUser) => setSession({ status: "signed_in", user }), []);
+  const signIn = useCallback((user: CurrentUser) => setSession({ status: "signed_in", user }), []);
 
   const signOut = useCallback(async () => {
     try { await endSession(); } finally { setSession({ status: "signed_out" }); }
@@ -73,9 +72,8 @@ export function ViewerProvider({ children, loadUser = fetchCurrentUser, endSessi
     });
   }, []);
 
-  const jobTitle = session.status === "signed_in" ? session.user.job_title : null;
   return (
-    <ViewerContext.Provider value={{ session, jobTitle, signedIn, signOut, theme, toggleTheme }}>
+    <ViewerContext.Provider value={{ session, signIn, signOut, theme, toggleTheme }}>
       {children}
     </ViewerContext.Provider>
   );

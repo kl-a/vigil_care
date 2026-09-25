@@ -1452,7 +1452,7 @@ flowchart LR
 ### Stage 1: Front door
 
 **What:**
-- **Dev login as a seeded User:** pick Dr De Souza (synthetic), a trial coordinator, a secretary or a developer admin. This replaces the skeleton's "Preview as". It comes with the identity interface and its dev-login implementation.
+- **Dev login as a seeded User:** pick the synthetic clinician (Dr Alex Rivera), trial coordinator, secretary or developer admin; names from [frontend-design.md](frontend-design.md) §10, since no real people appear in demo data. This replaces the skeleton's "Preview as". It comes with the identity interface and its dev-login implementation.
 - **Demo data v1** (`make demo-data`, dev only): the demo Practice and one User per Job Title.
 - **Permissions and Verification:** one permission check implementing §6.4, and the Verification service.
 - **User Management basics:** list, create, deactivate and change Job Title, each change recorded as a Verification. Password and 2FA resets come in Stage 12.
