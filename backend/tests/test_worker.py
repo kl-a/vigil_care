@@ -128,3 +128,18 @@ def test_monthly_is_the_most_recent_first_of_the_month() -> None:
     assert due(datetime(2026, 1, 15, tzinfo=UTC)) == datetime(2026, 1, 1, tzinfo=UTC)
     assert monthly(day=15)(datetime(2026, 1, 10, tzinfo=UTC)) == datetime(2025, 12, 15, tzinfo=UTC)
 
+
+
+def test_the_worker_process_loads_every_table_its_jobs_refer_to() -> None:
+    """The worker runs in its own process: loading its Job Kinds must also load every model their rows point at
+    (a Job's practice_id → practice), or the first claim fails."""
+    import subprocess
+    import sys
+
+    check = (
+        "from app.jobs import registry; registry();"
+        "from app.orchestrator.models import Job;"
+        "[fk.column for fk in Job.__table__.foreign_keys]"
+    )
+    result = subprocess.run([sys.executable, "-c", check], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr[-500:]

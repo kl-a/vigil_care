@@ -53,18 +53,18 @@
 | 2 | [#17](https://github.com/kl-a/vigil_care/issues/17) | Soft-delete a Patient | #8 | ✅ Done ([PR #29](https://github.com/kl-a/vigil_care/pull/29)) |
 | 2 | [#9](https://github.com/kl-a/vigil_care/issues/9) | Care Team | #8, #7 | ✅ Done ([PR #29](https://github.com/kl-a/vigil_care/pull/29)) |
 
-### Stage 3 · PBS & Support Views
+### Stage 3 · PBS & Support Views (shipped: `SHIPPED_STAGE = 3`)
 
-**Demo:** look up pembrolizumab's PBS Listing per indication. As the developer admin, start a PBS Refresh and follow it in the Support Views.
+**Demo:** look up pembrolizumab's PBS Listing per indication. As the developer admin, start a PBS Refresh and follow it in the Support Views. Script: [docs/demos/stage-3.md](demos/stage-3.md).
 
 This stage can run alongside Stage 2.
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
 | 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | 🔨 Built (`stage-3`) |
-| 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | ⏳ Blocked |
-| 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | ⏳ Blocked |
-| 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | ⏳ Blocked |
+| 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | 🔨 Built (`stage-3`) |
+| 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | 🔨 Built (`stage-3`) |
+| 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | 🔨 Built (`stage-3`) |
 
 ### Stages 4–13 (outlines)
 
@@ -102,14 +102,14 @@ flowchart LR
     T7 --> T9
     T17 --> S2((Stage 2 demo))
     T9 --> S2
-    T24 --> T18[#18 job queue 🔨] --> T19[#19 PBS Refresh] --> T20[#20 PBS Lookup]
-    T18 --> T10[#10 Support Views]
+    T24 --> T18[#18 job queue 🔨] --> T19[#19 PBS Refresh 🔨] --> T20[#20 PBS Lookup 🔨]
+    T18 --> T10[#10 Support Views 🔨]
     T20 --> S3((Stage 3 demo))
     T10 --> S3
 ```
 
 **Next up:**
-1. Merge #17 and #9: Stage 2 is then complete and shipped, ready for its demo ([docs/demos/stage-2.md](demos/stage-2.md)).
-2. Stage 3: #18 (job queue and Refresh Jobs) is ready now; then #19 (PBS Refresh) and #10 (Support Views), then #20 (PBS Drug Lookup).
+1. Merge Stage 3 (#18, #19, #10, #20): it's built and shipped, ready for its demo ([docs/demos/stage-3.md](demos/stage-3.md)).
+2. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
 
 **After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.
