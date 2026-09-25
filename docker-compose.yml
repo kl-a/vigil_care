@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: vigil
       POSTGRES_PASSWORD: vigil
       POSTGRES_DB: vigil
-    ports: ["5432:5432"]
+    ports: ["${VIGIL_DB_PORT:-5432}:5432"]
     volumes: [db-data:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U vigil -d vigil"]
@@ -21,7 +21,7 @@ services:
       VIGIL_DEV_LOGIN_ENABLED: ${VIGIL_DEV_LOGIN_ENABLED:-false}
       VIGIL_DATABASE_URL: postgresql://vigil:vigil@db:5432/vigil
       VIGIL_VLM_WORKER_URL: ${VIGIL_VLM_WORKER_URL:-}
-    ports: ["8000:8000"]
+    ports: ["${VIGIL_BACKEND_PORT:-8000}:8000"]
     depends_on:
       db: { condition: service_healthy }
 
@@ -31,7 +31,7 @@ services:
       args:
         NEXT_PUBLIC_VIGIL_ENV: ${VIGIL_ENV:-dev}
         NEXT_PUBLIC_VIGIL_ACTIVE_MODULES: ${VIGIL_ACTIVE_MODULES:-oncology}
-    ports: ["3000:3000"]
+    ports: ["${VIGIL_FRONTEND_PORT:-3000}:3000"]
     depends_on: [backend]
 
 volumes:

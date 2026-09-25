@@ -43,10 +43,15 @@ Work is tracked in [GitHub Issues](https://github.com/kl-a/vigil_care/issues). T
 
 Prerequisites on the host: Docker (with Compose), Node.js 20+ and Python 3.12+. Nothing else is installed on the host. Dependencies live in `backend/.venv` and `frontend/node_modules`.
 
+The quickest way to click through the app:
+
 ```bash
-cp .env.example .env      # VIGIL_ENV=dev by default
-docker compose up --build # Postgres (pgvector), backend on :8000, frontend on :3000
+scripts/run-local.sh          # full stack in Docker; opens the browser and prints a click-through guide
+scripts/run-local.sh --dev    # Postgres in Docker; backend + frontend on your machine with hot reload
+scripts/run-local.sh --stop   # stop everything (the database volume is kept)
 ```
+
+The script checks prerequisites, creates `.env` from `.env.example`, starts Docker Desktop if needed, and picks the next free port if 3000, 8000 or 5432 is taken by another app. It also waits until everything answers. To run Compose yourself: `cp .env.example .env && docker compose up --build`.
 
 - App: http://localhost:3000. In dev, use **Preview as** in the top bar to see each Job Title's navigation. Real logins arrive with #4.
 - Health: http://localhost:8000/health · API docs: http://localhost:8000/docs
