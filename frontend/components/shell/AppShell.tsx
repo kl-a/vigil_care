@@ -25,7 +25,7 @@ function crumbsFor(pathname: string): { label: string; href: string }[] {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { session, showUpcoming } = useViewer();
+  const { session, showUpcoming, activeModules } = useViewer();
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
@@ -37,9 +37,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const { job_title: jobTitle } = session.user;
   const crumbs = crumbsFor(pathname);
-  const screen = screenForPathname(pathname);
+  const screen = screenForPathname(pathname, activeModules);
   const crumbVisible = (href: string) => {
-    const crumbScreen = screenForPathname(href);
+    const crumbScreen = screenForPathname(href, activeModules);
     return crumbScreen === undefined || isVisible(crumbScreen, showUpcoming);
   };
 

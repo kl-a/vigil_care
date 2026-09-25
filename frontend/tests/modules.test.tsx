@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { patientTabsFor, sectionsFor } from "@/lib/modules/registry";
 import { SectionSlot } from "@/components/SectionSlot";
+import { ViewerProvider } from "@/components/shell/ViewerProvider";
+import { userWith } from "./fixtures";
 
 describe("Specialty Module section registry", () => {
   it("adds the Oncology Treatment Options tab only when Oncology is active", () => {
@@ -21,11 +23,21 @@ describe("Specialty Module section registry", () => {
     expect(sectionsFor("clinical-data-tabs", [])).toEqual([]);
   });
 
-  it("renders module sections into a slot, and nothing when the module is off", () => {
-    const { rerender } = render(<SectionSlot slot="patient-summary" activeModules={["oncology"]} />);
-    expect(screen.getByRole("region", { name: "Diagnosis" })).toBeInTheDocument();
+  it("renders the sections of the Practice's active modules into a slot, and nothing when a module is off", async () => {
+    const { unmount } = render(
+      <ViewerProvider initialUser={userWith("clinician")} loadModules={async () => ["oncology"]}>
+        <SectionSlot slot="patient-summary" />
+      </ViewerProvider>,
+    );
+    expect(await screen.findByRole("region", { name: "Diagnosis" })).toBeInTheDocument();
+    unmount();
 
-    rerender(<SectionSlot slot="patient-summary" activeModules={[]} />);
+    render(
+      <ViewerProvider initialUser={userWith("clinician")} loadModules={async () => []}>
+        <SectionSlot slot="patient-summary" />
+      </ViewerProvider>,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(screen.queryByRole("region", { name: "Diagnosis" })).not.toBeInTheDocument();
   });
 });

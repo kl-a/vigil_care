@@ -17,6 +17,16 @@ export function seesPatientData(jobTitle: JobTitle): boolean {
   return jobTitle !== "developer_admin";
 }
 
+/** Change Settings (design doc §6.4). The backend enforces it; the UI just doesn't offer what would be refused. */
+export function canChangeSettings(jobTitle: JobTitle): boolean {
+  return jobTitle === "clinician" || jobTitle === "developer_admin";
+}
+
+/** Activate / deactivate Specialty Modules (design doc §6.4): developer admins only. */
+export function canSwitchModules(jobTitle: JobTitle): boolean {
+  return jobTitle === "developer_admin";
+}
+
 /** Home: the Dashboard for staff once it ships (Stage 5); until then, and always for developer admins, System status. */
 export function homePath(jobTitle: JobTitle): string {
   return seesPatientData(jobTitle) && isShipped(DASHBOARD_STAGE) ? "/dashboard" : "/system";

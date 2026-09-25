@@ -23,6 +23,9 @@
 | 10 | Back in Users → **Deactivate** Riley. | A reason is required. Log out: Riley is no longer on the dev login. Nothing is deleted; the audit trail stays. | #6 |
 | 11 | Try to change your own Job Title. | There's no button on your own row ("You"): nobody can lock themselves out. | #6 |
 
-*Steps for #14 (Practice details) and #15 (switching Oncology off and on) are added as those tickets land.*
+| 12 | As Dr Alex Rivera, open **Settings** → Practice details. Change the phone number → Save details. | Clinicians and developer admins keep the Practice's details up to date; the location is there for trial-site distances later. The save is in the audit trail under Dr Rivera's name. | #14 |
+| 13 | Log out, choose Jordan Park (Secretary). | No Settings in the sidebar: only clinicians and developer admins change them. | #14 |
+| 14 | As Casey Dev, open **Settings** → Specialty Modules. Oncology is **On**. | Vigil is a general Core with Specialty Modules; Oncology is the first. Only a developer admin switches them. | #15 |
+| 15 | Tick **Show upcoming screens**, open a Patient (e.g. `/patients/demo/summary`, as Dr Rivera) and note the Diagnosis section and the Treatment Options tab. Then, as Casey Dev, **Switch Oncology off** (sign-off, reason "Showing the Core"). | Back as Dr Rivera: the Oncology sections and the Treatment Options tab are gone; the Core screens still work. Switch it back on and they return: nothing was deleted. | #15 |
 
 **If something goes wrong:** the dev login says "No Users yet" → run `make demo-data`. It says the dev login isn't available → set `VIGIL_DEV_LOGIN_ENABLED=true` in `.env` (dev only) and restart.

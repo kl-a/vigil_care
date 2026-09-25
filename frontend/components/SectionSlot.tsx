@@ -1,9 +1,13 @@
-import { ACTIVE_MODULES, sectionsFor } from "@/lib/modules/registry";
-import type { SectionSlotName } from "@/lib/modules/types";
+"use client";
 
-/** Renders the sections that active Specialty Modules register for a slot. */
-export function SectionSlot({ slot, activeModules = ACTIVE_MODULES }: { slot: SectionSlotName; activeModules?: readonly string[] }) {
-  const sections = sectionsFor(slot, activeModules);
+import { sectionsFor } from "@/lib/modules/registry";
+import type { ModuleKey, SectionSlotName } from "@/lib/modules/types";
+import { useViewer } from "./shell/ViewerProvider";
+
+/** Renders the sections that the Practice's active Specialty Modules register for a slot. */
+export function SectionSlot({ slot, activeModules }: { slot: SectionSlotName; activeModules?: readonly ModuleKey[] }) {
+  const viewer = useViewer();
+  const sections = sectionsFor(slot, activeModules ?? viewer.activeModules);
   if (sections.length === 0) return null;
   return (
     <>

@@ -15,6 +15,7 @@ def _counts(database: DatabaseSettings) -> dict[str, Any]:
         practice = demo_data.PRACTICE_ID
         return {
             "practices": conn.execute("SELECT count(*) FROM practice WHERE id = %s", [practice]).fetchone(),
+            "located": conn.execute("SELECT lat IS NOT NULL AND lng IS NOT NULL AND phone IS NOT NULL FROM practice WHERE id = %s", [practice]).fetchone(),
             "unmarked_names": conn.execute(
                 "SELECT count(*) FROM \"user\" WHERE practice_id = %s AND display_name NOT LIKE '%%(synthetic)'", [practice]
             ).fetchone(),
@@ -29,6 +30,7 @@ def test_demo_data_loads_the_practice_one_user_per_job_title_and_oncology(databa
     demo_data.load(settings)
     counts = _counts(database)
     assert counts["practices"] == (1,)
+    assert counts["located"] == (True,)
     assert counts["unmarked_names"] == (0,)
     assert counts["job_titles"] == (["clinician", "developer_admin", "secretary", "trial_coordinator"],)
     assert counts["oncology"] == (True,)

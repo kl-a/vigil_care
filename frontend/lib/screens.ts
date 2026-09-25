@@ -1,4 +1,4 @@
-import { ACTIVE_MODULES, patientTabsFor } from "./modules/registry";
+import { patientTabsFor } from "./modules/registry";
 import type { ModuleKey, ScreenInfo } from "./modules/types";
 
 /** Screen inventory from design doc §5 (numbers) plus the developer admin's System status. */
@@ -19,7 +19,7 @@ export const CORE_SCREENS: readonly Screen[] = [
   { number: 14, title: "PBS Drug Lookup", path: "/pbs", purpose: "Quick drug reference.", stage: 3 },
   { number: 17, title: "Provider Management", path: "/providers", purpose: "The Practice's Provider directory.", stage: 2 },
   { number: 18, title: "User Management", path: "/users", purpose: "Manage who can log in.", stage: 1, built: true },
-  { number: 19, title: "Settings", path: "/settings", purpose: "System configuration.", stage: 1 },
+  { number: 19, title: "Settings", path: "/settings", purpose: "System configuration.", stage: 1, built: true },
   { title: "System status", path: "/system", purpose: "Health, pipeline runs, job queue and refresh logs, with no Patient data.", stage: 1, built: true },
 ];
 
@@ -28,7 +28,7 @@ export function screensFor(activeModules: readonly ModuleKey[]): Screen[] {
   return [...CORE_SCREENS, ...patientScreens];
 }
 
-export function screenForPath(path: string, activeModules: readonly ModuleKey[] = ACTIVE_MODULES): Screen | undefined {
+export function screenForPath(path: string, activeModules: readonly ModuleKey[] = []): Screen | undefined {
   return screensFor(activeModules).find((screen) => screen.path === path);
 }
 
@@ -36,7 +36,7 @@ export function screenForPath(path: string, activeModules: readonly ModuleKey[] 
  * The screen a URL shows: a Core screen by its first segment (so /users/123 is User Management),
  * or a Patient tab (/patients/42 is the Overview; /patients/42/summary the Summary).
  */
-export function screenForPathname(pathname: string, activeModules: readonly ModuleKey[] = ACTIVE_MODULES): Screen | undefined {
+export function screenForPathname(pathname: string, activeModules: readonly ModuleKey[] = []): Screen | undefined {
   const [first, patientId, tab] = pathname.split("/").filter(Boolean);
   if (first === "patients" && patientId) return screenForPath(`/patients/[id]/${tab ?? "overview"}`, activeModules);
   return screenForPath(`/${first ?? ""}`, activeModules);

@@ -1074,8 +1074,8 @@ PATCH  /users/{id}                          Update Job Title / deactivate (reaso
 POST   /users/{id}/reset-2fa
 
 # Practice, Providers & Care Team
-GET    /practice                            Practice details
-PATCH  /practice
+GET    /practice                            The signed-in User's Practice details (everyone signed in)
+PATCH  /practice                            Change them (clinician, developer admin; Verification with before/after)
 POST   /providers                           Create Provider (internal or external)
 GET    /providers
 GET    /providers/{id}
@@ -1193,6 +1193,7 @@ GET    /exports                             Export history
 
 # Specialty Modules
 GET    /modules                             Installed modules + active flag for this Practice
+GET    /modules/active                      This Practice's active modules, their UI sections and Patient tabs (from the Builder)
 PATCH  /modules/{key}                       Activate/deactivate (developer admin; Verification)
 
 # System

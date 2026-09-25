@@ -11,12 +11,10 @@ const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "exports", label: "Exports", screen: { number: 16, title: "Exports", purpose: "Generate and sign off Identified or De-identified Exports.", stage: 12 } },
 ];
 
-/**
- * Specialty Modules active for this Practice. Until per-Practice activation comes from the API
- * (ticket #3), it is configuration. The Core never assumes any module is active.
+/*
+ * Which modules are active comes from the API per Practice (/modules/active, #15) through the viewer
+ * (useViewer().activeModules). The Core never assumes any module is active.
  */
-export const ACTIVE_MODULES: readonly ModuleKey[] = (process.env.NEXT_PUBLIC_VIGIL_ACTIVE_MODULES ?? "")
-  .split(",").map((key) => key.trim()).filter(Boolean);
 
 function active(keys: readonly ModuleKey[]): ModuleManifest[] {
   return INSTALLED_MODULES.filter((module) => keys.includes(module.key));
