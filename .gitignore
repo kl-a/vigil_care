@@ -4,3 +4,11 @@ data/
 node_modules/
 .venv/
 __pycache__/
+backend/openapi.json
+frontend/.next/
+*.tsbuildinfo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+temp/
+.run/
