@@ -1,13 +1,14 @@
 """Per-Practice activation of Specialty Modules (design doc §4.1, §6.4) and the active configuration."""
 
 import uuid
+from dataclasses import asdict
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.audit import service as audit
 from app.audit.service import Actor
-from app.core.permissions import may
+from app.core.permissions import require
 from app.modules.registry.builder import PracticeConfiguration, build
 from app.modules.registry.models import PracticeModule
 from app.modules.registry.registry import installed_modules
@@ -18,10 +19,6 @@ from app.modules.registry.schemas import (
     ModuleChange,
     ModuleStatus,
 )
-
-
-class NotAllowed(PermissionError):
-    """Only developer admins switch modules (design doc §6.4)."""
 
 
 class ModuleNotInstalled(LookupError):
@@ -38,34 +35,38 @@ def active_module_keys(db: Session, practice_id: uuid.UUID) -> list[str]:
 
 
 def configuration(db: Session, practice_id: uuid.UUID) -> PracticeConfiguration:
-    """The Practice's configuration, assembled by the Builder from its active modules."""
+    """The Practice's configuration, assembled by the Builder from its active modules.
+
+    For other Core modules (e.g. Verification rights for review). It returns the Builder's own immutable
+    type, not a database model; the API's view of it is `active_configuration`.
+    """
     return build(active_module_keys(db, practice_id))
 
 
 def active_configuration(db: Session, actor: Actor) -> ActiveConfiguration:
-    config = configuration(db, actor.practice_id)
+    return as_api(configuration(db, actor.practice_id))
+
+
+def as_api(config: PracticeConfiguration) -> ActiveConfiguration:
+    """The API's view of a configuration: which modules, sections and Patient tabs the frontend shows."""
     return ActiveConfiguration(
         active_modules=list(config.active_modules),
-        sections=[
-            ActiveSectionOut(module=a.module, id=a.section.id, slot=a.section.slot, title=a.section.title, order=a.section.order)
-            for a in config.ui_sections
-        ],
-        patient_tabs=[ActiveTabOut(module=a.module, segment=a.tab.segment, label=a.tab.label) for a in config.patient_tabs],
+        sections=[ActiveSectionOut(module=active.module, **asdict(active.section)) for active in config.ui_sections],
+        patient_tabs=[ActiveTabOut(module=active.module, **asdict(active.tab)) for active in config.patient_tabs],
     )
 
 
 def list_modules(db: Session, actor: Actor) -> list[ModuleStatus]:
     active = set(active_module_keys(db, actor.practice_id))
     return [
-        ModuleStatus(key=m.key, display_name=m.display_name, version=m.version, is_active=m.key in active)
-        for m in installed_modules().values()
+        ModuleStatus(key=module.key, display_name=module.display_name, version=module.version, is_active=module.key in active)
+        for module in installed_modules().values()
     ]
 
 
 def set_module_active(db: Session, actor: Actor, key: str, change: ModuleChange) -> ModuleStatus:
     """Deactivating hides the module's behaviour and UI; its data is kept, never deleted."""
-    if not may(actor.job_title, "activate_modules"):
-        raise NotAllowed("Only a developer admin can switch Specialty Modules on or off.")
+    require(actor.job_title, "activate_modules", "Only a developer admin can switch Specialty Modules on or off.")
     module = installed_modules().get(key)
     if module is None:
         raise ModuleNotInstalled(f"No Specialty Module {key!r} is installed.")

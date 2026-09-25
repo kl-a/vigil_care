@@ -34,3 +34,10 @@ def test_the_builder_combines_the_core_with_active_modules() -> None:
 
 def test_an_unknown_module_is_ignored_rather_than_guessed() -> None:
     assert build(["cardiology"]).active_modules == ()
+
+
+def test_the_builder_covers_every_extension_point() -> None:
+    config = build(["oncology"])
+    assert config.condition_extensions == {"oncology": "cancer_diagnosis"}
+    assert config.fact_kinds == {} and config.document_types == ()  # no behaviour yet (Stages 4 and 9)
+    assert config.treatment_option_sources == {} and config.trial_vocabulary == ()

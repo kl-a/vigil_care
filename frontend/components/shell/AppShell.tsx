@@ -25,21 +25,27 @@ function crumbsFor(pathname: string): { label: string; href: string }[] {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { session, showUpcoming, activeModules } = useViewer();
+  const { session, showUpcoming, modules, refreshModules } = useViewer();
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     if (session.status === "signed_out") router.replace("/login");
   }, [session.status, router]);
 
+  // Another User (a developer admin) may have switched a module: pick it up on every navigation.
+  const signedIn = session.status === "signed_in";
+  useEffect(() => {
+    if (signedIn) void refreshModules();
+  }, [pathname, signedIn, refreshModules]);
+
   if (session.status === "loading") return <p role="status" className="p-6 text-sm text-muted-foreground">Loading…</p>;
   if (session.status === "signed_out") return null;
 
   const { job_title: jobTitle } = session.user;
   const crumbs = crumbsFor(pathname);
-  const screen = screenForPathname(pathname, activeModules);
+  const screen = screenForPathname(pathname, modules);
   const crumbVisible = (href: string) => {
-    const crumbScreen = screenForPathname(href, activeModules);
+    const crumbScreen = screenForPathname(href, modules);
     return crumbScreen === undefined || isVisible(crumbScreen, showUpcoming);
   };
 

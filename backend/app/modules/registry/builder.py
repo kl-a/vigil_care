@@ -4,7 +4,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from app.core.permissions import CORE_FACT_RIGHTS, VerificationRights
-from app.modules.registry.contract import PatientTab, SpecialtyModule, UiSection
+from pydantic import BaseModel
+
+from app.modules.registry.contract import DocumentTypeDefinition, PatientTab, SpecialtyModule, UiSection
 from app.modules.registry.registry import installed_modules
 
 
@@ -22,11 +24,17 @@ class ActiveTab:
 
 @dataclass(frozen=True)
 class PracticeConfiguration:
+    """Every extension point of §4.1, combined for one Practice."""
+
     active_modules: tuple[str, ...]
+    fact_kinds: dict[str, type[BaseModel]]
+    condition_extensions: dict[str, str]
+    document_types: tuple[DocumentTypeDefinition, ...]
     verification_rights: VerificationRights
     ui_sections: tuple[ActiveSection, ...]
     patient_tabs: tuple[ActiveTab, ...]
     trial_vocabulary: tuple[str, ...]
+    treatment_option_sources: dict[str, str]
     open_item_types: tuple[str, ...]
 
 
@@ -40,6 +48,9 @@ def build(active_keys: Iterable[str], installed: dict[str, SpecialtyModule] | No
         rights.update(module.verification_rights)
     return PracticeConfiguration(
         active_modules=tuple(module.key for module in modules),
+        fact_kinds={kind: schema for module in modules for kind, schema in module.fact_kinds.items()},
+        condition_extensions={module.key: module.condition_extension for module in modules if module.condition_extension},
+        document_types=tuple(doc for module in modules for doc in module.document_types),
         verification_rights=VerificationRights(rights),
         ui_sections=tuple(
             sorted(
@@ -49,5 +60,8 @@ def build(active_keys: Iterable[str], installed: dict[str, SpecialtyModule] | No
         ),
         patient_tabs=tuple(ActiveTab(module.key, tab) for module in modules for tab in module.patient_tabs),
         trial_vocabulary=tuple(term for module in modules for term in module.trial_vocabulary),
+        treatment_option_sources={
+            module.key: module.treatment_option_source for module in modules if module.treatment_option_source
+        },
         open_item_types=tuple(kind for module in modules for kind in module.open_item_types),
     )

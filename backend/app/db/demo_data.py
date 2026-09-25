@@ -62,13 +62,15 @@ def load(settings: Settings) -> None:
         _activate_oncology(db)
 
 
-# Frontend brief §10; the phone numbers are fictional and example.com never resolves to anyone.
+# Frontend brief §10. 02 5550 xxxx is reserved for fiction, example.com never resolves, and an ABN of all
+# zeros is never issued.
 PRACTICE_DETAILS = {
     "name": "Harbourside Oncology (synthetic)",
     "address": "1 Example St, Sydney NSW 2000",
     "phone": "02 5550 0100",
     "fax": "02 5550 0101",
     "email": "reception@harbourside-oncology.example.com",
+    "abn": "00 000 000 000",
     "lat": Decimal("-33.8688"),
     "lng": Decimal("151.2093"),
 }

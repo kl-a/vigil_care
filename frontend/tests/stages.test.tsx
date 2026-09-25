@@ -10,7 +10,7 @@ import { ViewerProvider } from "@/components/shell/ViewerProvider";
 import { patientTabsFor } from "@/lib/modules/registry";
 import { SHIPPED_STAGE, isShipped } from "@/lib/stages";
 import { screenForPathname } from "@/lib/screens";
-import { userWith } from "./fixtures";
+import { ONCOLOGY_ON, userWith } from "./fixtures";
 
 async function renderAt(at: string) {
   pathname = at;
@@ -38,8 +38,8 @@ describe("build stages (design doc §15)", () => {
     expect(screenForPathname("/patients")?.stage).toBe(2);
     expect(screenForPathname("/patients/42")?.stage).toBe(2);
     expect(screenForPathname("/patients/42/summary")?.stage).toBe(5);
-    expect(screenForPathname("/patients/42/treatment-options", ["oncology"])?.stage).toBe(11);
-    for (const tab of patientTabsFor(["oncology"])) expect(tab.screen.stage).toBeGreaterThan(0);
+    expect(screenForPathname("/patients/42/treatment-options", ONCOLOGY_ON)?.stage).toBe(11);
+    for (const tab of patientTabsFor(ONCOLOGY_ON)) expect(tab.screen.stage).toBeGreaterThan(0);
   });
 
   it("shows only built screens of shipped stages in the navigation", async () => {

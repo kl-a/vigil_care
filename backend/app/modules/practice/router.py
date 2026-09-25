@@ -1,6 +1,6 @@
-"""Practice details (#14, design doc §5 screen 19)."""
+"""Practice details (#14, design doc §5 screen 19). Refusals (403) come from the service."""
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
 from app.modules.accounts.dependencies import Db, SignedIn
 from app.modules.practice import service
@@ -16,7 +16,4 @@ def practice_details(actor: SignedIn, db: Db) -> PracticeDetails:
 
 @router.patch("")
 def change_practice(change: PracticeChange, actor: SignedIn, db: Db) -> PracticeDetails:
-    try:
-        return service.change_practice(db, actor, change)
-    except service.NotAllowed as error:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, str(error)) from None
+    return service.change_practice(db, actor, change)

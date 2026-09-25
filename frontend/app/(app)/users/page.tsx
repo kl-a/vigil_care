@@ -8,7 +8,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { JobTitleChip } from "@/components/users/JobTitleChip";
 import { ChangeJobTitleDialog, SetActiveDialog } from "@/components/users/UserDialogs";
 import { messageOf } from "@/lib/api";
-import { JOB_TITLES, JOB_TITLE_LABEL, type JobTitle } from "@/lib/jobTitles";
+import { JOB_TITLES, JOB_TITLE_LABEL, signOffName, type JobTitle } from "@/lib/jobTitles";
 import { changeUser, createUser, formatWhen, listUsers, type UserChange, type UserRow } from "@/lib/users";
 
 type Dialog = { kind: "job_title" | "active"; user: UserRow } | null;
@@ -33,7 +33,7 @@ export default function UserManagementPage() {
     load();
   }
 
-  const actor = `${me.display_name} (${JOB_TITLE_LABEL[me.job_title]})`;
+  const actor = signOffName(me);
   return (
     <div data-screen-label="User Management" className="flex w-full max-w-[1200px] flex-col gap-4 px-5 pb-8 pt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">

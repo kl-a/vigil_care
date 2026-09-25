@@ -8,6 +8,7 @@ MODULE = SpecialtyModule(
     key="oncology",
     display_name="Oncology",
     version="0.1.0",
+    condition_extension="cancer_diagnosis",
     verification_rights=ONCOLOGY_FACT_RIGHTS,
     ui_sections=(
         UiSection("cancer-diagnoses", "patient-overview", "Cancer Diagnoses", 10),

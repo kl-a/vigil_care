@@ -62,9 +62,11 @@ def test_an_unchanged_save_records_nothing(sign_in: SignIn, committed: Seed) -> 
 
 
 def test_one_practice_cant_read_or_change_another(sign_in: SignIn, committed: Seed) -> None:
-    ours, _ = sign_in("clinician")
+    ours, our_ids = sign_in("clinician")
     theirs, their_ids = sign_in("clinician")
-    ours.patch("/practice", json={"name": "Our Practice (synthetic)"})
+    # Naming the other Practice doesn't help: the request is always about the signed-in User's own.
+    changed = ours.patch("/practice", json={"id": str(their_ids["practice"]), "name": "Our Practice (synthetic)"})
+    assert changed.json()["id"] == str(our_ids["practice"])
     assert theirs.get("/practice").json()["name"] == "Synthetic Oncology Practice"
     assert theirs.get("/practice").json()["id"] == str(their_ids["practice"])
 

@@ -5,13 +5,13 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/settings", useRouter: (
 
 const practice = vi.hoisted(() => ({ fetchPractice: vi.fn(), changePractice: vi.fn() }));
 vi.mock("@/lib/practice", () => practice);
-const modules = vi.hoisted(() => ({ listModules: vi.fn(), setModuleActive: vi.fn(), fetchActiveModules: vi.fn() }));
+const modules = vi.hoisted(() => ({ listModules: vi.fn(), setModuleActive: vi.fn(), fetchModuleConfiguration: vi.fn() }));
 vi.mock("@/lib/modules/api", () => modules);
 
 import SettingsPage from "@/app/(app)/settings/page";
 import { ViewerProvider } from "@/components/shell/ViewerProvider";
 import type { JobTitle } from "@/lib/jobTitles";
-import { userWith } from "./fixtures";
+import { ONCOLOGY_ON, userWith } from "./fixtures";
 
 const DETAILS = {
   id: "p-1", name: "Harbourside Oncology (synthetic)", address: "1 Example St, Sydney NSW 2000", phone: "02 5550 0100",
@@ -20,7 +20,7 @@ const DETAILS = {
 
 function renderAs(jobTitle: JobTitle) {
   render(
-    <ViewerProvider initialUser={userWith(jobTitle)} loadModules={modules.fetchActiveModules}>
+    <ViewerProvider initialUser={userWith(jobTitle)} loadModules={modules.fetchModuleConfiguration}>
       <SettingsPage />
     </ViewerProvider>,
   );
@@ -32,7 +32,7 @@ describe("Settings", () => {
     practice.fetchPractice.mockResolvedValue(DETAILS);
     practice.changePractice.mockImplementation(async (change: object) => ({ ...DETAILS, ...change }));
     modules.listModules.mockResolvedValue([{ key: "oncology", display_name: "Oncology", version: "0.1.0", is_active: true }]);
-    modules.fetchActiveModules.mockResolvedValue(["oncology"]);
+    modules.fetchModuleConfiguration.mockResolvedValue(ONCOLOGY_ON);
     modules.setModuleActive.mockResolvedValue({ key: "oncology", display_name: "Oncology", version: "0.1.0", is_active: false });
   });
 
@@ -63,7 +63,7 @@ describe("Settings", () => {
     fireEvent.click(within(dialog).getByRole("checkbox"));
     fireEvent.click(within(dialog).getByRole("button", { name: "Switch off" }));
     await waitFor(() => expect(modules.setModuleActive).toHaveBeenCalledWith("oncology", { is_active: false, reason: "Pausing oncology" }));
-    await waitFor(() => expect(modules.fetchActiveModules).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(modules.fetchModuleConfiguration).toHaveBeenCalledTimes(2));
   });
 
   it("shows clinicians the modules but no switch", async () => {

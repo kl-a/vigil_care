@@ -8,10 +8,10 @@ import { useViewer } from "./shell/ViewerProvider";
 
 export function PatientTabs({ patientId }: { patientId: string }) {
   const pathname = usePathname();
-  const { showUpcoming, activeModules } = useViewer();
+  const { showUpcoming, modules } = useViewer();
   return (
     <nav aria-label="Patient" className="flex gap-4 overflow-x-auto text-[13px]">
-      {patientTabsFor(activeModules).filter((tab) => isVisible(tab.screen, showUpcoming)).map((tab) => {
+      {patientTabsFor(modules).filter((tab) => isVisible(tab.screen, showUpcoming)).map((tab) => {
         const href = `/patients/${patientId}/${tab.segment}`;
         const current = pathname === href;
         return (

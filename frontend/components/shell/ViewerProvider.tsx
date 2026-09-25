@@ -2,8 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { ENVIRONMENT } from "@/lib/environment";
-import { fetchActiveModules } from "@/lib/modules/api";
-import type { ModuleKey } from "@/lib/modules/types";
+import { fetchModuleConfiguration } from "@/lib/modules/api";
+import { NO_MODULES, type ModuleConfiguration } from "@/lib/modules/types";
 import { fetchCurrentUser, logout, type CurrentUser } from "@/lib/session";
 
 type Theme = "light" | "dark";
@@ -25,8 +25,8 @@ interface Viewer {
   /** Dev only: reveal screens whose stage hasn't shipped, as labelled placeholders. Always false elsewhere. */
   showUpcoming: boolean;
   toggleShowUpcoming: () => void;
-  /** Specialty Modules active for the signed-in User's Practice; none until loaded or signed out. */
-  activeModules: readonly ModuleKey[];
+  /** The Practice's active Specialty Modules, their sections and tabs; none until loaded or signed out. */
+  modules: ModuleConfiguration;
   /** False until the active modules have loaded for the signed-in User. */
   modulesReady: boolean;
   /** Reload them, e.g. after a developer admin switches a module in Settings. */
@@ -52,14 +52,14 @@ interface ViewerProviderProps {
   endSession?: () => Promise<void>;
   /** Start signed in as this User (tests of screens inside the shell). */
   initialUser?: CurrentUser;
-  loadModules?: () => Promise<ModuleKey[]>;
+  loadModules?: () => Promise<ModuleConfiguration>;
 }
 
-export function ViewerProvider({ children, loadUser = fetchCurrentUser, endSession = logout, initialUser, loadModules = fetchActiveModules }: ViewerProviderProps) {
+export function ViewerProvider({ children, loadUser = fetchCurrentUser, endSession = logout, initialUser, loadModules = fetchModuleConfiguration }: ViewerProviderProps) {
   const [session, setSession] = useState<SessionState>(initialUser ? { status: "signed_in", user: initialUser } : { status: "loading" });
   const [theme, setTheme] = useState<Theme>("light");
   const [showUpcoming, setShowUpcoming] = useState(false);
-  const [activeModules, setActiveModules] = useState<readonly ModuleKey[]>([]);
+  const [modules, setModules] = useState<ModuleConfiguration>(NO_MODULES);
   const [modulesReady, setModulesReady] = useState(false);
 
   useEffect(() => {
@@ -81,13 +81,13 @@ export function ViewerProvider({ children, loadUser = fetchCurrentUser, endSessi
   }, [theme]);
 
   const refreshModules = useCallback(async () => {
-    try { setActiveModules(await loadModules()); } catch { setActiveModules([]); } finally { setModulesReady(true); }
+    try { setModules(await loadModules()); } catch { setModules(NO_MODULES); } finally { setModulesReady(true); }
   }, [loadModules]);
 
   const signedInUserId = session.status === "signed_in" ? session.user.id : null;
   useEffect(() => {
     if (signedInUserId) void refreshModules();
-    else { setActiveModules([]); setModulesReady(false); }
+    else { setModules(NO_MODULES); setModulesReady(false); }
   }, [signedInUserId, refreshModules]);
 
   const signIn = useCallback((user: CurrentUser) => setSession({ status: "signed_in", user }), []);
@@ -113,7 +113,7 @@ export function ViewerProvider({ children, loadUser = fetchCurrentUser, endSessi
   }, []);
 
   return (
-    <ViewerContext.Provider value={{ session, signIn, signOut, theme, toggleTheme, showUpcoming, toggleShowUpcoming, activeModules, modulesReady, refreshModules }}>
+    <ViewerContext.Provider value={{ session, signIn, signOut, theme, toggleTheme, showUpcoming, toggleShowUpcoming, modules, modulesReady, refreshModules }}>
       {children}
     </ViewerContext.Provider>
   );

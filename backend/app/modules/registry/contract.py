@@ -47,6 +47,8 @@ class SpecialtyModule:
     version: str
     # Clinical Record: fact kinds and the Pydantic schema of each (validated before write).
     fact_kinds: Mapping[str, type[BaseModel]] = field(default_factory=dict)
+    # Condition extension: the table that extends a Condition for this module (e.g. cancer_diagnosis).
+    condition_extension: str | None = None
     document_types: Sequence[DocumentTypeDefinition] = ()
     # Verification rights: the module's rows of design doc §6.4.
     verification_rights: Mapping[str, FactRight] = field(default_factory=dict)
@@ -54,6 +56,7 @@ class SpecialtyModule:
     patient_tabs: Sequence[PatientTab] = ()
     # Trial matching: the criteria attributes this module evaluates.
     trial_vocabulary: Sequence[str] = ()
-    # Treatment Options (optional): the key of the module's source, e.g. "eviq".
+    # Treatment Options (optional): the key of the module's source, e.g. "eviq". The Strategy that asks
+    # "which source applies to this Condition?" is built with Treatment Options (Stage 11).
     treatment_option_source: str | None = None
     open_item_types: Sequence[str] = ()

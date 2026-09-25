@@ -3,9 +3,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CORE_SCREENS, screensFor } from "@/lib/screens";
 import { patientTabsFor } from "@/lib/modules/registry";
-import { INSTALLED_MODULES } from "@/modules";
+import { NO_MODULES } from "@/lib/modules/types";
+import { ONCOLOGY_ON } from "./fixtures";
 
-const ALL = INSTALLED_MODULES.map((m) => m.key);
+const ALL = ONCOLOGY_ON;
 
 /** "/patients/[id]/summary" → "(app)/patients/[id]/[tab]/page.tsx"; all Patient tabs share one dynamic route. */
 function routeFileFor(path: string): string {
@@ -37,7 +38,7 @@ describe("screen inventory", () => {
 
   it("keeps module screens out of the Core screen list", () => {
     expect(CORE_SCREENS.some((s) => s.title === "Treatment Options")).toBe(false);
-    expect(screensFor([]).some((s) => s.title === "Treatment Options")).toBe(false);
-    expect(screensFor(["oncology"]).some((s) => s.title === "Treatment Options")).toBe(true);
+    expect(screensFor(NO_MODULES).some((s) => s.title === "Treatment Options")).toBe(false);
+    expect(screensFor(ONCOLOGY_ON).some((s) => s.title === "Treatment Options")).toBe(true);
   });
 });

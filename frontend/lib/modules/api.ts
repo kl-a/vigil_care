@@ -1,13 +1,10 @@
 import { request, type Schemas } from "@/lib/api";
-import type { ModuleKey } from "./types";
+import type { ModuleConfiguration } from "./types";
 
-export type ActiveConfiguration = Schemas["ActiveConfiguration"];
 export type ModuleStatus = Schemas["ModuleStatus"];
 
-/** The Specialty Modules active for the signed-in User's Practice (per-Practice activation, #15). */
-export async function fetchActiveModules(): Promise<ModuleKey[]> {
-  return (await request<ActiveConfiguration>("/modules/active")).active_modules;
-}
+/** The Practice's active modules, sections and Patient tabs (per-Practice activation, #15). */
+export const fetchModuleConfiguration = () => request<ModuleConfiguration>("/modules/active");
 
 export const listModules = () => request<ModuleStatus[]>("/modules");
 export const setModuleActive = (key: string, change: { is_active: boolean; reason?: string }) =>

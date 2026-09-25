@@ -1,5 +1,5 @@
 import { INSTALLED_MODULES } from "@/modules";
-import type { ModuleKey, ModuleManifest, PatientTab, SectionDefinition, SectionSlotName } from "./types";
+import type { ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName } from "./types";
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "overview", label: "Overview", slot: "patient-overview", screen: { number: 4, title: "Patient Overview", purpose: "Clinical profile for one Patient.", stage: 2 } },
@@ -11,24 +11,30 @@ const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "exports", label: "Exports", screen: { number: 16, title: "Exports", purpose: "Generate and sign off Identified or De-identified Exports.", stage: 12 } },
 ];
 
-/*
- * Which modules are active comes from the API per Practice (/modules/active, #15) through the viewer
- * (useViewer().activeModules). The Core never assumes any module is active.
+function manifest(key: string) {
+  return INSTALLED_MODULES.find((module) => module.key === key);
+}
+
+/**
+ * A slot's sections: which, in what order and with what title comes from the API (the Builder);
+ * the renderer from the module's manifest. A section without a renderer here is skipped.
  */
-
-function active(keys: readonly ModuleKey[]): ModuleManifest[] {
-  return INSTALLED_MODULES.filter((module) => keys.includes(module.key));
+export function sectionsFor(slot: SectionSlotName, config: ModuleConfiguration): SectionDefinition[] {
+  return config.sections
+    .filter((section) => section.slot === slot)
+    .sort((a, b) => a.order - b.order)
+    .flatMap((section) => {
+      const render = manifest(section.module)?.sections[section.id];
+      return render ? [{ id: section.id, slot, title: section.title, order: section.order, render }] : [];
+    });
 }
 
-export function sectionsFor(slot: SectionSlotName, activeModules: readonly ModuleKey[]): SectionDefinition[] {
-  return active(activeModules)
-    .flatMap((module) => module.sections.filter((section) => section.slot === slot))
-    .sort((a, b) => a.order - b.order);
-}
-
-/** Core tabs, with module tabs inserted before Trials. */
-export function patientTabsFor(activeModules: readonly ModuleKey[]): PatientTab[] {
-  const moduleTabs = active(activeModules).flatMap((module) => module.patientTabs);
+/** Core tabs, with the active modules' tabs (from the API) inserted before Trials. */
+export function patientTabsFor(config: ModuleConfiguration): PatientTab[] {
+  const moduleTabs = config.patient_tabs.flatMap((tab) => {
+    const frontend = manifest(tab.module)?.patientTabs[tab.segment];
+    return frontend ? [{ segment: tab.segment, label: tab.label, ...frontend }] : [];
+  });
   const trials = CORE_PATIENT_TABS.findIndex((tab) => tab.segment === "trials");
   return [...CORE_PATIENT_TABS.slice(0, trials), ...moduleTabs, ...CORE_PATIENT_TABS.slice(trials)];
 }

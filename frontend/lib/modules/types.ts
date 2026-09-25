@@ -6,14 +6,6 @@ export type SectionSlotName = "patient-overview" | "patient-summary" | "clinical
 /** A Specialty Module's key, e.g. "oncology". */
 export type ModuleKey = string;
 
-export interface SectionDefinition {
-  id: string;
-  slot: SectionSlotName;
-  title: string;
-  order: number;
-  render: () => ReactNode;
-}
-
 /** What a screen is, for its placeholder and the screen inventory (design doc §5). */
 export interface ScreenInfo {
   number?: number;
@@ -33,8 +25,30 @@ export interface PatientTab {
   slot?: SectionSlotName;
 }
 
+/**
+ * The Practice's active modules, their sections and Patient tabs: the Builder's output from
+ * GET /modules/active (#15). The backend decides *what* appears; the frontend supplies *how* it renders.
+ */
+export interface ModuleConfiguration {
+  active_modules: ModuleKey[];
+  sections: { module: ModuleKey; id: string; slot: string; title: string; order: number }[];
+  patient_tabs: { module: ModuleKey; segment: string; label: string }[];
+}
+
+export const NO_MODULES: ModuleConfiguration = { active_modules: [], sections: [], patient_tabs: [] };
+
+/** A rendered section: the API's section plus the module's renderer. */
+export interface SectionDefinition {
+  id: string;
+  slot: SectionSlotName;
+  title: string;
+  order: number;
+  render: () => ReactNode;
+}
+
+/** A module's frontend: renderers for the sections and screens its backend declares. */
 export interface ModuleManifest {
   key: ModuleKey;
-  sections: SectionDefinition[];
-  patientTabs: PatientTab[];
+  sections: Record<string, () => ReactNode>;
+  patientTabs: Record<string, { screen: ScreenInfo; slot?: SectionSlotName }>;
 }

@@ -286,7 +286,7 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | Open Items | Extra Open Item types | Biomarker discordance |
 
 2. **Module registry.** The Core discovers modules only through the registry and **never imports a module**. Modules may import the Core's public service interfaces, never another module.
-3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers.
+3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers. *(Built with each extension point's first behaviour; the Treatment Options lookup in Stage 11. The contract, registry and Builder exist from Stage 1, #15.)*
 4. **Per-Practice activation.** A Practice may have several modules active. Only a **developer admin** switches modules on or off, in Settings, and each change is recorded as a Verification. Deactivating a module hides its sections and stops its extraction, but its **data is kept and never deleted**. A Document whose Document Type belongs to an inactive module becomes a **Held Document**. Users aren't restricted by module in the MVP. A **Builder** assembles each Practice's active configuration (extension points, sections, vocabularies) from its enabled modules at startup.
 5. **Portability rule.** Each concept (e.g. Line of Therapy, Response Assessment) is implemented as **one self-contained unit** (its tables, schemas, extraction prompt, rules, evaluators and UI section), reached only through its own interface. That way, moving a concept from Oncology to the Core, or to another module, is a mechanical move, not a rewrite. Tests target the unit's interface so they move with it.
 
@@ -1386,7 +1386,8 @@ vigil/
 > - `data/` is gitignored; `prompts/` and `eval/reference_set/` are version-controlled (synthetic only; never commit real data).
 > - `.env` is gitignored; `.env.example` is committed with placeholders.
 > - All models inherit `core.base_model.Entity` (UUID `id`, `created_at`, `updated_at`, soft-delete columns) through exactly one of `PracticeEntity`, `SupportEntity` or `SharedEntity` (§6.2 Practice scoping). Each module's tables are in its own `models.py`.
-> - Routers call only their own module's service layer. Services accept and return Pydantic schemas, never SQLAlchemy models.
+> - Routers call only their own module's service layer. Services accept and return Pydantic schemas, never SQLAlchemy models (the Builder's immutable `PracticeConfiguration` is also fine: it isn't a database model).
+> - **Signing in is shared:** every module's routes use `SignedIn` and `Db` from `modules/accounts/dependencies.py`, the accounts module's public interface. Services refuse with `core.permissions.NotAllowed` (via `require`), which the app turns into 403.
 
 ---
 

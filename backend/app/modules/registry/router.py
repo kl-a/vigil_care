@@ -23,7 +23,5 @@ def active_configuration(actor: SignedIn, db: Db) -> ActiveConfiguration:
 def set_module_active(key: str, change: ModuleChange, actor: SignedIn, db: Db) -> ModuleStatus:
     try:
         return service.set_module_active(db, actor, key, change)
-    except service.NotAllowed as error:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, str(error)) from None
     except service.ModuleNotInstalled as error:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(error)) from None
