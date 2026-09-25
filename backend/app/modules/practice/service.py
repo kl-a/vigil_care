@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.audit import service as audit
 from app.audit.service import Actor
+from app.core.changes import changed_fields
 from app.core.permissions import require
 from app.modules.practice.models import Practice
 from app.modules.practice.schemas import PracticeChange, PracticeDetails
@@ -41,12 +42,7 @@ def change_practice(db: Session, actor: Actor, change: PracticeChange) -> Practi
     require(actor.job_title, "change_settings")
     practice = db.get_one(Practice, actor.practice_id)
     current = _as_details(practice).model_dump()
-    # Empty text clears an optional field.
-    requested = {
-        field: (value or None) if isinstance(value, str) else value
-        for field, value in change.model_dump(exclude_unset=True).items()
-    }
-    changed = {field: value for field, value in requested.items() if value != current[field]}
+    changed = changed_fields(current, change, required=("name",))
     if changed:
         audit.record_verification(
             db, actor, subject_table="practice", subject_id=practice.id, action="edit",

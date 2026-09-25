@@ -17,16 +17,17 @@ from sqlalchemy.orm import Session
 from app.audit import service as audit
 from app.audit.service import Actor
 from app.core.crypto import FieldCipher
+from app.core.changes import blank_to_none, changed_fields
 from app.core.permissions import require
 from app.modules.accounts.service import display_names
 from app.modules.patients.models import Patient
-from app.modules.patients.models import PatientIdentity as IdentityRow
+from app.modules.patients.models import PatientIdentity
 from app.modules.patients.schemas import (
     IdentityChange,
     IdentityHistoryEntry,
     NewPatient,
+    IdentityDetails,
     PatientDetail,
-    PatientIdentity,
     PatientRow,
 )
 
@@ -49,18 +50,18 @@ def _audit_context(patient_id: uuid.UUID) -> str:
     return f"verification.patient:{patient_id}"
 
 
-def _identity(cipher: FieldCipher, row: IdentityRow) -> PatientIdentity:
+def _identity(cipher: FieldCipher, row: PatientIdentity) -> IdentityDetails:
     values: dict[str, Any] = {}
-    for field in PatientIdentity.model_fields:
+    for field in IdentityDetails.model_fields:
         if field in ENCRYPTED:
             sealed: bytes | None = getattr(row, f"{field}_encrypted")
             values[field] = cipher.decrypt(sealed, context=field_context(field, row.patient_id)) if sealed else None
         else:
             values[field] = getattr(row, field)
-    return PatientIdentity(**values)
+    return IdentityDetails(**values)
 
 
-def _store(cipher: FieldCipher, row: IdentityRow, field: str, value: Any) -> None:
+def _store(cipher: FieldCipher, row: PatientIdentity, field: str, value: Any) -> None:
     if field in ENCRYPTED:
         sealed = cipher.encrypt(value, context=field_context(field, row.patient_id)) if value else None
         setattr(row, f"{field}_encrypted", sealed)
@@ -84,19 +85,19 @@ def _unseal(cipher: FieldCipher, patient_id: uuid.UUID, stored: dict[str, Any] |
     return values
 
 
-def display_name(identity: IdentityRow | PatientIdentity) -> str:
+def display_name(identity: PatientIdentity | IdentityDetails) -> str:
     return f"{identity.given_name} {identity.family_name}"
 
 
-def _patients(practice_id: uuid.UUID) -> Select[Patient, IdentityRow]:
+def _patients(practice_id: uuid.UUID) -> Select[Patient, PatientIdentity]:
     return (
-        select(Patient, IdentityRow)
-        .join(IdentityRow, IdentityRow.patient_id == Patient.id)
+        select(Patient, PatientIdentity)
+        .join(PatientIdentity, PatientIdentity.patient_id == Patient.id)
         .where(Patient.practice_id == practice_id)
     )
 
 
-def _patient(db: Session, actor: Actor, patient_id: uuid.UUID) -> tuple[Patient, IdentityRow]:
+def _patient(db: Session, actor: Actor, patient_id: uuid.UUID) -> tuple[Patient, PatientIdentity]:
     row = db.execute(_patients(actor.practice_id).where(Patient.id == patient_id)).one_or_none()
     if row is None:
         raise PatientNotFound()
@@ -114,9 +115,13 @@ def list_patients(db: Session, actor: Actor, q: str | None = None) -> list[Patie
     query = _patients(actor.practice_id)
     for word in (q or "").split():
         query = query.where(
-            or_(IdentityRow.given_name.ilike(f"%{word}%"), IdentityRow.family_name.ilike(f"%{word}%"), IdentityRow.mrn.ilike(f"{word}%"))
+            or_(
+                PatientIdentity.given_name.ilike(f"%{word}%"),
+                PatientIdentity.family_name.ilike(f"%{word}%"),
+                PatientIdentity.mrn.ilike(f"{word}%"),
+            )
         )
-    rows = db.execute(query.order_by(IdentityRow.family_name, IdentityRow.given_name, Patient.pseudonym))
+    rows = db.execute(query.order_by(PatientIdentity.family_name, PatientIdentity.given_name, Patient.pseudonym))
     return [
         PatientRow(
             id=patient.id,
@@ -161,8 +166,8 @@ def create_patient(db: Session, cipher: FieldCipher, actor: Actor, new: NewPatie
     patient = Patient(practice_id=actor.practice_id, pseudonym=_next_pseudonym(db))
     db.add(patient)
     db.flush()
-    identity = IdentityRow(practice_id=actor.practice_id, patient_id=patient.id, given_name=new.given_name, family_name=new.family_name)
-    values = {field: (value or None) if isinstance(value, str) else value for field, value in new.model_dump().items()}
+    identity = PatientIdentity(practice_id=actor.practice_id, patient_id=patient.id, given_name=new.given_name, family_name=new.family_name)
+    values = blank_to_none(new.model_dump())
     for field, value in values.items():
         _store(cipher, identity, field, value)
     db.add(identity)
@@ -178,15 +183,7 @@ def change_identity(db: Session, cipher: FieldCipher, actor: Actor, patient_id: 
     require(actor.job_title, "verify_patient_identity")
     patient, identity = _patient(db, actor, patient_id)
     current = _identity(cipher, identity).model_dump()
-    requested = {
-        field: (value or None) if isinstance(value, str) else value
-        for field, value in change.model_dump(exclude_unset=True).items()
-    }
-    changed = {
-        field: value
-        for field, value in requested.items()
-        if value != current[field] and not (value is None and field in REQUIRED)
-    }
+    changed = changed_fields(current, change, required=REQUIRED)
     if changed:
         audit.record_verification(
             db, actor, subject_table=PATIENT_SUBJECT, subject_id=patient.id, action="edit",

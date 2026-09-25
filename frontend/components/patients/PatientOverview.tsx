@@ -113,7 +113,7 @@ function IdentityForm({ patient, onSaved, onCancel }: { patient: PatientDetail; 
   );
 }
 
-/** The Patient Identity inputs, shared by "New patient" and "Edit details". */
+/** The Patient Identity inputs, shared by "New Patient" and "Edit details". */
 export function IdentityFields({ draft, onChange }: { draft: Record<IdentityField, string>; onChange: (draft: Record<IdentityField, string>) => void }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">

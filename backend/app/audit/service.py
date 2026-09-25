@@ -7,8 +7,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.audit.models import Verification
-from app.core.base_model import Entity
 from app.audit.schemas import VerificationEntry
+from app.core.base_model import Entity
 from app.core.vocabulary import JobTitle
 
 VerificationAction = Literal[

@@ -2,12 +2,14 @@
 
     python -m app.db.demo_data      # or: make demo-data
 
-Every name comes from the frontend brief §10 ("use only this; no real people"), marked "(synthetic)".
-Harbourside Oncology is the main demo Practice, with one User per Job Title, its Sites, Providers and Patients. Northside Oncology is a second
-Practice where Dr Alex Rivera also works, so one login with several Practice Memberships is demoable.
+Names come from the frontend brief §10 ("use only this; no real people"), marked "(synthetic)"; the one
+addition is a second referring GP, which #7 asks for.
+Harbourside Oncology is the main demo Practice: one User per Job Title, two Sites, its Providers and three
+Patients. Northside Oncology is a second Practice where Dr Alex Rivera also works, so one login with several
+Practice Memberships is demoable.
 
-Loading is idempotent: rows have fixed ids; existing rows are kept (User names are brought up to date). Later
-stages add Patients, Providers and Clinical Records here.
+Loading is idempotent: rows have fixed ids; existing rows are kept (User names and a migrated primary Site
+are brought up to date). Later stages add Care Teams and Clinical Records here.
 """
 
 import uuid
@@ -19,9 +21,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.audit.models import Verification
-from app.core.config import Settings
+from app.core.config import Settings, keystore
 from app.core.crypto import FieldCipher
-from app.core.seams.keys import LocalKeystore
 from app.core.database import session_factory
 from app.core.vocabulary import JobTitle
 from app.db import metadata  # noqa: F401  (registers every table, so foreign keys resolve)
@@ -84,6 +85,7 @@ TREATING_ONCOLOGIST = DemoProvider("Dr", "Alex", "Rivera (synthetic)", "medical_
 PROVIDERS = (
     TREATING_ONCOLOGIST,
     DemoProvider("Dr", "Morgan", "Grey (synthetic)", "general_practice", "Example Family Practice", notes="Referring GP"),
+    DemoProvider("Dr", "Jamie", "Lane (synthetic)", "general_practice", "Example Street Clinic", notes="Referring GP"),
     DemoProvider("Dr", "Taylor", "Quinn (synthetic)", "surgery", "Example Hospital"),
     DemoProvider(None, "Riley", "Hart (synthetic)", "other", "Example Cancer Centre", notes="Trial-site contact"),
 )
@@ -138,7 +140,7 @@ def load(settings: Settings) -> None:
         for provider in PROVIDERS:
             _provider(db, provider)
         _link_own_provider(db, CLINICIAN, TREATING_ONCOLOGIST)
-        cipher = FieldCipher(LocalKeystore.from_secrets(settings.encryption_key))
+        cipher = FieldCipher(keystore(settings))
         for patient in PATIENTS:
             _patient(db, cipher, patient)
         _activate_oncology(db)

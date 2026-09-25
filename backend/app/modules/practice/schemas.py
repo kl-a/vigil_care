@@ -3,9 +3,9 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
+from app.core.fields import Email, Text
 from app.modules.practice.models import ProviderSpecialty
 
-Text = Annotated[str, StringConstraints(strip_whitespace=True, max_length=200)]
 
 
 class PracticeDetails(BaseModel):
@@ -27,7 +27,7 @@ class PracticeChange(BaseModel):
     address: Text | None = None
     phone: Text | None = None
     fax: Text | None = None
-    email: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^([^@\s]+@[^@\s]+\.[^@\s]+)?$")] | None = None
+    email: Email | None = None
     abn: Text | None = None
 
     @field_validator("abn")
@@ -71,9 +71,6 @@ class SiteChange(BaseModel):
     lat: Latitude | None = None
     lng: Longitude | None = None
     is_primary: Literal[True] | None = None
-
-
-Email = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^([^@\s]+@[^@\s]+\.[^@\s]+)?$")]
 
 
 class ProviderRow(BaseModel):

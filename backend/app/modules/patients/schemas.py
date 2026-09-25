@@ -4,8 +4,9 @@ from typing import Annotated, Any
 
 from pydantic import AfterValidator, BaseModel, StringConstraints
 
+from app.core.fields import Email, Text
+
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
-Text = Annotated[str, StringConstraints(strip_whitespace=True, max_length=200)]
 
 
 def _digits(count: int, what: str) -> AfterValidator:
@@ -27,11 +28,10 @@ def _not_in_future(value: date) -> date:
 MedicareNumber = Annotated[str, StringConstraints(strip_whitespace=True), _digits(10, "A Medicare number")]
 Ihi = Annotated[str, StringConstraints(strip_whitespace=True), _digits(16, "An IHI")]
 Irn = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[1-9]?$")]
-Email = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^([^@\s]+@[^@\s]+\.[^@\s]+)?$")]
 Dob = Annotated[date, AfterValidator(_not_in_future)]
 
 
-class PatientIdentity(BaseModel):
+class IdentityDetails(BaseModel):
     """Who the Patient is, shown in full inside Vigil and never sent outside the Practice Boundary (§9.3)."""
 
     given_name: str
@@ -114,5 +114,5 @@ class PatientDetail(BaseModel):
     id: uuid.UUID
     pseudonym: str
     display_name: str
-    identity: PatientIdentity
+    identity: IdentityDetails
     history: list[IdentityHistoryEntry]

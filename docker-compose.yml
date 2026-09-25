@@ -52,6 +52,7 @@ services:
       VIGIL_VLM_WORKER_URL: ${VIGIL_VLM_WORKER_URL:-}
       VIGIL_SESSION_SECRET: ${VIGIL_SESSION_SECRET:-}
       VIGIL_ENCRYPTION_KEY: ${VIGIL_ENCRYPTION_KEY:-}
+      VIGIL_PREVIOUS_ENCRYPTION_KEYS: ${VIGIL_PREVIOUS_ENCRYPTION_KEYS:-}
     ports: ["${VIGIL_BACKEND_PORT:-8000}:8000"]
     depends_on:
       migrate: { condition: service_completed_successfully }

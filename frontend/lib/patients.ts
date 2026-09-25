@@ -2,7 +2,7 @@ import { request, type Schemas } from "./api";
 
 export type PatientRow = Schemas["PatientRow"];
 export type PatientDetail = Schemas["PatientDetail"];
-export type PatientIdentity = Schemas["PatientIdentity"];
+export type PatientIdentity = Schemas["IdentityDetails"];
 export type NewPatient = Schemas["NewPatient"];
 export type IdentityChange = Schemas["IdentityChange"];
 export type IdentityHistoryEntry = Schemas["IdentityHistoryEntry"];

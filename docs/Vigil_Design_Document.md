@@ -1290,6 +1290,7 @@ vigil/
 │   │   │   ├── base_model.py        # Entity: UUID, timestamps, soft delete; PracticeEntity / SupportEntity / SharedEntity
 │   │   │   ├── vocabulary.py        # Value sets shared by several modules (Job Titles, intents, statuses)
 │   │   │   ├── permissions.py       # can_verify(user, fact_kind), Job Title rules (§6.4)
+│   │   │   ├── crypto.py            # FieldCipher: AES-256-GCM with keys from the key interface
 │   │   │   └── seams/               # ─── Swappable infrastructure (ADR 0003) ───
 │   │   │       ├── storage.py       # LocalDiskStorage → BlobStorage later
 │   │   │       ├── keys.py          # LocalKeystore → KeyVault later
@@ -1311,7 +1312,7 @@ vigil/
 │   │   │
 │   │   ├── modules/
 │   │   │   ├── accounts/            # User, Practice Membership, login, 2FA, reauth
-│   │   │   ├── practice/            # Practice, Provider, Care Team
+│   │   │   ├── practice/            # Practice, Site, Provider, Care Team
 │   │   │   ├── patients/            # Patient, Patient Identity
 │   │   │   ├── documents/           # Document, Original/Working Copy, hold, move
 │   │   │   │   ├── normalise.py     # Deskew, greyscale, ≤300 dpi

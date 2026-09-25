@@ -59,8 +59,8 @@ describe("Patient List", () => {
   it("creates a Patient with their identity and opens their Overview", async () => {
     patients.createPatient.mockResolvedValue(DETAIL);
     renderAs(<PatientsPage />);
-    fireEvent.click(await screen.findByRole("button", { name: "New patient" }));
-    const form = screen.getByRole("form", { name: "New patient" });
+    fireEvent.click(await screen.findByRole("button", { name: "New Patient" }));
+    const form = screen.getByRole("form", { name: "New Patient" });
     fireEvent.change(within(form).getByLabelText("Given name"), { target: { value: "Jane" } });
     fireEvent.change(within(form).getByLabelText("Family name"), { target: { value: "Citizen" } });
     fireEvent.change(within(form).getByLabelText("Date of birth"), { target: { value: "1962-04-03" } });
@@ -75,8 +75,8 @@ describe("Patient List", () => {
   it("shows why the backend refused", async () => {
     patients.createPatient.mockRejectedValue(new Error("A Medicare number has 10 digits."));
     renderAs(<PatientsPage />);
-    fireEvent.click(await screen.findByRole("button", { name: "New patient" }));
-    const form = screen.getByRole("form", { name: "New patient" });
+    fireEvent.click(await screen.findByRole("button", { name: "New Patient" }));
+    const form = screen.getByRole("form", { name: "New Patient" });
     fireEvent.change(within(form).getByLabelText("Given name"), { target: { value: "Jane" } });
     fireEvent.change(within(form).getByLabelText("Family name"), { target: { value: "Citizen" } });
     fireEvent.submit(form);

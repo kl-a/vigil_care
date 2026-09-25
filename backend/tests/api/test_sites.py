@@ -51,13 +51,22 @@ def test_the_first_site_is_primary_and_later_ones_are_not(sign_in: SignIn) -> No
     assert add(client, CLINIC)["is_primary"] is False
 
 
-def test_choosing_another_primary_moves_it(sign_in: SignIn) -> None:
-    client, _ = sign_in("clinician")
+def test_choosing_another_primary_moves_it_signing_off_both(sign_in: SignIn, committed: Seed) -> None:
+    client, ids = sign_in("clinician")
     rooms, clinic = add(client, ROOMS), add(client, CLINIC)
     changed = client.patch(f"/sites/{clinic['id']}", json={"is_primary": True})
     assert changed.status_code == 200 and changed.json()["is_primary"] is True
     primary = {s["id"]: s["is_primary"] for s in client.get("/sites").json()}
     assert primary == {rooms["id"]: False, clinic["id"]: True}
+    moves = committed.conn.execute(
+        "SELECT subject_id, before, after FROM verification WHERE practice_id = %s AND subject_table = 'site'"
+        " AND after ? 'is_primary' AND before IS NOT NULL",
+        [ids["practice"]],
+    ).fetchall()
+    assert {str(s): (b, a) for s, b, a in moves} == {
+        rooms["id"]: ({"is_primary": True}, {"is_primary": False}),
+        clinic["id"]: ({"is_primary": False}, {"is_primary": True}),
+    }
 
 
 def test_the_primary_is_chosen_not_unset(sign_in: SignIn) -> None:

@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.audit import service as audit
 from app.audit.service import Actor
+from app.core.changes import changed_fields
 from app.core.permissions import require
 from app.modules.practice.models import Site
 from app.modules.practice.schemas import NewSite, SiteChange, SiteRow
@@ -25,7 +26,7 @@ class SiteNotFound(LookupError):
 
 
 class PrimarySiteNeeded(ValueError):
-    pass
+    """The primary Site can't be deleted: another is chosen first, so the Practice always has one."""
 
 
 def _row(site: Site) -> SiteRow:
@@ -50,9 +51,13 @@ def _site(db: Session, actor: Actor, site_id: uuid.UUID) -> Site:
     return site
 
 
-def _clear_primary(db: Session, practice_id: uuid.UUID) -> None:
-    """Before another Site becomes primary: the database allows only one at a time."""
-    for site in db.scalars(select(Site).where(Site.practice_id == practice_id, Site.is_primary)):
+def _clear_primary(db: Session, actor: Actor) -> None:
+    """Before another Site becomes primary (the database allows one at a time); the demotion is signed off too."""
+    for site in db.scalars(select(Site).where(Site.practice_id == actor.practice_id, Site.is_primary)):
+        audit.record_verification(
+            db, actor, subject_table=SITE_SUBJECT, subject_id=site.id, action="edit",
+            before={"is_primary": True}, after={"is_primary": False},
+        )
         site.is_primary = False
     db.flush()
 
@@ -90,12 +95,7 @@ def change_site(db: Session, actor: Actor, site_id: uuid.UUID, change: SiteChang
     require(actor.job_title, "change_settings")
     site = _site(db, actor, site_id)
     current = _fields(site)
-    # Empty text clears an optional field.
-    requested = {
-        field: (value or None) if isinstance(value, str) else value
-        for field, value in change.model_dump(exclude_unset=True).items()
-    }
-    changed = {field: value for field, value in requested.items() if value != current[field]}
+    changed = changed_fields(current, change, required=("name",))
     if not changed:
         return _row(site)
     audit.record_verification(
@@ -103,7 +103,7 @@ def change_site(db: Session, actor: Actor, site_id: uuid.UUID, change: SiteChang
         before={field: current[field] for field in changed}, after=changed,
     )
     if changed.get("is_primary"):
-        _clear_primary(db, actor.practice_id)
+        _clear_primary(db, actor)
     for field, value in changed.items():
         setattr(site, field, _decimal(value) if field in ("lat", "lng") else value)
     db.flush()

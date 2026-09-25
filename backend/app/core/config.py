@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.core.seams.keys import LocalKeystore
+from app.core.seams.keys import Keystore, LocalKeystore
 
 Environment = Literal["dev", "test", "prod"]
 
@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     session_secret: str = DEV_SESSION_SECRET
     # Base64 of a random 32-byte key (e.g. `openssl rand -base64 32`), behind the key interface (ADR 0003).
     encryption_key: str = DEV_ENCRYPTION_KEY
+    # After a rotation: the older keys, comma-separated, so values they sealed still open.
+    previous_encryption_keys: str = ""
 
     @field_validator("session_secret")
     @classmethod
@@ -67,8 +69,14 @@ def refuse_unsafe_startup(settings: Settings) -> None:
             "Set VIGIL_ENCRYPTION_KEY to a random 32-byte key, base64-encoded (openssl rand -base64 32)."
         )
     try:
-        LocalKeystore.from_secrets(settings.encryption_key)
+        keystore(settings)
     except ValueError as error:
         raise StartupRefused(f"The encryption key (VIGIL_ENCRYPTION_KEY) isn't usable: {error}") from None
     if settings.environment == "prod":
         raise StartupRefused("VIGIL_ENV=prod is not supported in the MVP (synthetic data only; dev and test).")
+
+
+def keystore(settings: Settings) -> Keystore:
+    """The key interface's implementation for these settings: the local keystore until Key Vault (ADR 0003)."""
+    previous = [secret.strip() for secret in settings.previous_encryption_keys.split(",") if secret.strip()]
+    return LocalKeystore.from_secrets(settings.encryption_key, previous=previous)

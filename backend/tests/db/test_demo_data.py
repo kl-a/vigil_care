@@ -72,7 +72,7 @@ def test_demo_data_loads_two_practices_one_user_per_job_title_and_oncology(datab
     assert counts["sites"] == (["Example Hospital clinic", "Harbourside rooms (primary)"],)
     assert counts["unmarked_names"] == (0,)
     assert counts["job_titles"] == (["clinician", "developer_admin", "secretary", "trial_coordinator"],)
-    assert counts["providers"] == (["general_practice", "medical_oncology (internal)", "other", "surgery"],)
+    assert counts["providers"] == (["general_practice", "general_practice", "medical_oncology (internal)", "other", "surgery"],)
     assert counts["linked"] == ("Rivera (synthetic)",)
     assert counts["patients"] == (
         ["VG-0042 Jane Citizen (synthetic)", "VG-0043 Sam Example (synthetic)", "VG-0044 Robin Sample (synthetic)"],

@@ -3,11 +3,10 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import health
-from app.core.config import Settings, refuse_unsafe_startup
+from app.core.config import Settings, keystore, refuse_unsafe_startup
 from app.core.crypto import FieldCipher, TamperedCiphertext
 from app.core.database import DatabaseCheck, postgres_check, session_factory
 from app.core.permissions import NotAllowed
-from app.core.seams.keys import LocalKeystore
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
 from app.modules.patients import router as patients
@@ -34,7 +33,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.state.settings = settings
     app.state.database_check = database_check or postgres_check(settings.database_url)
     app.state.sessionmaker = session_factory(settings.database_url)
-    app.state.field_cipher = FieldCipher(LocalKeystore.from_secrets(settings.encryption_key))
+    app.state.field_cipher = FieldCipher(keystore(settings))
     # Signed cookie holding only the User id and the Practice they act in.
     # Stage 13 adds the inactivity lock and HTTPS-only cookies.
     app.add_middleware(

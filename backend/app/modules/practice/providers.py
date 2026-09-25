@@ -12,11 +12,14 @@ from sqlalchemy.orm import Session
 
 from app.audit import service as audit
 from app.audit.service import Actor
+from app.core.changes import blank_to_none, changed_fields
 from app.core.permissions import require
 from app.modules.practice.models import Provider, ProviderSpecialty
 from app.modules.practice.schemas import NewProvider, ProviderChange, ProviderRow
 
 PROVIDER_SUBJECT = "provider"
+# Sent empty in an edit, these are ignored rather than cleared.
+REQUIRED = ("first_name", "last_name", "specialty", "is_internal")
 
 
 class ProviderNotFound(LookupError):
@@ -24,7 +27,7 @@ class ProviderNotFound(LookupError):
 
 
 class ProviderNumberTaken(ValueError):
-    pass
+    """Provider numbers are unique within the Practice, including removed Providers'."""
 
 
 def display_name(provider: Provider) -> str:
@@ -104,7 +107,7 @@ def provider_names(db: Session, practice_id: uuid.UUID, provider_ids: set[uuid.U
 
 def add_provider(db: Session, actor: Actor, new: NewProvider) -> ProviderRow:
     require(actor.job_title, "manage_providers")
-    values = {field: (value or None) if isinstance(value, str) else value for field, value in new.model_dump().items()}
+    values = blank_to_none(new.model_dump())
     _check_number_free(db, actor, values["provider_number"])
     provider = Provider(practice_id=actor.practice_id, **values)
     db.add(provider)
@@ -119,16 +122,7 @@ def change_provider(db: Session, actor: Actor, provider_id: uuid.UUID, change: P
     require(actor.job_title, "manage_providers")
     provider = _provider(db, actor, provider_id)
     current = _fields(provider)
-    requested = {
-        field: (value or None) if isinstance(value, str) else value
-        for field, value in change.model_dump(exclude_unset=True).items()
-    }
-    # A required field can't be cleared; sending it empty or null is ignored rather than refused.
-    changed = {
-        field: value
-        for field, value in requested.items()
-        if value != current[field] and not (value is None and field in ("first_name", "last_name", "specialty", "is_internal"))
-    }
+    changed = changed_fields(current, change, required=REQUIRED)
     if not changed:
         return _row(provider)
     if "provider_number" in changed:

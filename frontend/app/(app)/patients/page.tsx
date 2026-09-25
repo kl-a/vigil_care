@@ -25,7 +25,7 @@ export default function PatientsPage() {
     <div data-screen-label="Patient List" className="flex w-full max-w-[1200px] flex-col gap-4 px-5 pb-8 pt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="m-0 text-xl font-semibold">Patients</h1>
-        <button onClick={() => setAdding(true)} className="h-8 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground">New patient</button>
+        <button onClick={() => setAdding(true)} className="h-8 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground">New Patient</button>
       </div>
       <label className="flex flex-col gap-1 text-xs font-medium">
         Search by name or MRN
@@ -88,14 +88,14 @@ function NewPatientForm({ onCreated, onCancel }: { onCreated: (id: string) => vo
   }
 
   return (
-    <form onSubmit={submit} aria-label="New patient" className="flex flex-col gap-3 rounded-md border border-border bg-card p-4">
-      <h2 className="m-0 text-sm font-semibold">New patient</h2>
+    <form onSubmit={submit} aria-label="New Patient" className="flex flex-col gap-3 rounded-md border border-border bg-card p-4">
+      <h2 className="m-0 text-sm font-semibold">New Patient</h2>
       <IdentityFields draft={draft} onChange={setDraft} />
       <p className="m-0 text-xs text-muted-foreground">Vigil assigns the Pseudonym (e.g. VG-0042), used only on De-identified Exports. Identifying details are encrypted in the database.</p>
       {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="h-8 rounded-md border border-border px-3 text-[13px]">Cancel</button>
-        <button type="submit" disabled={busy} className="h-8 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground disabled:opacity-50">Create patient</button>
+        <button type="submit" disabled={busy} className="h-8 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground disabled:opacity-50">Create Patient</button>
       </div>
     </form>
   );

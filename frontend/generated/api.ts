@@ -513,6 +513,38 @@ export interface components {
             phone?: string | null;
         };
         /**
+         * IdentityDetails
+         * @description Who the Patient is, shown in full inside Vigil and never sent outside the Practice Boundary (§9.3).
+         */
+        IdentityDetails: {
+            /** Address */
+            address: string | null;
+            /** Dob */
+            dob: string | null;
+            /** Email */
+            email: string | null;
+            /** Family Name */
+            family_name: string;
+            /** Given Name */
+            given_name: string;
+            /** Ihi */
+            ihi: string | null;
+            /** Medicare Irn */
+            medicare_irn: string | null;
+            /** Medicare Number */
+            medicare_number: string | null;
+            /** Mobile */
+            mobile: string | null;
+            /** Mrn */
+            mrn: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone: string | null;
+            /** Phone */
+            phone: string | null;
+        };
+        /**
          * IdentityHistoryEntry
          * @description One change to the Patient's identity: who, their Job Title then, what changed and when.
          */
@@ -663,41 +695,9 @@ export interface components {
              * Format: uuid
              */
             id: string;
-            identity: components["schemas"]["PatientIdentity"];
+            identity: components["schemas"]["IdentityDetails"];
             /** Pseudonym */
             pseudonym: string;
-        };
-        /**
-         * PatientIdentity
-         * @description Who the Patient is, shown in full inside Vigil and never sent outside the Practice Boundary (§9.3).
-         */
-        PatientIdentity: {
-            /** Address */
-            address: string | null;
-            /** Dob */
-            dob: string | null;
-            /** Email */
-            email: string | null;
-            /** Family Name */
-            family_name: string;
-            /** Given Name */
-            given_name: string;
-            /** Ihi */
-            ihi: string | null;
-            /** Medicare Irn */
-            medicare_irn: string | null;
-            /** Medicare Number */
-            medicare_number: string | null;
-            /** Mobile */
-            mobile: string | null;
-            /** Mrn */
-            mrn: string | null;
-            /** Next Of Kin Name */
-            next_of_kin_name: string | null;
-            /** Next Of Kin Phone */
-            next_of_kin_phone: string | null;
-            /** Phone */
-            phone: string | null;
         };
         /**
          * PatientRow

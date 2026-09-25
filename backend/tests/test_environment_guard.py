@@ -1,7 +1,9 @@
+import base64
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import DEV_ENCRYPTION_KEY, DEV_SESSION_SECRET, StartupRefused
+from app.core.config import DEV_ENCRYPTION_KEY, DEV_SESSION_SECRET, StartupRefused, keystore
+from app.core.crypto import FieldCipher
 from app.main import create_app
 from tests.conftest import make_settings
 
@@ -75,3 +77,11 @@ def test_the_dev_encryption_key_is_refused_outside_dev() -> None:
 def test_an_encryption_key_that_isnt_256_bits_is_refused() -> None:
     with pytest.raises(StartupRefused, match="encryption key"):
         create_app(make_settings(encryption_key="dG9vIHNob3J0"), database_check=lambda: True)
+
+
+def test_values_sealed_before_a_rotation_open_with_the_previous_key_configured() -> None:
+    old = base64.b64encode(bytes([1] * 32)).decode()
+    new = base64.b64encode(bytes([2] * 32)).decode()
+    sealed = FieldCipher(keystore(make_settings(encryption_key=old))).encrypt("0491 570 156", context="c")
+    rotated = FieldCipher(keystore(make_settings(encryption_key=new, previous_encryption_keys=f" {old} ")))
+    assert rotated.decrypt(sealed, context="c") == "0491 570 156"
