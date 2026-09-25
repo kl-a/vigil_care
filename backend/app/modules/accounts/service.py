@@ -80,6 +80,12 @@ def dev_login(db: Session, user_id: uuid.UUID, practice_id: uuid.UUID) -> Curren
     return user
 
 
+def display_names(db: Session, user_ids: set[uuid.UUID]) -> dict[uuid.UUID, str]:
+    """Who signed something off, for audit trails in any module."""
+    rows = db.execute(select(User.id, User.display_name).where(User.id.in_(user_ids)))
+    return {user_id: name for user_id, name in rows}
+
+
 class ActiveUsers:
     """The accounts module's answer to the identity interface's `ActiveUsers`: active at any Practice."""
 
@@ -169,8 +175,7 @@ def user_detail(db: Session, actor: CurrentUser, user_id: uuid.UUID) -> UserDeta
     user = db.get_one(User, user_id)
     # Verifications belong to a Practice, so this is the history at this Practice only.
     entries = audit.history(db, actor.practice_id, USER_SUBJECT, user_id)
-    authors = db.execute(select(User.id, User.display_name).where(User.id.in_({e.user_id for e in entries})))
-    names = {author_id: name for author_id, name in authors}
+    names = display_names(db, {e.user_id for e in entries})
     history = [
         HistoryEntry(
             action=e.action,

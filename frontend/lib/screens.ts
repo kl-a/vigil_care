@@ -10,7 +10,7 @@ export interface Screen extends ScreenInfo {
 export const CORE_SCREENS: readonly Screen[] = [
   { number: 1, title: "Login", path: "/login", purpose: "Individual sign-in with 2FA.", stage: 1, built: true },
   { number: 2, title: "Dashboard", path: "/dashboard", purpose: "Practice-wide Open Items.", stage: 5 },
-  { number: 3, title: "Patient List", path: "/patients", purpose: "Browse, search and create Patients.", stage: 2 },
+  { number: 3, title: "Patient List", path: "/patients", purpose: "Browse, search and create Patients.", stage: 2, built: true },
   { number: 5, title: "Document Upload", path: "/documents", purpose: "Ingest Documents and follow their status.", stage: 6 },
   { number: 6, title: "Extraction Review", path: "/review", purpose: "Review Extracted Facts one by one.", stage: 9 },
   { number: 7, title: "Redaction QA", path: "/redaction", purpose: "Review and correct PII masking.", stage: 7 },

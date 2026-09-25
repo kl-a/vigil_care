@@ -3,7 +3,7 @@
     python -m app.db.demo_data      # or: make demo-data
 
 Every name comes from the frontend brief §10 ("use only this; no real people"), marked "(synthetic)".
-Harbourside Oncology is the main demo Practice, with one User per Job Title. Northside Oncology is a second
+Harbourside Oncology is the main demo Practice, with one User per Job Title, its Sites, Providers and Patients. Northside Oncology is a second
 Practice where Dr Alex Rivera also works, so one login with several Practice Memberships is demoable.
 
 Loading is idempotent: rows have fixed ids; existing rows are kept (User names are brought up to date). Later
@@ -12,6 +12,7 @@ stages add Patients, Providers and Clinical Records here.
 
 import uuid
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -19,10 +20,14 @@ from sqlalchemy.orm import Session
 
 from app.audit.models import Verification
 from app.core.config import Settings
+from app.core.crypto import FieldCipher
+from app.core.seams.keys import LocalKeystore
 from app.core.database import session_factory
 from app.core.vocabulary import JobTitle
 from app.db import metadata  # noqa: F401  (registers every table, so foreign keys resolve)
 from app.modules.accounts.models import PracticeMembership, User
+from app.modules.patients.models import Patient, PatientIdentity
+from app.modules.patients.service import ENCRYPTED, field_context
 from app.modules.practice.models import Practice, Provider, ProviderSpecialty, Site
 from app.modules.registry.models import PracticeModule
 
@@ -84,6 +89,39 @@ PROVIDERS = (
 )
 
 
+@dataclass(frozen=True)
+class DemoPatient:
+    """Frontend brief §10. Medicare numbers and IHIs start with zeros, so they can never be real ones."""
+
+    pseudonym: str
+    given_name: str
+    family_name: str
+    dob: date
+    mrn: str
+    identity: dict[str, str]
+
+    @property
+    def id(self) -> uuid.UUID:
+        return uuid.uuid5(NAMESPACE, f"patient:{self.pseudonym}")
+
+
+PATIENTS = (
+    DemoPatient("VG-0042", "Jane", "Citizen (synthetic)", date(1962, 4, 3), "1002003", {
+        "medicare_number": "0000 00042 1", "medicare_irn": "1", "ihi": "0000 0000 0000 0042",
+        "address": "10 Example Ave, Sydney NSW 2000", "phone": "02 5550 0142", "mobile": "0491 570 156",
+        "email": "jane.citizen@example.com", "next_of_kin_name": "John Citizen (synthetic), husband", "next_of_kin_phone": "0491 570 157",
+    }),
+    DemoPatient("VG-0043", "Sam", "Example (synthetic)", date(1975, 9, 17), "1002017", {
+        "medicare_number": "0000 00043 1", "medicare_irn": "2", "address": "3 Example Pde, Bondi NSW 2026",
+        "mobile": "0491 570 158", "email": "sam.example@example.com",
+    }),
+    DemoPatient("VG-0044", "Robin", "Sample (synthetic)", date(1958, 1, 29), "1002031", {
+        "medicare_number": "0000 00044 1", "medicare_irn": "1", "address": "7 Example Cl, Parramatta NSW 2150",
+        "phone": "02 5550 0144", "mobile": "0491 570 159",
+    }),
+)
+
+
 def load(settings: Settings) -> None:
     if settings.environment != "dev":
         raise DemoDataRefused(f"Demo data is for dev only, not '{settings.environment}'.")
@@ -100,6 +138,9 @@ def load(settings: Settings) -> None:
         for provider in PROVIDERS:
             _provider(db, provider)
         _link_own_provider(db, CLINICIAN, TREATING_ONCOLOGIST)
+        cipher = FieldCipher(LocalKeystore.from_secrets(settings.encryption_key))
+        for patient in PATIENTS:
+            _patient(db, cipher, patient)
         _activate_oncology(db)
 
 
@@ -157,9 +198,13 @@ def _practice(db: Session, practice_id: uuid.UUID, details: dict[str, str]) -> N
 
 
 def _site(db: Session, site: DemoSite) -> None:
-    # Databases migrated from before #25 already have a primary Site per Practice (from its old location).
-    has_primary = db.scalars(select(Site.id).where(Site.practice_id == site.practice_id, Site.is_primary)).first()
-    if db.get(Site, site.id) is not None or (site.is_primary and has_primary is not None):
+    if db.get(Site, site.id) is not None:
+        return
+    # Databases migrated from before #25 already have a primary Site per Practice, made from its old location:
+    # bring it in step with the demo's rather than adding a second primary.
+    migrated = db.scalars(select(Site).where(Site.practice_id == site.practice_id, Site.is_primary)).first()
+    if site.is_primary and migrated is not None:
+        migrated.name, migrated.address, migrated.lat, migrated.lng = site.name, site.address, site.lat, site.lng
         return
     db.add(
         Site(
@@ -200,6 +245,25 @@ def _link_own_provider(db: Session, user: DemoUser, provider: DemoProvider) -> N
     ).one()
     if membership.provider_id is None:
         membership.provider_id = provider.id
+
+
+def _patient(db: Session, cipher: FieldCipher, patient: DemoPatient) -> None:
+    """Encrypted with the configured key, exactly as the app does it (patients.service)."""
+    if db.get(Patient, patient.id) is not None:
+        return
+    db.add(Patient(id=patient.id, practice_id=PRACTICE_ID, pseudonym=patient.pseudonym))
+    db.flush()
+    identity = PatientIdentity(
+        practice_id=PRACTICE_ID, patient_id=patient.id, given_name=patient.given_name, family_name=patient.family_name,
+        dob=patient.dob, mrn=patient.mrn,
+    )
+    for field, value in patient.identity.items():
+        if field in ENCRYPTED:
+            setattr(identity, f"{field}_encrypted", cipher.encrypt(value, context=field_context(field, patient.id)))
+        else:
+            setattr(identity, field, value)
+    db.add(identity)
+    db.flush()
 
 
 def _user(db: Session, user: DemoUser) -> None:
@@ -255,6 +319,7 @@ def main() -> None:
     for user in USERS:
         print(f"  {user.display_name:<28} {user.job_title}")
     print(f"  {CLINICIAN.display_name:<28} also clinician at {NORTHSIDE['name']}")
+    print("Patients: " + ", ".join(f"{p.given_name} {p.family_name} ({p.pseudonym})" for p in PATIENTS))
 
 
 if __name__ == "__main__":

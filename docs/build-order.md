@@ -39,17 +39,17 @@
 | 3 | [#14](https://github.com/kl-a/vigil_care/issues/14) | Practice details in Settings (location moves to the primary Site in #25) | #6 | ✅ Done ([PR #26](https://github.com/kl-a/vigil_care/pull/26)) |
 | 3 | [#15](https://github.com/kl-a/vigil_care/issues/15) | Specialty Modules: contract, registry and Settings toggle | #6 | ✅ Done ([PR #26](https://github.com/kl-a/vigil_care/pull/26)) |
 | any | [#16](https://github.com/kl-a/vigil_care/issues/16) | Show only built screens, and System status | none | ✅ Done ([PR #23](https://github.com/kl-a/vigil_care/pull/23)) |
-| 4 | [#24](https://github.com/kl-a/vigil_care/issues/24) | Practice Memberships: one login, several Practices (data model + dev login; no switcher yet) | #14, #15 | 🔨 Built (`ticket-24-practice-memberships`) |
+| 4 | [#24](https://github.com/kl-a/vigil_care/issues/24) | Practice Memberships: one login, several Practices (data model + dev login; no switcher yet) | #14, #15 | ✅ Done ([PR #27](https://github.com/kl-a/vigil_care/pull/27)) |
 
 ### Stage 2 · Patients
 
-**Demo:** find Jane Citizen and edit her details, then show the audit entry and the encrypted fields in the database. Add her treating oncologist and referring GP.
+**Demo:** find Jane Citizen and edit her details, then show the audit entry and the encrypted fields in the database. Add her treating oncologist and referring GP. Script so far: [docs/demos/stage-2.md](demos/stage-2.md).
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#8](https://github.com/kl-a/vigil_care/issues/8) | Patients with encrypted Patient Identity (includes the key interface) | #6, #24 | ⏳ Blocked (ready once #24 merges) |
-| 1 | [#7](https://github.com/kl-a/vigil_care/issues/7) | Provider directory | #6, #24 | ⏳ Blocked (ready once #24 merges) |
-| 1 | [#25](https://github.com/kl-a/vigil_care/issues/25) | Sites: where a Practice sees Patients | #14, #24 | ⏳ Blocked (ready once #24 merges) |
+| 1 | [#8](https://github.com/kl-a/vigil_care/issues/8) | Patients with encrypted Patient Identity (includes the key interface) | #6, #24 | 🔨 Built (`tickets-7-8-25`) |
+| 1 | [#7](https://github.com/kl-a/vigil_care/issues/7) | Provider directory | #6, #24 | 🔨 Built (`tickets-7-8-25`) |
+| 1 | [#25](https://github.com/kl-a/vigil_care/issues/25) | Sites: where a Practice sees Patients | #14, #24 | 🔨 Built (`tickets-7-8-25`) |
 | 2 | [#17](https://github.com/kl-a/vigil_care/issues/17) | Soft-delete a Patient | #8 | ⏳ Blocked |
 | 2 | [#9](https://github.com/kl-a/vigil_care/issues/9) | Care Team | #8, #7 | ⏳ Blocked |
 
@@ -61,7 +61,7 @@ This stage can run alongside Stage 2.
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | ⏳ Blocked (ready once #24 merges) |
+| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | ⏭️ Ready |
 | 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | ⏳ Blocked |
 | 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | ⏳ Blocked |
 | 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | ⏳ Blocked |
@@ -89,15 +89,15 @@ flowchart LR
     T13 --> T6[#6 permissions + Users ✅]
     T6 --> T14[#14 Practice details ✅]
     T6 --> T15[#15 Specialty Modules ✅]
-    T14 --> T24[#24 Practice Memberships]
+    T14 --> T24[#24 Practice Memberships ✅]
     T15 --> T24
     T24 --> S1
     T16[#16 built screens only ✅] --> S1((Stage 1 demo))
     T14 --> S1
     T15 --> S1
-    T24 --> T8[#8 Patients] --> T17[#17 soft delete]
-    T24 --> T7[#7 Providers]
-    T24 --> T25[#25 Sites] --> S2
+    T24 --> T8[#8 Patients 🔨] --> T17[#17 soft delete]
+    T24 --> T7[#7 Providers 🔨]
+    T24 --> T25[#25 Sites 🔨] --> S2
     T8 --> T9[#9 Care Team]
     T7 --> T9
     T17 --> S2((Stage 2 demo))
@@ -109,7 +109,7 @@ flowchart LR
 ```
 
 **Next up:**
-1. Merge #24 (Practice Memberships). Stage 1 is then complete, ready for its demo ([docs/demos/stage-1.md](demos/stage-1.md)).
-2. Stages 2 and 3 in parallel: #8 and #7 (Patients, Providers), #25 (Sites), #18 (job queue).
+1. Merge #7, #8 and #25. Then #17 (soft-delete a Patient) and #9 (Care Team) complete Stage 2, ready for its demo; raise `SHIPPED_STAGE` to 2.
+2. Stage 3 in parallel: #18 (job queue) is ready now.
 
 **After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.

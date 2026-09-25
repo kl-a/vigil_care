@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.core.config import DEV_SESSION_SECRET, StartupRefused
+from app.core.config import DEV_ENCRYPTION_KEY, DEV_SESSION_SECRET, StartupRefused
 from app.main import create_app
 from tests.conftest import make_settings
 
@@ -65,3 +65,13 @@ def test_an_empty_session_secret_falls_back_to_the_dev_default() -> None:
 def test_a_real_session_secret_is_accepted_in_test() -> None:
     app = create_app(make_settings(environment="test", session_secret="s" * 48), database_check=lambda: True)
     assert app.title == "Vigil"
+
+
+def test_the_dev_encryption_key_is_refused_outside_dev() -> None:
+    with pytest.raises(StartupRefused, match="encryption key"):
+        create_app(make_settings(environment="test", encryption_key=DEV_ENCRYPTION_KEY), database_check=lambda: True)
+
+
+def test_an_encryption_key_that_isnt_256_bits_is_refused() -> None:
+    with pytest.raises(StartupRefused, match="encryption key"):
+        create_app(make_settings(encryption_key="dG9vIHNob3J0"), database_check=lambda: True)

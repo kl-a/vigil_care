@@ -140,6 +140,58 @@ export interface paths {
         patch: operations["set_module_active_modules__key__patch"];
         trace?: never;
     };
+    "/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Patients */
+        get: operations["list_patients_patients_get"];
+        put?: never;
+        /** Create Patient */
+        post: operations["create_patient_patients_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Patient Detail */
+        get: operations["patient_detail_patients__patient_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Identity */
+        patch: operations["change_identity_patients__patient_id__identity_patch"];
+        trace?: never;
+    };
     "/practice": {
         parameters: {
             query?: never;
@@ -428,6 +480,65 @@ export interface components {
             /** Reauthenticated */
             reauthenticated: boolean;
         };
+        /**
+         * IdentityChange
+         * @description Only the fields sent are changed. Empty text clears an optional field; names can't be cleared.
+         */
+        IdentityChange: {
+            /** Address */
+            address?: string | null;
+            /** Dob */
+            dob?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Family Name */
+            family_name?: string | null;
+            /** Given Name */
+            given_name?: string | null;
+            /** Ihi */
+            ihi?: string | null;
+            /** Medicare Irn */
+            medicare_irn?: string | null;
+            /** Medicare Number */
+            medicare_number?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Mrn */
+            mrn?: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name?: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone?: string | null;
+            /** Phone */
+            phone?: string | null;
+        };
+        /**
+         * IdentityHistoryEntry
+         * @description One change to the Patient's identity: who, their Job Title then, what changed and when.
+         */
+        IdentityHistoryEntry: {
+            /** Action */
+            action: string;
+            /** After */
+            after: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Before */
+            before: {
+                [key: string]: unknown;
+            } | null;
+            /** By Display Name */
+            by_display_name: string;
+            /** By Job Title */
+            by_job_title: string;
+            /** Reason */
+            reason: string | null;
+        };
         /** ModuleChange */
         ModuleChange: {
             /** Is Active */
@@ -445,6 +556,38 @@ export interface components {
             key: string;
             /** Version */
             version: string;
+        };
+        /**
+         * NewPatient
+         * @description A new Patient's identity. The Pseudonym is assigned, never chosen.
+         */
+        NewPatient: {
+            /** Address */
+            address?: string | null;
+            /** Dob */
+            dob?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Family Name */
+            family_name: string;
+            /** Given Name */
+            given_name: string;
+            /** Ihi */
+            ihi?: string | null;
+            /** Medicare Irn */
+            medicare_irn?: string | null;
+            /** Medicare Number */
+            medicare_number?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Mrn */
+            mrn?: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name?: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone?: string | null;
+            /** Phone */
+            phone?: string | null;
         };
         /** NewProvider */
         NewProvider: {
@@ -505,6 +648,80 @@ export interface components {
             job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
             /** Username */
             username: string;
+        };
+        /**
+         * PatientDetail
+         * @description The Patient header and Overview's identity card, with the identity's audit trail (newest first).
+         */
+        PatientDetail: {
+            /** Display Name */
+            display_name: string;
+            /** History */
+            history: components["schemas"]["IdentityHistoryEntry"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            identity: components["schemas"]["PatientIdentity"];
+            /** Pseudonym */
+            pseudonym: string;
+        };
+        /**
+         * PatientIdentity
+         * @description Who the Patient is, shown in full inside Vigil and never sent outside the Practice Boundary (§9.3).
+         */
+        PatientIdentity: {
+            /** Address */
+            address: string | null;
+            /** Dob */
+            dob: string | null;
+            /** Email */
+            email: string | null;
+            /** Family Name */
+            family_name: string;
+            /** Given Name */
+            given_name: string;
+            /** Ihi */
+            ihi: string | null;
+            /** Medicare Irn */
+            medicare_irn: string | null;
+            /** Medicare Number */
+            medicare_number: string | null;
+            /** Mobile */
+            mobile: string | null;
+            /** Mrn */
+            mrn: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone: string | null;
+            /** Phone */
+            phone: string | null;
+        };
+        /**
+         * PatientRow
+         * @description A Patient in the Patient List. Cancer Types and counts join in later stages.
+         */
+        PatientRow: {
+            /** Display Name */
+            display_name: string;
+            /** Dob */
+            dob: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mrn */
+            mrn: string | null;
+            /** Pseudonym */
+            pseudonym: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /**
          * PracticeChange
@@ -923,6 +1140,136 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModuleStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_patients_patients_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_patient_patients_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewPatient"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patient_detail_patients__patient_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_identity_patients__patient_id__identity_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDetail"];
                 };
             };
             /** @description Validation Error */

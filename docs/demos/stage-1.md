@@ -13,7 +13,7 @@
 | 1 | Choose **Dr Alex Rivera (synthetic), Clinician**. | The top bar shows who you are and your Job Title; the orange DEV badge means synthetic data only. Clinicians see every screen. | #13 |
 | 2 | **Log out**, choose **Jordan Park (synthetic), Secretary**. | Users is there, Settings isn't. Same app, different Job Title. | #13 |
 | 3 | Log out, choose **Casey Dev (synthetic), Developer admin**. | No Patients anywhere: developer admins configure and support Vigil but never see Patient data. | #13 |
-| 4 | As Casey Dev, paste `/patients/jane/summary` into the address bar. | "Not available for your Job Title". (From #8 the Patient API refuses too, with a 403.) | #13 |
+| 4 | As Casey Dev, paste `/patients` into the address bar. | "Not available for your Job Title". The Patient API refuses too, with a 403. | #13 |
 
 | 5 | As Casey Dev, look at the sidebar and the home page. | Only what's built appears: Users and System status (Settings joins with #14/#15). Home is **System status**: database OK, VLM worker not configured, DEV. | #16 |
 | 6 | Tick **Show upcoming screens** (top bar, dev only). | Every later screen appears, badged with its stage (Patients "S2", PBS "S3"…). Open one: an orange note says "coming in Stage N". Untick it again. | #16 |
@@ -26,7 +26,7 @@
 | 12 | As Dr Alex Rivera, open **Settings** → Practice details. Change the phone number → Save details. | Clinicians and developer admins keep the Practice's details up to date. (Where the Practice sees Patients, and so trial-site distances, comes with Sites in Stage 2.) The save is in the audit trail under Dr Rivera's name. | #14 |
 | 13 | Log out, choose Jordan Park (Secretary). | No Settings in the sidebar: only clinicians and developer admins change them. | #14 |
 | 14 | As Casey Dev, open **Settings** → Specialty Modules. Oncology is **On**. | Vigil is a general Core with Specialty Modules; Oncology is the first. Only a developer admin switches them. | #15 |
-| 15 | Tick **Show upcoming screens**, open a Patient (e.g. `/patients/demo/summary`, as Dr Rivera) and note the Diagnosis section and the Treatment Options tab. Then, as Casey Dev, **Switch Oncology off** (sign-off, reason "Showing the Core"). | Back as Dr Rivera: the Oncology sections and the Treatment Options tab are gone; the Core screens still work. Switch it back on and they return: nothing was deleted. | #15 |
+| 15 | Tick **Show upcoming screens**, open **Patients → Jane Citizen (synthetic) → Summary** as Dr Rivera and note the Diagnosis section and the Treatment Options tab. Then, as Casey Dev, **Switch Oncology off** (sign-off, reason "Showing the Core"). | Back as Dr Rivera: the Oncology sections and the Treatment Options tab are gone; the Core screens still work. Switch it back on and they return: nothing was deleted. | #15 |
 
 | 16 | Log out. Point at Dr Alex Rivera listed twice on the dev login: Harbourside and Northside. Choose **Dr Alex Rivera, Northside Oncology**. | One person, one login, a Practice Membership at each Practice. The top bar's Practice is Northside; Users shows only Northside's people, and Oncology is off here because each Practice has its own modules. | #24 |
 | 17 | Still as Dr Rivera at Northside: **Users** → **New User**, enter only the username `jordan.park`, Job Title Secretary → Add User. | Jordan already has a login (at Harbourside), so their own name comes with it and nothing about Harbourside shows here. Log out: Jordan is now listed under both Practices. | #24 |
