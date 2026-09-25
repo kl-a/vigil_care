@@ -1,7 +1,7 @@
 # Vigil developer commands. Nothing is installed on the host outside backend/.venv and frontend/node_modules.
 BACKEND_PY := backend/.venv/bin/python
 
-.PHONY: setup up down test test-backend test-frontend typecheck gates api-types check-api-types
+.PHONY: setup up down test test-backend test-frontend typecheck gates api-types check-api-types ci
 
 setup: ## Create the backend venv and install frontend deps (local only)
 	cd backend && python3 -m venv .venv && .venv/bin/pip install -q -e '.[dev]'
@@ -35,3 +35,5 @@ api-types: ## Regenerate frontend types from the backend's OpenAPI schema
 
 check-api-types: api-types ## Fail if the committed frontend types are out of date
 	git diff --exit-code -- frontend/generated/api.ts
+
+ci: test typecheck gates check-api-types ## Everything a build must pass

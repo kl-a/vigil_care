@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ShieldOff } from "lucide-react";
-import { JOB_TITLE_LABEL, homePath, type JobTitle } from "@/lib/jobTitles";
+import { JOB_TITLE_LABEL, homePath, seesPatientData, type JobTitle } from "@/lib/jobTitles";
 
 export function Forbidden({ jobTitle }: { jobTitle: JobTitle }) {
-  const message = jobTitle === "developer_admin"
-    ? "Developer admins never see Patient data. Patient screens are not available for this Job Title."
-    : `This page isn't available to a ${JOB_TITLE_LABEL[jobTitle]}.`;
+  const message = seesPatientData(jobTitle)
+    ? `This page isn't available to a ${JOB_TITLE_LABEL[jobTitle]}.`
+    : "Developer admins never see Patient data. Patient screens are not available for this Job Title.";
   return (
     <div className="flex flex-1 items-center justify-center p-10">
       <div className="flex max-w-[420px] flex-col items-center gap-2.5 text-center">

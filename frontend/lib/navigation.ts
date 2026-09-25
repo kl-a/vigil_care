@@ -35,9 +35,12 @@ export const ADMIN_NAV: readonly NavItem[] = [
   { id: "system", label: "System status", href: "/system", icon: "activity", jobTitles: [...STAFF, "developer_admin"] },
 ];
 
+function allows(item: NavItem, jobTitle: JobTitle): boolean {
+  return item.jobTitles.includes(jobTitle);
+}
+
 export function navigationFor(jobTitle: JobTitle): { main: NavItem[]; admin: NavItem[] } {
-  const visible = (item: NavItem) => item.jobTitles.includes(jobTitle);
-  return { main: MAIN_NAV.filter(visible), admin: ADMIN_NAV.filter(visible) };
+  return { main: MAIN_NAV.filter((item) => allows(item, jobTitle)), admin: ADMIN_NAV.filter((item) => allows(item, jobTitle)) };
 }
 
 /** The nav item a path belongs to: its first segment ("/patients/x/summary" → patients). */
@@ -49,5 +52,5 @@ export function navItemForPath(pathname: string): NavItem | undefined {
 /** Whether a Job Title may open a path. Unknown paths are left to the router's 404. */
 export function canAccess(pathname: string, jobTitle: JobTitle): boolean {
   const item = navItemForPath(pathname);
-  return item ? item.jobTitles.includes(jobTitle) : true;
+  return item ? allows(item, jobTitle) : true;
 }

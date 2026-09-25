@@ -1,9 +1,14 @@
 import { expect, it } from "vitest";
 import { parseEnvironment } from "@/lib/environment";
 
-it("reads test and prod, and defaults anything else to dev", () => {
+it("reads dev, test and prod", () => {
+  expect(parseEnvironment("dev")).toBe("dev");
   expect(parseEnvironment("test")).toBe("test");
   expect(parseEnvironment("prod")).toBe("prod");
-  expect(parseEnvironment(undefined)).toBe("dev");
-  expect(parseEnvironment("staging")).toBe("dev");
+});
+
+it("refuses a missing or unknown environment instead of falling back to dev", () => {
+  // Falling back to dev would switch on dev-only features (e.g. Preview as) in test or prod.
+  expect(() => parseEnvironment(undefined)).toThrow(/NEXT_PUBLIC_VIGIL_ENV/);
+  expect(() => parseEnvironment("staging")).toThrow(/staging/);
 });

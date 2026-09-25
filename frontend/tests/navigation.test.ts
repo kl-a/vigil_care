@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canAccess, navigationFor } from "@/lib/navigation";
-import { homePath } from "@/lib/jobTitles";
+import { homePath, seesPatientData } from "@/lib/jobTitles";
 
 const labels = (items: { label: string }[]) => items.map((i) => i.label);
 
@@ -39,6 +39,11 @@ describe("route access", () => {
     expect(canAccess("/users", "trial_coordinator")).toBe(false);
     expect(canAccess("/settings", "trial_coordinator")).toBe(false);
     expect(canAccess("/patients/jane/summary", "trial_coordinator")).toBe(true);
+  });
+
+  it("treats developer admins as the only Job Title that never sees Patient data", () => {
+    expect(seesPatientData("developer_admin")).toBe(false);
+    expect(["clinician", "trial_coordinator", "secretary"].every((t) => seesPatientData(t as never))).toBe(true);
   });
 
   it("sends developer admins home to System status and everyone else to the Dashboard", () => {

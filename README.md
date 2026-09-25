@@ -58,7 +58,10 @@ make setup            # backend venv + frontend deps
 make test             # backend, gates runner and frontend tests
 make typecheck        # mypy (strict) + tsc
 make gates            # quality gates; test environment only
+make ci               # tests + typecheck + gates + API-types drift check (what a build must pass)
 make api-types        # regenerate frontend/generated/api.ts from the backend's OpenAPI schema
 ```
 
-**Safety rule:** the dev login may only be enabled when `VIGIL_ENV=dev`. The backend refuses to start otherwise, and `VIGIL_ENV=prod` is refused in the MVP.
+**Safety rules:**
+- The dev login may only be enabled when `VIGIL_ENV=dev`. The backend refuses to start otherwise, and `VIGIL_ENV=prod` is refused in the MVP.
+- The frontend build fails if `NEXT_PUBLIC_VIGIL_ENV` is missing or unknown; it never silently falls back to dev. `next dev` reads `frontend/.env.development`.

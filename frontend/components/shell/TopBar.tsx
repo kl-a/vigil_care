@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { Moon, PanelLeft, Search, Sun } from "lucide-react";
 import { ENVIRONMENT } from "@/lib/environment";
-import { JOB_TITLE_LABEL, JOB_TITLES, homePath, type JobTitle } from "@/lib/jobTitles";
+import { JOB_TITLE_LABEL, JOB_TITLES, homePath, seesPatientData, type JobTitle } from "@/lib/jobTitles";
 import { EnvironmentBadge } from "./EnvironmentBadge";
 import { useViewer } from "./ViewerProvider";
 
 export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const { jobTitle, canPreviewJobTitles, setPreviewJobTitle, theme, toggleTheme } = useViewer();
-  const seesPatients = jobTitle !== "developer_admin";
   return (
     <header data-noprint="" className="sticky top-0 z-30 flex h-12 items-center gap-3 border-b border-border bg-card px-3">
       <button aria-label="Toggle sidebar" onClick={onToggleSidebar} className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
@@ -19,7 +18,7 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         <span className="flex h-6 w-6 items-center justify-center rounded-[5px] bg-primary text-[13px] font-semibold text-primary-foreground">V</span>
         <span className="text-[15px] font-semibold">Vigil</span>
       </Link>
-      {seesPatients && (
+      {seesPatientData(jobTitle) && (
         <label className="relative ml-3 min-w-[120px] flex-[0_1_340px]">
           <span className="sr-only">Search patients</span>
           <Search aria-hidden className="absolute left-[9px] top-[9px] h-3.5 w-3.5 text-muted-foreground" />
@@ -46,13 +45,13 @@ export function TopBar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
       <button aria-label="Toggle dark theme" onClick={toggleTheme} className="flex h-8 w-8 items-center justify-center rounded-md border border-border">
         {theme === "dark" ? <Sun aria-hidden className="h-[15px] w-[15px]" /> : <Moon aria-hidden className="h-[15px] w-[15px]" />}
       </button>
-      <span className="flex h-8 items-center gap-2 rounded-md border border-border pl-1 pr-2 text-xs">
+      <Link href="/login" className="flex h-8 items-center gap-2 rounded-md border border-border pl-1 pr-2 text-xs text-foreground no-underline hover:bg-muted">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-primary">?</span>
         <span className="flex flex-col leading-tight">
-          <span className="font-medium">Not signed in</span>
+          <span className="font-medium">Sign in</span>
           <span className="text-[11px] text-muted-foreground">{JOB_TITLE_LABEL[jobTitle]}</span>
         </span>
-      </span>
+      </Link>
     </header>
   );
 }

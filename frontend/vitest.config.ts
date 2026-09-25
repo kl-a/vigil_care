@@ -4,5 +4,5 @@ import path from "node:path";
 export default defineConfig({
   esbuild: { jsx: "automatic" },
   resolve: { alias: { "@": path.resolve(__dirname) } },
-  test: { environment: "jsdom", setupFiles: ["./tests/setup.ts"], include: ["tests/**/*.test.{ts,tsx}"] },
+  test: { env: { NEXT_PUBLIC_VIGIL_ENV: "dev", NEXT_PUBLIC_VIGIL_ACTIVE_MODULES: "oncology" }, environment: "jsdom", setupFiles: ["./tests/setup.ts"], include: ["tests/**/*.test.{ts,tsx}"] },
 });

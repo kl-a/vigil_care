@@ -8,9 +8,13 @@ export const JOB_TITLE_LABEL: Record<JobTitle, string> = {
   developer_admin: "Developer admin",
 };
 
-/** Developer admins never see Patient data, so their home is System status. */
+/** Developer admins configure and support Vigil but never see Patient data (design doc §6.4). */
+export function seesPatientData(jobTitle: JobTitle): boolean {
+  return jobTitle !== "developer_admin";
+}
+
 export function homePath(jobTitle: JobTitle): string {
-  return jobTitle === "developer_admin" ? "/system" : "/dashboard";
+  return seesPatientData(jobTitle) ? "/dashboard" : "/system";
 }
 
 export function isJobTitle(value: unknown): value is JobTitle {
