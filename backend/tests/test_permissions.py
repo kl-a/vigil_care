@@ -76,6 +76,10 @@ def test_row_12_start_a_refresh() -> None:
     assert allowed(lambda jt: may(jt, "start_refresh")) == {"developer_admin"}
 
 
+def test_row_13_pbs_drug_lookup_never_developer_admin() -> None:
+    assert allowed(lambda jt: may(jt, "pbs_lookup")) == {"clinician", "trial_coordinator", "secretary"}
+
+
 def test_a_developer_admin_can_verify_no_fact_kind() -> None:
     assert not any(RIGHTS.can_verify("developer_admin", kind) for kind in RIGHTS.fact_kinds())
 

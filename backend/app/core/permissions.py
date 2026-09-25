@@ -31,6 +31,7 @@ Permission = Literal[
     "view_patient_data",
     "support_views",
     "start_refresh",
+    "pbs_lookup",
 ]
 
 _STAFF: frozenset[JobTitle] = frozenset({"clinician", "trial_coordinator", "secretary"})
@@ -55,6 +56,8 @@ PERMISSIONS: Mapping[Permission, frozenset[JobTitle]] = {
     "view_patient_data": _STAFF,
     "support_views": frozenset({"clinician", "trial_coordinator", "secretary", "developer_admin"}),
     "start_refresh": frozenset({"developer_admin"}),
+    # Public reference data, but a clinical tool: the developer admin's navigation has no PBS lookup.
+    "pbs_lookup": _STAFF,
 }
 
 

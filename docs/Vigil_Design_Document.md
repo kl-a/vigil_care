@@ -726,6 +726,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
 | **Support views** (health, pipeline-run status and errors, the cloud request ledger's metadata, job queue, refresh logs, VLM worker status, audit counts) | ✅ | ✅ | ✅ | ✅ |
 | **Start a Refresh** (trial registries, PBS, eviQ) from the Support Views | ❌ | ❌ | ❌ | ✅ |
+| **PBS Drug Lookup** (public reference data, but a clinical tool: not in the developer admin's navigation) | ✅ | ✅ | ✅ | ❌ |
 
 **Developer admins** configure and support Vigil, and **can never access Patient data, in any environment**. Every Patient-data endpoint returns 403 for them, and the frontend hides those screens. Their Dashboard shows system status instead of Open Items. Troubleshooting that would need Patient data is done by a clinician, secretary or trial coordinator. Granting or removing the developer admin Job Title is recorded as a Verification.
 
@@ -1180,9 +1181,10 @@ POST   /treatment-protocols/refresh         eviQ refresh
 GET    /conditions/{id}/treatment-options   Treatment Options from the owning module (Oncology: eviQ + PBS Coverage)
 
 # PBS
-GET    /pbs/drugs
-GET    /pbs/drugs/{item_code}
-POST   /pbs/refresh
+GET    /pbs/schedule                        The schedule shown: its date, whether it's the sample, the last Refresh
+GET    /pbs/drugs?q=                        Search by drug, brand, active ingredient or item code
+GET    /pbs/drugs/{item_code}               The item's drug: every item, with its PBS Listing per indication
+                                            (a PBS Refresh is started with POST /refreshes {"kind": "refresh_pbs"})
 
 # Trials
 POST   /trials/refresh
@@ -1346,7 +1348,7 @@ vigil/
 │   │   │   │   └── review.py        # accept/edit/reject → Clinical Record + verification
 │   │   │   ├── clinical/            # Core Clinical Record: Condition, Treatment Course, imaging, labs, notes, plans
 │   │   │   ├── medications/         # + Condition reconciliation
-│   │   │   ├── pbs/                 # PBS adapter + PBS Listing (Core)
+│   │   │   ├── pbs/                 # PBS adapter (API client, bundled sample, Refresh), PBS Drug Lookup, PBS Listing (Core)
 │   │   │   ├── registry/            # Specialty Module contract, registry, per-Practice activation, config builder
 │   │   │   ├── trials/
 │   │   │   ├── matching/            # Match Runs, scope, aggregation, staleness
