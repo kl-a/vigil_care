@@ -9,6 +9,9 @@ from psycopg.rows import tuple_row
 from psycopg.types.json import Jsonb
 
 
+MEMBERSHIP_FIELDS = ("is_active", "provider_id", "last_login_at")
+
+
 class Seed:
     def __init__(self, conn: psycopg.Connection[Any]) -> None:
         self.conn = conn
@@ -33,15 +36,17 @@ class Seed:
         return self.insert("practice", name="Synthetic Oncology Practice")
 
     def user(self, practice_id: uuid.UUID, job_title: str = "clinician", **values: Any) -> uuid.UUID:
+        """A login with a Practice Membership at `practice_id`. Membership columns go to the Membership."""
+        membership = {field: values.pop(field) for field in MEMBERSHIP_FIELDS if field in values}
         values.setdefault("username", f"user-{uuid.uuid4().hex[:8]}")
         values.setdefault("display_name", "Synthetic User")
-        return self.insert(
-            "user",
-            practice_id=practice_id,
-            password_hash="not-a-real-hash",
-            job_title=job_title,
-            **values,
-        )
+        user_id = self.insert("user", password_hash="not-a-real-hash", **values)
+        self.member(practice_id, user_id, job_title, **membership)
+        return user_id
+
+    def member(self, practice_id: uuid.UUID, user_id: uuid.UUID, job_title: str = "clinician", **values: Any) -> uuid.UUID:
+        """An existing login joins another Practice."""
+        return self.insert("practice_membership", practice_id=practice_id, user_id=user_id, job_title=job_title, **values)
 
     def provider(self, practice_id: uuid.UUID, **values: Any) -> uuid.UUID:
         values.setdefault("specialty", "medical_oncology")

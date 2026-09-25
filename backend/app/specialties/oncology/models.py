@@ -17,6 +17,7 @@ from app.core.base_model import (
     Provenance,
     SharedEntity,
     allowed,
+    member_fk,
     practice_fk,
     provenance_args,
 )
@@ -83,7 +84,7 @@ class Recurrence(PracticeEntity, Provenance):
     __extra_args__ = (
         practice_fk("cancer_diagnosis_id", "cancer_diagnosis"),
         practice_fk("evidence_document_id", "document"),
-        practice_fk("attributed_by_user_id", "user"),
+        member_fk("attributed_by_user_id"),
         practice_fk("new_cancer_diagnosis_id", "cancer_diagnosis"),
         *provenance_args(),
         CheckConstraint(

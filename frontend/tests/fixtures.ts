@@ -21,9 +21,9 @@ export function userWith(jobTitle: JobTitle): CurrentUser {
   };
 }
 
+/** A dev login choice: one of the User's Practice Memberships. */
 export function choiceFor(jobTitle: JobTitle): DevLoginChoice {
-  const { id, display_name, job_title, practice_name } = userWith(jobTitle);
-  return { id, display_name, job_title, practice_name };
+  return userWith(jobTitle);
 }
 
 /** GET /modules/active with Oncology on, exactly as the backend Builder returns it (checked by backend/tests/test_frontend_contract.py). */

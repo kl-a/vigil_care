@@ -99,7 +99,7 @@ The application stack runs via `docker compose up`. Host prerequisites: Docker, 
 - Not a regulated medical device. Operates under the TGA CDSS exemption for single-practice use.
 - No real patient data. The MVP runs dev and test environments only.
 - No EMR/EHR integration (MOSAIQ, Genie, CHARM, EPIC). Standalone document upload only.
-- No multi-practice / multi-tenant operation, and no Access Grants between Practices. The data model still records a Practice on every Patient, User and Document ([revisit-later.md](revisit-later.md) #13).
+- No multi-practice / multi-tenant operation, and no Access Grants between Practices. The data model still records a Practice on every Patient and Document, and a User's Job Title per Practice (Practice Memberships) ([revisit-later.md](revisit-later.md) #13).
 - No patient-facing features. Staff-only tool.
 - No treatment ordering or prescribing. Information display only.
 - No letter drafting ([revisit-later.md](revisit-later.md) #8).
@@ -422,7 +422,7 @@ erDiagram
 - `deleted_at`, `deleted_by_user_id`, `deleted_reason`: soft delete. All queries filter `WHERE deleted_at IS NULL` by default via SQLAlchemy query hooks. **Users never hard-delete anything.** A soft delete requires a reason and also writes a `verification` row with `action = 'delete'`. A CHECK makes the three columns all set or all null, and requires a non-empty reason.
 - **Models:** every table has a SQLAlchemy model from the baseline onward, in the package of the module that owns it (Oncology's models live in the Oncology module). The Alembic baseline is generated from the models and then edited by hand for triggers, grants and seed rows. A **drift test** fails if the models and the migrated database disagree. The Core and each Specialty Module have their own migrations (baseline: `0001_core`, then `0002_oncology`).
 
-**Practice scoping.** There's only one Practice in the MVP, but every query is scoped by `practice_id` from day one. Every table falls into exactly one of three groups:
+**Practice scoping.** The MVP starts with one Practice (the demo data has two, to show Practice Memberships), and every query is scoped by `practice_id` from day one: a session acts in one Practice at a time. Every table falls into exactly one of three groups:
 
 | Group | `practice_id` | Tables |
 |---|---|---|
@@ -430,13 +430,14 @@ erDiagram
 | **Support data** | Nullable (null = system-wide, e.g. a Refresh) | `job`, `pipeline_run`, `llm_call_log`, `cloud_request` (null only for public text, e.g. parsing a trial's criteria). `job_step` has none; it's reached through its `job`. |
 | **Shared reference data** | None | `practice` itself, `user` (a person, who may belong to several Practices; see Practice Memberships below), `specialty_module`, `job_kind`, `fact_kind`, `document_type`, `cancer_type`, `treatment_protocol`, `protocol_drug`, `drug_reference`, `pbs_item`, `pbs_refresh_log`, `eviq_refresh_log`, `trial`, `trial_site`, `trial_snapshot`, `trial_criterion`, `llm_cache` |
 
-- **Composite FKs and a nullable `practice_id`.** A composite FK isn't checked when `practice_id` is null. So `cloud_request` also has plain FKs to `document` and `user`, plus a CHECK: a Patient payload (masked image or pseudonymised text) needs both `practice_id` and `document_id`, and a public-text payload has no `document_id`.
-- **A child row can't point at another Practice's parent.** Every Practice-data table has `UNIQUE (id, practice_id)`. Every FK from one Practice-data table to another is **composite**, `(parent_id, practice_id) → parent(id, practice_id)`, so the database rejects a mismatch. Examples: a Condition belongs to the same Practice as its Patient, and a Verification to the same Practice as its User.
+- **Composite FKs and a nullable `practice_id`.** A composite FK isn't checked when `practice_id` is null. So `cloud_request` also has plain FKs to `document` and `user` (and every Support table's `deleted_by_user_id` has a plain FK to `user` beside the composite one to `practice_membership`), plus a CHECK: a Patient payload (masked image or pseudonymised text) needs both `practice_id` and `document_id`, and a public-text payload has no `document_id`.
+- **A child row can't point at another Practice's parent.** Every Practice-data table has `UNIQUE (id, practice_id)`. Every FK from one Practice-data table to another is **composite**, `(parent_id, practice_id) → parent(id, practice_id)`, so the database rejects a mismatch. Examples: a Condition belongs to the same Practice as its Patient.
+- **Only a member can act in a Practice.** Every Practice-scoped reference to the User who did something (`entered_by_user_id`, `uploaded_by_user_id`, `signed_off_by_user_id`, `deleted_by_user_id`, a Verification's `user_id`, …) is composite `(user_id, practice_id) → practice_membership(user_id, practice_id)`. The column still holds the User's id, but the database rejects a User with no Membership in that Practice.
 
 **Provenance convention for Clinical Record tables** (condition, cancer_diagnosis, recurrence, biomarker, treatment_course, oncology_course_detail, imaging_study, finding, response_assessment, lab_result, performance_status, cns_status, medication, management_plan, clinical_note):
 - `source_fact_id`: FK → `extracted_fact`, nullable. Null means the value was entered directly by a User.
 - `source_document_id`: FK → `document`, nullable.
-- `entered_by_user_id`: FK → `user`, nullable. Set when entered directly.
+- `entered_by_user_id`: FK → the User's `practice_membership`, nullable. Set when entered directly.
 - A CHECK requires `source_fact_id` or `entered_by_user_id`: every Clinical Record row says where it came from.
 - A row exists in a Clinical Record table **only after** a Verification by a User whose Job Title permits it (§6.4). Unverified candidates live only in `extracted_fact`.
 
@@ -449,7 +450,7 @@ erDiagram
 - Every FK has a corresponding index on the referencing column (Postgres doesn't create these automatically).
 
 **Check constraints** (enum-like columns are enforced in the DB, not only in the application):
-- `user.job_title IN ('clinician', 'trial_coordinator', 'secretary', 'developer_admin')`
+- `practice_membership.job_title IN ('clinician', 'trial_coordinator', 'secretary', 'developer_admin')`
 - `provider.specialty IN ('medical_oncology', 'radiation_oncology', 'surgery', 'general_practice', 'haematology', 'pathology', 'radiology', 'other')`
 - `care_team_member.role IN ('treating_oncologist', 'referring_gp', 'referring_specialist', 'surgeon', 'radiation_oncologist', 'trial_site_contact')`
 - `document.status IN ('uploaded', 'ocr', 'masking', 'redaction_review', 'classifying', 'extracting', 'in_review', 'complete', 'held', 'failed')`
@@ -531,7 +532,8 @@ erDiagram
 **Unique constraints:**
 - `patient_identity.patient_id`: one identity row per Patient.
 - `patient.pseudonym`: unique (e.g. `VG-0042`).
-- `user(practice_id, username)`.
+- `user.username`: unique across Vigil (one login per person).
+- `practice_membership(user_id, practice_id)`: one Membership per User per Practice.
 - `document(patient_id, original_sha256)`: no duplicate uploads of the same file for the same Patient.
 - `provider(practice_id, provider_number)` (partial, where not null).
 - `pbs_item(item_code, schedule_date)`.
@@ -589,8 +591,8 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 |-------|---------|-------------|
 | `practice` | A Practice using Vigil. One row in the MVP; the operator adds more with a command (revisit-later #13). | `name`, `address` (registered), `phone`, `fax`, `email`, `abn` (nullable). *Planned (Sites ticket): `lat`/`lng` move to its primary Site.* |
 | `site` *(planned: Sites ticket, Stage 2)* | A place where the Practice sees Patients | `practice_id`, `name`, `address`, `lat`, `lng` (for trial-site distances), `is_primary` (exactly one per Practice) |
-| `user` | A person who logs into Vigil, with one login across Practices. *(Planned: Practice Memberships ticket, Stage 1; until then `practice_id`, `job_title`, `provider_id`, `is_active` and `last_login_at` live here.)* | `username` (**unique across Vigil**), `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at` |
-| `practice_membership` *(planned: Practice Memberships ticket, Stage 1)* | A User's standing at one Practice | `practice_id`, `user_id`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (nullable: their own Provider entry in this Practice's directory), `is_active`, `last_login_at`. Unique `(practice_id, user_id)`. Every Practice-scoped reference to a User (uploaded by, signed off by, deleted by, …) is a composite FK `(user_id, practice_id)` → `practice_membership(user_id, practice_id)`, so only a member of a Practice can act in it. |
+| `user` | A person who logs into Vigil, with one login across Practices. Their Job Title and status are per Practice, in `practice_membership`. | `username` (**unique across Vigil**), `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at` |
+| `practice_membership` | A User's standing at one Practice. A session acts in one Practice at a time, with the Job Title held there. | `practice_id`, `user_id`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (nullable: their own Provider entry in this Practice's directory), `is_active` (deactivating affects only this Practice), `last_login_at`. Unique `(user_id, practice_id)`. Every Practice-scoped reference to a User (uploaded by, signed off by, deleted by, …) is a composite FK `(user_id, practice_id)` → `practice_membership(user_id, practice_id)`, so only a member of a Practice can act in it. |
 | `provider` | A clinician in the Practice's directory, internal or external | `practice_id` (whose directory), `title`, `first_name`, `last_name`, `provider_number` (nullable), `specialty`, `is_internal`, `organisation` (for external), `phone`, `email`, `fax`, `notes` |
 | `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`), `sex`, `created_at`. No real identity here. |
 | `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
@@ -607,7 +609,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | `ocr_page` | Classic-OCR output for one page of the Working Copy | `document_id` (or `redaction_job_file_id`), `page_number`, `engine` (ppocr_v5/doctr), `engine_version`, `words` (JSONB: `[{text, bbox_pt, confidence}]`), `mean_confidence`, `rotation_deg` |
 | `extraction` | One run of the extractor over a Document | `document_id`, `document_type_id`, `pipeline_run_id`, `reader` (text_layer/classic_ocr/local_vlm/cloud_vlm), `model_id`, `prompt_version`, `created_at` |
 | `extracted_fact` | One candidate clinical statement: **the unit of review** | `extraction_id`, `patient_id`, `fact_kind` (FK → `fact_kind.key`: condition/cancer_diagnosis/recurrence/biomarker/lab_result/imaging_study/finding/response_assessment/treatment_course/medication/performance_status/cns_status/management_plan/clinical_note), `module_key` (null = Core), `payload` (JSONB, validated against the fact kind's Pydantic model, which the owning module registers), `source_locations` (JSONB: `[{page, bbox_pt, text}]`), `confidence` (0–1), `confidence_band` (high/medium/low), `numeric_crosscheck` (agree/disagree/not_applicable), `required_job_title` (the minimum Job Title that may verify it, from §6.4), `review_status`, `accepted_record_table`, `accepted_record_id` (set on accept) |
-| `verification` | A User's sign-off on anything: **the audit spine**. Changes to a User (created, Job Title changed, deactivated, reactivated) are `edit` Verifications on `subject_table = 'user'`, with before/after saying what changed. | `subject_table`, `subject_id`, `user_id`, `job_title_at_time`, `action`, `reason` (nullable), `before` (JSONB, nullable), `after` (JSONB, nullable), `reauthenticated` (bool: true for clinician-only actions), `created_at` |
+| `verification` | A User's sign-off on anything: **the audit spine**. Changes to a User's Membership (added to the Practice, Job Title changed, deactivated, reactivated) are `edit` Verifications on `subject_table = 'user'` (`subject_id` = the User) in that Practice, with before/after saying what changed. | `subject_table`, `subject_id`, `user_id`, `job_title_at_time`, `action`, `reason` (nullable), `before` (JSONB, nullable), `after` (JSONB, nullable), `reauthenticated` (bool: true for clinician-only actions), `created_at` |
 
 **Registries & Jobs** (Core; modules add rows through their own migrations)
 
@@ -1306,7 +1308,7 @@ vigil/
 │   │   │   └── scheduler.py         # PBS / eviQ / trial refresh; backup
 │   │   │
 │   │   ├── modules/
-│   │   │   ├── accounts/            # User, login, 2FA, reauth
+│   │   │   ├── accounts/            # User, Practice Membership, login, 2FA, reauth
 │   │   │   ├── practice/            # Practice, Provider, Care Team
 │   │   │   ├── patients/            # Patient, Patient Identity
 │   │   │   ├── documents/           # Document, Original/Working Copy, hold, move
@@ -1744,7 +1746,7 @@ Revisit at the Azure move ([revisit-later.md](revisit-later.md) #14).
 | Pseudonym | Only on De-identified Exports; cloud requests use one-off request IDs. | §9.3 |
 | Environments | dev / test / prod; the MVP is dev + test; synthetic only, full guardrails; dev login in dev only. | Env section |
 | Cloud-readiness | Seams for storage, DB, VLM worker, queue, keys, login; no multi-tenancy yet. | ADR 0003, §14 |
-| Practices | Every Patient/User/Document belongs to a Practice; Access Grants and Combined View deferred. | revisit #13 |
+| Practices | Every Patient/Document belongs to a Practice, and a User works at Practices through Practice Memberships; Access Grants and Combined View deferred. | revisit #13 |
 | Core + Specialty Modules (v1.3) | A specialty-agnostic Core with pluggable Specialty Modules (plugin architecture: contract, registry, Strategy per extension point, per-Practice activation by developer admins); Oncology first. Condition is Core, Cancer Diagnosis is Oncology, Comorbidity is a view. Each concept is a self-contained unit so it can move between modules and the Core. Next specialties: private outpatient specialists, then GP; hospitals are future work. | ADR 0004, §4.1, revisit #17 |
 | Deletion | No hard deletes by Users; misfiled Documents are moved. Retention undecided. | §7.5, revisit #15 |
 | v1.1 §19 open decisions | Comorbidities (v1.3: non-focus Conditions) from all letters (reconciled); Management Plan verbatim + Next Steps; no letter drafting in the MVP; eviQ checked weekly. | §7, §10 |

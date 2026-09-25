@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import ForeignKey, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, SharedEntity, practice_fk
+from app.core.base_model import PracticeEntity, SharedEntity, member_fk, practice_fk
 
 
 class SpecialtyModule(SharedEntity):
@@ -25,7 +25,7 @@ class PracticeModule(PracticeEntity):
     __tablename__ = "practice_module"
     __extra_args__ = (
         UniqueConstraint("practice_id", "module_key"),
-        practice_fk("changed_by_user_id", "user"),
+        member_fk("changed_by_user_id"),
     )
 
     module_key: Mapped[str] = mapped_column(

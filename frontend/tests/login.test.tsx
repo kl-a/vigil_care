@@ -42,7 +42,21 @@ describe("dev login", () => {
     renderLogin();
     fireEvent.click(await screen.findByRole("button", { name: /Casey Dev/ }));
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/system"));
-    expect(session.devLogin).toHaveBeenCalledWith(choiceFor("developer_admin").id);
+    expect(session.devLogin).toHaveBeenCalledWith(choiceFor("developer_admin").id, choiceFor("developer_admin").practice_id);
+  });
+
+  it("lists a User once for each Practice they work at, and signs in to the one chosen", async () => {
+    const northside = { ...choiceFor("clinician"), practice_id: "00000000-0000-0000-0000-0000000000bb", practice_name: "Northside Oncology (synthetic)" };
+    session.fetchDevLoginChoices.mockResolvedValue([choiceFor("clinician"), northside]);
+    session.devLogin.mockResolvedValue(userWith("clinician"));
+    renderLogin();
+    const choices = await screen.findAllByRole("button", { name: /Dr Alex Rivera/ });
+    expect(choices.map((c) => c.textContent)).toEqual([
+      expect.stringContaining("Harbourside Oncology (synthetic)"),
+      expect.stringContaining("Northside Oncology (synthetic)"),
+    ]);
+    fireEvent.click(choices[1]!);
+    await waitFor(() => expect(session.devLogin).toHaveBeenCalledWith(northside.id, northside.practice_id));
   });
 
   it("points to make demo-data when there are no Users", async () => {

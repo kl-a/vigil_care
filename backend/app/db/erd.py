@@ -25,7 +25,7 @@ POSTGRES = postgresql.dialect()  # type: ignore[no-untyped-call]
 
 AREAS = {
     "practice": "Practice & Providers",
-    "accounts": "Users",
+    "accounts": "Users & Memberships",
     "patients": "Patients",
     "registry": "Specialty Modules",
     "documents": "Documents",

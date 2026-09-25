@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import CheckConstraint, ForeignKeyConstraint, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import SupportEntity, allowed, practice_fk
+from app.core.base_model import SupportEntity, allowed, member_fk, practice_fk
 
 CLOUD_PURPOSES = ("vlm_read", "classify", "extract", "adjudicate", "parse_criteria")
 PAYLOAD_KINDS = ("masked_image", "pseudonymised_text", "public_text")
@@ -27,7 +27,7 @@ class CloudRequest(SupportEntity):
         # Composite FKs keep a Document or User in the request's Practice. They're skipped when
         # practice_id is null, so the plain FKs below still check the rows exist.
         practice_fk("document_id", "document"),
-        practice_fk("initiated_by_user_id", "user"),
+        member_fk("initiated_by_user_id"),
         ForeignKeyConstraint(["document_id"], ["document.id"], ondelete="RESTRICT"),
         ForeignKeyConstraint(["initiated_by_user_id"], ["user.id"], ondelete="RESTRICT"),
         CheckConstraint(

@@ -11,7 +11,7 @@ from typing import Any
 from sqlalchemy import CheckConstraint, ForeignKey, Index, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, Provenance, allowed, practice_fk, provenance_args
+from app.core.base_model import PracticeEntity, Provenance, allowed, member_fk, practice_fk, provenance_args
 from app.core.vocabulary import TREATMENT_INTENTS
 
 CONDITION_STATUSES = ("active", "resolved")
@@ -159,8 +159,8 @@ class NextStep(PracticeEntity):
     __tablename__ = "next_step"
     __extra_args__ = (
         practice_fk("patient_id", "patient"),
-        practice_fk("created_by_user_id", "user"),
-        practice_fk("done_by_user_id", "user"),
+        member_fk("created_by_user_id"),
+        member_fk("done_by_user_id"),
         CheckConstraint("(done_at IS NULL) = (done_by_user_id IS NULL)", name="done_together"),
     )
 

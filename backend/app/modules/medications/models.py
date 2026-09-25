@@ -13,6 +13,7 @@ from app.core.base_model import (
     Provenance,
     SharedEntity,
     allowed,
+    member_fk,
     practice_fk,
     provenance_args,
 )
@@ -109,7 +110,7 @@ class MedicationChangeLog(PracticeEntity):
     __immutable__ = True
     __extra_args__ = (
         practice_fk("medication_id", "medication"),
-        practice_fk("changed_by_user_id", "user"),
+        member_fk("changed_by_user_id"),
     )
 
     medication_id: Mapped[uuid.UUID] = mapped_column(index=True)

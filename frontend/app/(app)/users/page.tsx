@@ -112,7 +112,8 @@ function NewUserForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
     setBusy(true);
     setError(null);
     try {
-      await createUser({ display_name: displayName.trim(), username: username.trim(), job_title: jobTitle });
+      const name = displayName.trim();
+      await createUser({ username: username.trim(), job_title: jobTitle, ...(name && { display_name: name }) });
       onDone();
     } catch (reason) {
       setError(messageOf(reason));
@@ -126,7 +127,7 @@ function NewUserForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1 text-xs font-medium">
           Name
-          <input id="new-user-name" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={FIELD} />
+          <input id="new-user-name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={FIELD} />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium">
           Username
@@ -140,7 +141,10 @@ function NewUserForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
           </select>
         </label>
       </div>
-      <p className="m-0 text-xs text-muted-foreground">They sign in with the dev login for now; password and 2FA enrolment arrive in Stage 13.</p>
+      <p className="m-0 text-xs text-muted-foreground">
+        Already uses Vigil at another Practice? Enter just their username: their name comes with their login, and nothing about their other Practices shows here.
+        They sign in with the dev login for now; password and 2FA enrolment arrive in Stage 13.
+      </p>
       {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="h-8 rounded-md border border-border px-3 text-[13px]">Cancel</button>

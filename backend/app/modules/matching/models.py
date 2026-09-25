@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import ForeignKey, Index, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, allowed, practice_fk
+from app.core.base_model import PracticeEntity, allowed, member_fk, practice_fk
 
 MATCH_STATES = ("POTENTIALLY_ELIGIBLE", "NEEDS_INFORMATION", "EXCLUDED")
 CRITERION_RESULTS = ("MET", "NOT_MET", "UNKNOWN")
@@ -20,7 +20,7 @@ class MatchRun(PracticeEntity):
     __extra_args__ = (
         practice_fk("patient_id", "patient"),
         practice_fk("target_condition_id", "condition"),
-        practice_fk("run_by_user_id", "user"),
+        member_fk("run_by_user_id"),
         Index("ix_match_run_latest", "patient_id", "target_condition_id", text("created_at DESC")),
     )
 

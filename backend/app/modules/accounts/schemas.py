@@ -14,22 +14,23 @@ class UserSummary(BaseModel):
     practice_name: str
 
 
-class DevLoginChoice(UserSummary):
-    """A User who can be chosen at the dev login."""
-
-
 class CurrentUser(UserSummary):
-    """The signed-in User, as the frontend sees them."""
+    """The signed-in User, acting in one Practice: `job_title` is the one they hold there."""
 
     practice_id: uuid.UUID
 
 
+class DevLoginChoice(CurrentUser):
+    """One active Practice Membership that can be chosen at the dev login."""
+
+
 class DevLoginRequest(BaseModel):
     user_id: uuid.UUID
+    practice_id: uuid.UUID
 
 
 class UserRow(BaseModel):
-    """A User as User Management lists them."""
+    """A User as User Management lists them: their Membership at the current Practice."""
 
     id: uuid.UUID
     username: str
@@ -63,8 +64,10 @@ DisplayName = Annotated[str, StringConstraints(strip_whitespace=True, min_length
 
 
 class NewUser(BaseModel):
+    """Someone with a login at another Practice is added by username alone; a new login needs a display name."""
+
     username: Username
-    display_name: DisplayName
+    display_name: DisplayName | None = None
     job_title: JobTitle
 
 

@@ -34,18 +34,23 @@ def api(database: DatabaseSettings) -> Callable[..., TestClient]:
     return build
 
 
+def dev_login(client: TestClient, user_id: Any, practice_id: Any) -> Any:
+    """Sign in as `user_id`, acting in `practice_id` (one of their Practice Memberships)."""
+    return client.post("/auth/dev-login", json={"user_id": str(user_id), "practice_id": str(practice_id)})
+
+
 SignIn = Callable[..., tuple[TestClient, dict[str, Any]]]
 
 
 @pytest.fixture
 def sign_in(api: Callable[..., TestClient], committed: Seed) -> SignIn:
-    """A client signed in (dev login) as a new User with the given Job Title, in a fresh Practice by default."""
+    """A client signed in (dev login) as a new User with the given Job Title, acting in a fresh Practice by default."""
 
     def go(job_title: str = "clinician", practice: Any = None, **user: Any) -> tuple[TestClient, dict[str, Any]]:
         practice = practice or committed.practice()
         user_id = committed.user(practice, job_title=job_title, **user)
         client = api()
-        assert client.post("/auth/dev-login", json={"user_id": str(user_id)}).status_code == 200
+        assert dev_login(client, user_id, practice).status_code == 200
         return client, {"practice": practice, "user": user_id}
 
     return go

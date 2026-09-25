@@ -35,6 +35,32 @@ def test_a_verification_cant_be_signed_by_another_practices_user(seed: Seed, rej
         seed.verification({**ours, "user": theirs["user"]})
 
 
+def test_only_a_member_can_act_in_a_practice(seed: Seed, rejects: Rejects) -> None:
+    ours = seed.everyone()
+    outsider = seed.user(seed.practice())
+    with rejects(ForeignKeyViolation):
+        seed.insert("condition", practice_id=ours["practice"], patient_id=ours["patient"], name="x", entered_by_user_id=outsider)
+    seed.member(ours["practice"], outsider, job_title="clinician")
+    seed.insert("condition", practice_id=ours["practice"], patient_id=ours["patient"], name="x", entered_by_user_id=outsider)
+
+
+def test_only_a_member_can_delete_a_practices_support_data(seed: Seed, rejects: Rejects) -> None:
+    ours = seed.everyone()
+    outsider = seed.user(seed.practice())
+    deleted = {"deleted_at": "2026-09-25T00:00:00Z", "deleted_reason": "Duplicate run"}
+    with rejects(ForeignKeyViolation):
+        seed.insert("pipeline_run", practice_id=ours["practice"], kind="ingest", deleted_by_user_id=outsider, **deleted)
+    seed.insert("pipeline_run", practice_id=ours["practice"], kind="ingest", deleted_by_user_id=ours["user"], **deleted)
+    seed.insert("pipeline_run", kind="pbs_refresh", deleted_by_user_id=outsider, **deleted)  # system-wide: any User
+
+
+def test_a_membership_cant_link_another_practices_provider(seed: Seed, rejects: Rejects) -> None:
+    ours, theirs = seed.practice(), seed.practice()
+    with rejects(ForeignKeyViolation):
+        seed.user(ours, provider_id=seed.provider(theirs))
+    seed.user(ours, provider_id=seed.provider(ours))
+
+
 def test_patient_identity_belongs_to_its_patients_practice(seed: Seed, rejects: Rejects) -> None:
     ours = seed.everyone()
     theirs = seed.everyone()
@@ -90,7 +116,7 @@ def test_the_app_may_hard_delete_only_caches_and_the_job_queue(owner_db: Any) ->
     assert [r["table_name"] for r in rows] == ["job", "job_step", "llm_cache"]
 
 
-@pytest.mark.parametrize("table", ["patient", "condition", "document", "extracted_fact", "user", "cancer_diagnosis"])
+@pytest.mark.parametrize("table", ["patient", "condition", "document", "extracted_fact", "user", "practice_membership", "cancer_diagnosis"])
 def test_support_tooling_cant_read_patient_data(support_db: Any, table: str) -> None:
     with rejects_on(support_db)(InsufficientPrivilege):
         support_db.execute(f'SELECT * FROM "{table}"')

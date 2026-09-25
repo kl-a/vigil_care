@@ -218,12 +218,19 @@ def test_pseudonyms_are_unique_across_practices(seed: Seed, rejects: Rejects) ->
         seed.patient(seed.practice(), pseudonym="VG-0042")
 
 
-def test_usernames_are_unique_per_practice(seed: Seed, rejects: Rejects) -> None:
+def test_usernames_are_unique_across_vigil(seed: Seed, rejects: Rejects) -> None:
     first, second = seed.practice(), seed.practice()
     seed.user(first, username="kim")
-    seed.user(second, username="kim")
     with rejects(UniqueViolation):
-        seed.user(first, username="kim")
+        seed.user(second, username="kim")
+
+
+def test_a_user_has_one_membership_per_practice(seed: Seed, rejects: Rejects) -> None:
+    practice = seed.practice()
+    user = seed.user(practice)
+    seed.member(seed.practice(), user)
+    with rejects(UniqueViolation):
+        seed.member(practice, user, job_title="secretary")
 
 
 def test_provider_numbers_are_unique_per_practice_when_present(seed: Seed, rejects: Rejects) -> None:

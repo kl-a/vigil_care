@@ -13,7 +13,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   }
 }
 
-/** Dev only: the seeded Users you can sign in as. */
+/** Dev only: every active Practice Membership you can sign in as (a User at two Practices appears twice). */
 export async function fetchDevLoginChoices(): Promise<DevLoginChoice[]> {
   try {
     return await request<DevLoginChoice[]>("/auth/dev-login/users");
@@ -23,8 +23,9 @@ export async function fetchDevLoginChoices(): Promise<DevLoginChoice[]> {
   }
 }
 
-export const devLogin = (userId: string) =>
-  request<CurrentUser>("/auth/dev-login", { method: "POST", body: JSON.stringify({ user_id: userId }) });
+/** Signs in as the User, acting in one of their Practices. */
+export const devLogin = (userId: string, practiceId: string) =>
+  request<CurrentUser>("/auth/dev-login", { method: "POST", body: JSON.stringify({ user_id: userId, practice_id: practiceId }) });
 
 /** Ends the session. Already signed out (401) counts as done. */
 export async function logout(): Promise<void> {

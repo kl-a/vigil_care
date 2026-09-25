@@ -94,6 +94,15 @@ def practice_fk(column: str, parent: str, ondelete: OnDelete = "RESTRICT") -> Fo
     )
 
 
+def member_fk(column: str) -> ForeignKeyConstraint:
+    """Composite FK from a Practice-data row to the User who acted: they must be a member of its Practice."""
+    return ForeignKeyConstraint(
+        [column, "practice_id"],
+        ["practice_membership.user_id", "practice_membership.practice_id"],
+        ondelete="RESTRICT",
+    )
+
+
 SOFT_DELETE_CHECK = (
     "(deleted_at IS NULL AND deleted_by_user_id IS NULL AND deleted_reason IS NULL)"
     " OR (deleted_at IS NOT NULL AND deleted_by_user_id IS NOT NULL"
@@ -152,6 +161,19 @@ class SupportEntity(Entity):
 
     __abstract__ = True
 
+    @classmethod
+    def _scope_args(cls) -> tuple[Any, ...]:
+        # A system-wide row (null practice_id) may be deleted by any User; a Practice's row only by a member.
+        return (
+            *super()._scope_args(),
+            ForeignKeyConstraint(
+                ["deleted_by_user_id", "practice_id"],
+                ["practice_membership.user_id", "practice_membership.practice_id"],
+                ondelete="RESTRICT",
+                use_alter=True,
+            ),
+        )
+
     @declared_attr
     def practice_id(cls) -> Mapped[uuid.UUID | None]:
         return mapped_column(
@@ -176,7 +198,7 @@ class PracticeEntity(Entity):
             UniqueConstraint("id", "practice_id"),
             ForeignKeyConstraint(
                 ["deleted_by_user_id", "practice_id"],
-                ["user.id", "user.practice_id"],
+                ["practice_membership.user_id", "practice_membership.practice_id"],
                 ondelete="RESTRICT",
                 use_alter=True,
             ),
@@ -199,7 +221,7 @@ def provenance_args() -> tuple[Any, ...]:
     return (
         practice_fk("source_fact_id", "extracted_fact"),
         practice_fk("source_document_id", "document"),
-        practice_fk("entered_by_user_id", "user"),
+        member_fk("entered_by_user_id"),
         CheckConstraint(
             "source_fact_id IS NOT NULL OR entered_by_user_id IS NOT NULL", name="provenance"
         ),

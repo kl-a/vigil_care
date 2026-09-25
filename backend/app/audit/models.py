@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import ForeignKey, Index, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.base_model import PracticeEntity, SharedEntity, SupportEntity, allowed, practice_fk
+from app.core.base_model import PracticeEntity, SharedEntity, SupportEntity, allowed, member_fk, practice_fk
 from app.core.vocabulary import JOB_TITLES, RUN_STATUSES, JobTitle
 
 VERIFICATION_ACTIONS = (
@@ -46,7 +46,7 @@ class Verification(PracticeEntity):
     __tablename__ = "verification"
     __immutable__ = True
     __extra_args__ = (
-        practice_fk("user_id", "user"),
+        member_fk("user_id"),
         Index("ix_verification_subject", "subject_table", "subject_id"),
     )
 

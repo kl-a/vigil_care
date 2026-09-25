@@ -9,5 +9,5 @@ def test_the_committed_data_model_diagram_is_up_to_date() -> None:
 
 def test_every_table_is_in_the_diagram() -> None:
     names = {t["name"] for t in erd.data_model()}
-    assert len(names) == 59
+    assert len(names) == 60
     assert {"patient", "cancer_diagnosis", "job_kind"} <= names

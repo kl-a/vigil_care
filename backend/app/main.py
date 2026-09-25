@@ -30,7 +30,8 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.state.settings = settings
     app.state.database_check = database_check or postgres_check(settings.database_url)
     app.state.sessionmaker = session_factory(settings.database_url)
-    # Signed cookie holding only the User id. Stage 13 adds the inactivity lock and HTTPS-only cookies.
+    # Signed cookie holding only the User id and the Practice they act in.
+    # Stage 13 adds the inactivity lock and HTTPS-only cookies.
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret,
