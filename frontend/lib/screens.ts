@@ -16,7 +16,7 @@ export const CORE_SCREENS: readonly Screen[] = [
   { number: 7, title: "Redaction QA", path: "/redaction", purpose: "Review and correct PII masking.", stage: 7 },
   { number: 8, title: "Redaction Jobs", path: "/redaction-jobs", purpose: "Standalone de-identification for trial portals and referrals.", stage: 7 },
   { number: 12, title: "Trial Browser", path: "/trials", purpose: "Explore the local trial database.", stage: 10 },
-  { number: 14, title: "PBS Drug Lookup", path: "/pbs", purpose: "Quick drug reference.", stage: 3 },
+  { number: 14, title: "PBS Drug Lookup", path: "/pbs", purpose: "Quick drug reference.", stage: 3, built: true },
   { number: 17, title: "Provider Management", path: "/providers", purpose: "The Practice's Provider directory.", stage: 2, built: true },
   { number: 18, title: "User Management", path: "/users", purpose: "Manage who can log in.", stage: 1, built: true },
   { number: 19, title: "Settings", path: "/settings", purpose: "System configuration.", stage: 1, built: true },

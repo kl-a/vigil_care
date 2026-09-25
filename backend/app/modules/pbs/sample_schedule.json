@@ -1,0 +1,2013 @@
+{
+ "notice": "SAMPLE DATA, NOT FOR CLINICAL USE. A small extract of the PBS Schedule of 1 September 2026, bundled so Vigil's demos work offline. Refresh from the PBS Schedule API for the current schedule.",
+ "copyright": [
+  "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
+  "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
+  "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
+ ],
+ "schedule_date": "2026-09-01",
+ "copayments": {
+  "general": 25,
+  "concessional": 7.7,
+  "safety_net_general": 1748.2,
+  "safety_net_concessional": 277.2
+ },
+ "items": [
+  {
+   "item_code": "10148D",
+   "drug_name": "Docetaxel",
+   "brand_names": [
+    "Docetaxel Accord"
+   ],
+   "form": "docetaxel 160 mg/8 mL injection, 8 mL vial",
+   "program_code": "IP",
+   "restriction_level": "unrestricted",
+   "max_quantity": null,
+   "max_amount": 250,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": []
+  },
+  {
+   "item_code": "10158P",
+   "drug_name": "Docetaxel",
+   "brand_names": [
+    "Docetaxel Accord"
+   ],
+   "form": "docetaxel 160 mg/8 mL injection, 8 mL vial",
+   "program_code": "IN",
+   "restriction_level": "unrestricted",
+   "max_quantity": null,
+   "max_amount": 250,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": []
+  },
+  {
+   "item_code": "11503K",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "High grade epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Continuation of subsequent-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required_streamlined",
+     "restriction_code": "17869_17910_R",
+     "conditions": [
+      "The treatment must be continuing existing PBS-subsidised treatment with this drug initiated through the Treatment Phase: Initial subsequent-line maintenance therapy (BRCA1/2 gene mutation); AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11522K",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "High grade epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Initial subsequent-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "14790_14761_R",
+     "conditions": [
+      "The condition must be associated with a pathogenic variant (germline mutation class 4/class 5; somatic mutation classification tier I/tier II) of the BRCA1/2 gene(s) - this has been confirmed by a validated test; AND",
+      "The condition must be platinum sensitive; AND",
+      "Patient must have received at least two previous platinum-containing regimens; AND",
+      "Patient must have relapsed following a previous platinum-containing regimen; AND",
+      "Patient must be in partial or complete response to the immediately preceding platinum-based chemotherapy regimen; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition.",
+      "Platinum sensitivity is defined as disease progression greater than 6 months after completion of the penultimate platinum regimen.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines.",
+      "Evidence of a BRCA1 or BRCA2 gene mutation must be derived through germline or somatic mutation testing."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11528R",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "High grade epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Initial subsequent-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "14790_14761_R",
+     "conditions": [
+      "The condition must be associated with a pathogenic variant (germline mutation class 4/class 5; somatic mutation classification tier I/tier II) of the BRCA1/2 gene(s) - this has been confirmed by a validated test; AND",
+      "The condition must be platinum sensitive; AND",
+      "Patient must have received at least two previous platinum-containing regimens; AND",
+      "Patient must have relapsed following a previous platinum-containing regimen; AND",
+      "Patient must be in partial or complete response to the immediately preceding platinum-based chemotherapy regimen; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition.",
+      "Platinum sensitivity is defined as disease progression greater than 6 months after completion of the penultimate platinum regimen.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines.",
+      "Evidence of a BRCA1 or BRCA2 gene mutation must be derived through germline or somatic mutation testing."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11539H",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "High grade epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Continuation of subsequent-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required_streamlined",
+     "restriction_code": "17869_17910_R",
+     "conditions": [
+      "The treatment must be continuing existing PBS-subsidised treatment with this drug initiated through the Treatment Phase: Initial subsequent-line maintenance therapy (BRCA1/2 gene mutation); AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11620N",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 40 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IIIB (locally advanced) or Stage IV (metastatic) non-small cell lung cancer (NSCLC)",
+     "treatment_phase": "Continuing treatment of second-line EGFR  tyrosine kinase inhibitor therapy",
+     "level": "authority_required",
+     "restriction_code": "17783_17784_R",
+     "conditions": [
+      "Continuing treatment of second-line EGFR tyrosine kinase inhibitor therapy",
+      "The treatment must be as monotherapy; AND",
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Patient must be undergoing continuing treatment with this drug as second-line therapy (i.e. there are 2 Continuing treatment listings for this drug - ensure the correct Continuing treatment restriction is being accessed); AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11622Q",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 80 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IIIB (locally advanced) or Stage IV (metastatic) non-small cell lung cancer (NSCLC)",
+     "treatment_phase": "Initial treatment as second-line EGFR tyrosine kinase inhibitor therapy",
+     "level": "authority_required",
+     "restriction_code": "17997_18034_R",
+     "conditions": [
+      "Patient must not have previously received this drug for this condition; AND",
+      "The treatment must be as monotherapy; AND",
+      "Patient must have a WHO performance status of 2 or less; AND",
+      "The condition must have progressed on or after prior epidermal growth factor receptor (EGFR) tyrosine kinase inhibitor (TKI) therapy as first line treatment for this condition; AND",
+      "Patient must have evidence of EGFR T790M mutation in tumour material at the point of progression on or after first line EGFR TKI treatment; AND",
+      "Must be treated by a medical practitioner.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    },
+    {
+     "indication": "Stage IIIB (locally advanced) or Stage IV (metastatic) non-small cell lung cancer (NSCLC)",
+     "treatment_phase": "Continuing treatment of second-line EGFR  tyrosine kinase inhibitor therapy",
+     "level": "authority_required",
+     "restriction_code": "17783_17784_R",
+     "conditions": [
+      "Continuing treatment of second-line EGFR tyrosine kinase inhibitor therapy",
+      "The treatment must be as monotherapy; AND",
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Patient must be undergoing continuing treatment with this drug as second-line therapy (i.e. there are 2 Continuing treatment listings for this drug - ensure the correct Continuing treatment restriction is being accessed); AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11900H",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IIIB, IIIC, IIID or Stage IV malignant melanoma",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "16851_16935_R",
+     "conditions": [
+      "The treatment must be in addition to complete surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have received prior PBS-subsidised treatment for this condition; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy.",
+      "When nivolumab is initially prescribed as a 3-weekly dosing regimen, patients must only receive a maximum of 240 mg every 3 weeks for 2 cycles (i.e., 1 repeat). When prescribed as a weight based or flat dose adjuvant regimen, patients must only receive a maximum of 240 mg every 2 weeks or 480 mg every 4 weeks for a maximum of 12 months of adjuvant treatment."
+     ]
+    },
+    {
+     "indication": "Stage IIIB, IIIC, IIID or Stage IV malignant melanoma",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "16934_16962_R",
+     "conditions": [
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must have undergone surgical resection; AND",
+      "Patient must not have experienced disease recurrence; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy.",
+      "When prescribed as a weight based or flat dose adjuvant regimen, patients must receive a maximum of 240 mg every 2 weeks or 480 mg every 4 weeks for a maximum of 12 months of adjuvant treatment."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "11906P",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IIIB, IIIC, IIID or Stage IV malignant melanoma",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "16851_16935_R",
+     "conditions": [
+      "The treatment must be in addition to complete surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have received prior PBS-subsidised treatment for this condition; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy.",
+      "When nivolumab is initially prescribed as a 3-weekly dosing regimen, patients must only receive a maximum of 240 mg every 3 weeks for 2 cycles (i.e., 1 repeat). When prescribed as a weight based or flat dose adjuvant regimen, patients must only receive a maximum of 240 mg every 2 weeks or 480 mg every 4 weeks for a maximum of 12 months of adjuvant treatment."
+     ]
+    },
+    {
+     "indication": "Stage IIIB, IIIC, IIID or Stage IV malignant melanoma",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "16934_16962_R",
+     "conditions": [
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must have undergone surgical resection; AND",
+      "Patient must not have experienced disease recurrence; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy.",
+      "When prescribed as a weight based or flat dose adjuvant regimen, patients must receive a maximum of 240 mg every 2 weeks or 480 mg every 4 weeks for a maximum of 12 months of adjuvant treatment."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12120X",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 200,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Initial treatment - 3 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "14771_14770_R",
+     "conditions": [
+      "The treatment must be in addition to complete surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have received prior PBS-subsidised treatment for this condition; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must not have received more than 12 months of therapy (irrespective of whether therapy has been partly PBS-subsidised/non-PBS-subsidised)."
+     ]
+    },
+    {
+     "indication": "Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Continuing treatment - 3 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "14772_14786_R",
+     "conditions": [
+      "Patient must be undergoing continuing PBS-subsidised treatment commenced through an 'Initial treatment' listing; AND",
+      "Patient must not have experienced disease recurrence; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have received more than 12 months of therapy (irrespective of whether therapy has been partly PBS-subsidised/non-PBS-subsidised)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12125E",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 3,
+   "listings": [
+    {
+     "indication": "Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Initial treatment - 6 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "10700_10688_R",
+     "conditions": [
+      "The treatment must be adjuvant to complete surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have received prior PBS-subsidised treatment for this condition; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy."
+     ]
+    },
+    {
+     "indication": "Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Continuing treatment - 6 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "10676_10676_R",
+     "conditions": [
+      "Patient must have previously been issued with an authority prescription for this drug for adjuvant treatment following complete surgical resection; AND",
+      "Patient must not have experienced disease recurrence; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12127G",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 3,
+   "listings": [
+    {
+     "indication": "Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Initial treatment - 6 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "10700_10688_R",
+     "conditions": [
+      "The treatment must be adjuvant to complete surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have received prior PBS-subsidised treatment for this condition; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy."
+     ]
+    },
+    {
+     "indication": "Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Continuing treatment - 6 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "10676_10676_R",
+     "conditions": [
+      "Patient must have previously been issued with an authority prescription for this drug for adjuvant treatment following complete surgical resection; AND",
+      "Patient must not have experienced disease recurrence; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12130K",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 200,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Initial treatment - 3 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "14771_14770_R",
+     "conditions": [
+      "The treatment must be in addition to complete surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have received prior PBS-subsidised treatment for this condition; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must not have received more than 12 months of therapy (irrespective of whether therapy has been partly PBS-subsidised/non-PBS-subsidised)."
+     ]
+    },
+    {
+     "indication": "Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma",
+     "treatment_phase": "Continuing treatment - 3 weekly treatment regimen",
+     "level": "authority_required",
+     "restriction_code": "14772_14786_R",
+     "conditions": [
+      "Patient must be undergoing continuing PBS-subsidised treatment commenced through an 'Initial treatment' listing; AND",
+      "Patient must not have experienced disease recurrence; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must not have received more than 12 months of therapy (irrespective of whether therapy has been partly PBS-subsidised/non-PBS-subsidised)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12157W",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Initial first-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "14804_14741_R",
+     "conditions": [
+      "The condition must be associated with a pathogenic variant (germline mutation class 4/class 5; somatic mutation classification tier I/tier II) of the BRCA1/2 gene(s) - this has been confirmed by a validated test; AND",
+      "Patient must be in partial or complete response to the immediately preceding platinum-based chemotherapy regimen prior to commencing treatment with this drug for this condition; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must be undergoing treatment with this drug class for the first time; or",
+      "Patient must be undergoing treatment with this drug class on a subsequent occasion, but only because there was an intolerance/contraindication to another drug in the same class that required permanent treatment withdrawal.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines.",
+      "Evidence of a BRCA1 or BRCA2 gene mutation must be derived through germline or somatic mutation testing."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12161C",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Continuation of first-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "17795_17945_R",
+     "conditions": [
+      "The treatment must be continuing existing PBS-subsidised treatment with this drug initiated through the Treatment Phase: Initial first-line maintenance therapy (BRCA1/2 gene mutation); AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "The treatment must not exceed a total of 24 months of combined non-PBS-subsidised and PBS-subsidised treatment for patients who are in complete response; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12169L",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Continuation of first-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "17795_17945_R",
+     "conditions": [
+      "The treatment must be continuing existing PBS-subsidised treatment with this drug initiated through the Treatment Phase: Initial first-line maintenance therapy (BRCA1/2 gene mutation); AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "The treatment must not exceed a total of 24 months of combined non-PBS-subsidised and PBS-subsidised treatment for patients who are in complete response; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12170M",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Initial first-line maintenance therapy (BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "14804_14741_R",
+     "conditions": [
+      "The condition must be associated with a pathogenic variant (germline mutation class 4/class 5; somatic mutation classification tier I/tier II) of the BRCA1/2 gene(s) - this has been confirmed by a validated test; AND",
+      "Patient must be in partial or complete response to the immediately preceding platinum-based chemotherapy regimen prior to commencing treatment with this drug for this condition; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must be undergoing treatment with this drug class for the first time; or",
+      "Patient must be undergoing treatment with this drug class on a subsequent occasion, but only because there was an intolerance/contraindication to another drug in the same class that required permanent treatment withdrawal.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines.",
+      "Evidence of a BRCA1 or BRCA2 gene mutation must be derived through germline or somatic mutation testing."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12232T",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 80 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IIIB (locally advanced) or Stage IV (metastatic) non-small cell lung cancer (NSCLC)",
+     "treatment_phase": "Initial treatment as first-line epidermal growth factor receptor tyrosine kinase inhibitor therapy",
+     "level": "authority_required",
+     "restriction_code": "17942_17978_R",
+     "conditions": [
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must have a WHO performance status of 2 or less; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have received previous PBS-subsidised treatment with another epidermal growth factor receptor (EGFR) tyrosine kinase inhibitor (TKI); or",
+      "Patient must have developed intolerance to another epidermal growth factor receptor (EGFR) tyrosine kinase inhibitor (TKI) of a severity necessitating permanent treatment withdrawal; AND",
+      "Patient must have evidence of an activating epidermal growth factor receptor (EGFR) gene mutation known to confer sensitivity to treatment with EGFR tyrosine kinase inhibitors in tumour material; AND",
+      "Patient must not have evidence in tumour material of an activating epidermal growth factor receptor (EGFR) exon 20 insertion mutation; AND",
+      "Must be treated by a medical practitioner.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    },
+    {
+     "indication": "Stage IIIB (locally advanced) or Stage IV (metastatic) non-small cell lung cancer (NSCLC)",
+     "treatment_phase": "Continuing treatment of first-line EGFR tyrosine kinase inhibitor therapy",
+     "level": "authority_required",
+     "restriction_code": "17781_17858_R",
+     "conditions": [
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Patient must be undergoing continuing treatment with this drug as first-line therapy (i.e. there are 2 Continuing treatment listings for this drug - ensure the correct Continuing treatment restriction is being accessed); AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12233W",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 40 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IIIB (locally advanced) or Stage IV (metastatic) non-small cell lung cancer (NSCLC)",
+     "treatment_phase": "Continuing treatment of first-line EGFR tyrosine kinase inhibitor therapy",
+     "level": "authority_required",
+     "restriction_code": "17781_17858_R",
+     "conditions": [
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Patient must be undergoing continuing treatment with this drug as first-line therapy (i.e. there are 2 Continuing treatment listings for this drug - ensure the correct Continuing treatment restriction is being accessed); AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12913P",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Castration resistant metastatic carcinoma of the prostate",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "17980_17796_R",
+     "conditions": [
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "The treatment must not be subsidised in combination with: (i) chemotherapy, (ii) a novel hormonal drug; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12921C",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Castration resistant metastatic carcinoma of the prostate",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "17980_17796_R",
+     "conditions": [
+      "Patient must have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "The treatment must not be subsidised in combination with: (i) chemotherapy, (ii) a novel hormonal drug; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12929L",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "Castration resistant metastatic carcinoma of the prostate",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "12590_12590_R",
+     "conditions": [
+      "The condition must be associated with a class 4 or 5 BRCA1 or BRCA2 gene mutation; AND",
+      "The treatment must not be subsidised in combination with: (i) chemotherapy, (ii) a novel hormonal drug; AND",
+      "The condition must have progressed following prior treatment that included a novel hormonal drug for this condition (metastatic/non-metastatic disease); AND",
+      "Patient must have a WHO performance status of 2 or less; AND",
+      "Patient must be undergoing treatment with this drug for the first time."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "12932P",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "Castration resistant metastatic carcinoma of the prostate",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "12590_12590_R",
+     "conditions": [
+      "The condition must be associated with a class 4 or 5 BRCA1 or BRCA2 gene mutation; AND",
+      "The treatment must not be subsidised in combination with: (i) chemotherapy, (ii) a novel hormonal drug; AND",
+      "The condition must have progressed following prior treatment that included a novel hormonal drug for this condition (metastatic/non-metastatic disease); AND",
+      "Patient must have a WHO performance status of 2 or less; AND",
+      "Patient must be undergoing treatment with this drug for the first time."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13240W",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Adjuvant treatment of stage II or III oesophageal cancer or gastro-oesophageal junction cancer",
+     "treatment_phase": null,
+     "level": "authority_required",
+     "restriction_code": "13870_13900_R",
+     "conditions": [
+      "The condition must have histological evidence confirming a diagnosis of a least one of: (i) adenocarcinoma, (ii) squamous cell cancer; document this evidence in the patient's medical records; AND",
+      "The condition must have been treated with neoadjuvant platinum-based chemoradiotherapy; AND",
+      "The treatment must be for the purposes of adjuvant use following complete surgical resection that occurred within 16 weeks prior to initiating this drug; AND",
+      "The condition must have evidence, through resected specimen, that residual disease meets the Tumour Nodes Metastases (TNM) staging system (as published by the Union for International Cancer Control) of either: (i) at least ypT1, (ii) at least ypN1; document this evidence in the patient's medical records; AND",
+      "Patient must have/have had, at the time of initiating treatment with this drug, a WHO performance status no higher than 1; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must be undergoing treatment with a dosing regimen as set out in the drug's approved Australian Product Information; AND",
+      "Patient must not be undergoing PBS-subsidised treatment with this drug where this prescription extends treatment beyond whichever comes first: (i) 12 months from treatment initiation, irrespective of whether initial treatment was PBS-subsidised/non-PBS-subsidised, (ii) disease recurrence despite treatment with this drug; annotate any remaining repeat prescriptions with the word 'cancelled' where this occurs."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13246E",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Adjuvant treatment of stage II or III oesophageal cancer or gastro-oesophageal junction cancer",
+     "treatment_phase": null,
+     "level": "authority_required",
+     "restriction_code": "13870_13900_R",
+     "conditions": [
+      "The condition must have histological evidence confirming a diagnosis of a least one of: (i) adenocarcinoma, (ii) squamous cell cancer; document this evidence in the patient's medical records; AND",
+      "The condition must have been treated with neoadjuvant platinum-based chemoradiotherapy; AND",
+      "The treatment must be for the purposes of adjuvant use following complete surgical resection that occurred within 16 weeks prior to initiating this drug; AND",
+      "The condition must have evidence, through resected specimen, that residual disease meets the Tumour Nodes Metastases (TNM) staging system (as published by the Union for International Cancer Control) of either: (i) at least ypT1, (ii) at least ypN1; document this evidence in the patient's medical records; AND",
+      "Patient must have/have had, at the time of initiating treatment with this drug, a WHO performance status no higher than 1; AND",
+      "The treatment must be the sole PBS-subsidised therapy for this condition; AND",
+      "Patient must be undergoing treatment with a dosing regimen as set out in the drug's approved Australian Product Information; AND",
+      "Patient must not be undergoing PBS-subsidised treatment with this drug where this prescription extends treatment beyond whichever comes first: (i) 12 months from treatment initiation, irrespective of whether initial treatment was PBS-subsidised/non-PBS-subsidised, (ii) disease recurrence despite treatment with this drug; annotate any remaining repeat prescriptions with the word 'cancelled' where this occurs."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13739D",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Stage II or Stage III triple negative breast cancer",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "14727_14727_R",
+     "conditions": [
+      "The treatment must be initiated in combination with neoadjuvant chemotherapy; AND",
+      "The condition must not have progressed/recurred whilst on treatment with this drug; AND",
+      "Patient must not be undergoing treatment with this drug beyond 52 cumulative weeks under this restriction; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 4 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13752T",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Stage II or Stage III triple negative breast cancer",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "14727_14727_R",
+     "conditions": [
+      "The treatment must be initiated in combination with neoadjuvant chemotherapy; AND",
+      "The condition must not have progressed/recurred whilst on treatment with this drug; AND",
+      "Patient must not be undergoing treatment with this drug beyond 52 cumulative weeks under this restriction; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 4 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13782J",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Continuation of first-line maintenance therapy (genomic instability without BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "18019_17911_R",
+     "conditions": [
+      "Patient must have received previous PBS-subsidised treatment with this drug as first line maintenance therapy for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "The treatment must not exceed a total of 24 months of combined non-PBS-subsidised and PBS-subsidised treatment for patients who are in complete response; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13783K",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Initial first-line maintenance therapy (genomic instability without BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "15093_15141_R",
+     "conditions": [
+      "The condition must be associated with homologous recombination deficiency (HRD) positive status defined by genomic instability, which has been confirmed by a validated test; AND",
+      "The condition must not be associated with pathogenic variants (germline mutation class 4/class 5; somatic mutation classification tier I/tier II) of the BRCA1/2 genes - this has been confirmed by a validated test; AND",
+      "Patient must be in partial or complete response to the immediately preceding platinum-based chemotherapy regimen prior to commencing treatment with this drug for this condition; or",
+      "The condition must have both: (i) been in a partial/complete response to the immediately preceding platinum-based chemotherapy regimen prior to having commenced non-PBS-subsidised treatment with this drug for this condition, (ii) not progressed since the commencement of non-PBS-subsidised supply of this drug; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must be undergoing treatment with this drug class for the first time; or",
+      "Patient must be undergoing treatment with this drug class on a subsequent occasion, but only because there was an intolerance/contraindication to another drug in the same class that required permanent treatment withdrawal.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines.",
+      "Evidence of homologous recombination deficiency (genomic instability) must be derived through a test that has been validated against the Myriad MyChoice HRD assay, which uses a score of 42 or greater as the threshold for HRD (genomic instability) positivity.",
+      "Evidence that BRCA1/2 gene mutations are absent must also be derived through a validated test as described above."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13800H",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Initial first-line maintenance therapy (genomic instability without BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "15093_15141_R",
+     "conditions": [
+      "The condition must be associated with homologous recombination deficiency (HRD) positive status defined by genomic instability, which has been confirmed by a validated test; AND",
+      "The condition must not be associated with pathogenic variants (germline mutation class 4/class 5; somatic mutation classification tier I/tier II) of the BRCA1/2 genes - this has been confirmed by a validated test; AND",
+      "Patient must be in partial or complete response to the immediately preceding platinum-based chemotherapy regimen prior to commencing treatment with this drug for this condition; or",
+      "The condition must have both: (i) been in a partial/complete response to the immediately preceding platinum-based chemotherapy regimen prior to having commenced non-PBS-subsidised treatment with this drug for this condition, (ii) not progressed since the commencement of non-PBS-subsidised supply of this drug; AND",
+      "Patient must not have previously received PBS-subsidised treatment with this drug for this condition; AND",
+      "Patient must be undergoing treatment with this drug class for the first time; or",
+      "Patient must be undergoing treatment with this drug class on a subsequent occasion, but only because there was an intolerance/contraindication to another drug in the same class that required permanent treatment withdrawal.",
+      "A response (complete or partial) to the platinum-based chemotherapy regimen is to be assessed using either Gynaecologic Cancer InterGroup (GCIG) or Response Evaluation Criteria in Solid Tumours (RECIST) guidelines.",
+      "Evidence of homologous recombination deficiency (genomic instability) must be derived through a test that has been validated against the Myriad MyChoice HRD assay, which uses a score of 42 or greater as the threshold for HRD (genomic instability) positivity.",
+      "Evidence that BRCA1/2 gene mutations are absent must also be derived through a validated test as described above."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13807Q",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "High grade stage III/IV epithelial ovarian, fallopian tube or primary peritoneal cancer",
+     "treatment_phase": "Continuation of first-line maintenance therapy (genomic instability without BRCA1/2 gene mutation)",
+     "level": "authority_required",
+     "restriction_code": "18019_17911_R",
+     "conditions": [
+      "Patient must have received previous PBS-subsidised treatment with this drug as first line maintenance therapy for this condition; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "The treatment must not exceed a total of 24 months of combined non-PBS-subsidised and PBS-subsidised treatment for patients who are in complete response; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "13939P",
+   "drug_name": "Letrozole",
+   "brand_names": [
+    "ARX-LETROZOLE",
+    "Femara 2.5 mg",
+    "Femolet",
+    "Gynotril",
+    "LETROZOLE-WGR",
+    "Letrozole GH",
+    "Letrozole Sandoz",
+    "Pharmacor Letrozole 2.5"
+   ],
+   "form": "letrozole 2.5 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "restricted",
+   "max_quantity": 60,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Breast cancer",
+     "treatment_phase": null,
+     "level": "restricted",
+     "restriction_code": "14940_14895_R",
+     "conditions": [
+      "The condition must be stable for the prescriber to consider the listed maximum quantity of this medicine suitable for this patient; AND",
+      "The condition must be hormone receptor positive."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14162J",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 40 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IB, II or IIIA non-small cell lung cancer",
+     "treatment_phase": "Adjuvant therapy",
+     "level": "authority_required",
+     "restriction_code": "17998_17999_R",
+     "conditions": [
+      "Patient must be continuing existing PBS-subsidised treatment with this drug; or",
+      "Patient must be both: (i) transitioning from existing non-PBS to PBS-subsidised supply of this drug, (ii) untreated with EGFR-TKI at the time this drug was initiated; AND",
+      "The treatment must be for the purpose of adjuvant therapy following surgical resection; AND",
+      "Patient must have evidence of an activating epidermal growth factor receptor (EGFR) gene mutation known to confer sensitivity to treatment with EGFR tyrosine kinase inhibitors in tumour material; AND",
+      "Patient must have/have had a WHO performance status score of no greater than 1 at treatment initiation with this drug; AND",
+      "The treatment must be commenced within 26 weeks of surgery; AND",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this condition; AND",
+      "Patient must be undergoing treatment that does not occur beyond the following, whichever comes first: (i) the first instance of disease progression/recurrence, (ii) 3 years in total for this condition from the first administered dose; mark any remaining repeat prescriptions with the word 'cancelled'; where (i)/(ii) has occurred; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14168Q",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 80 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Stage IB, II or IIIA non-small cell lung cancer",
+     "treatment_phase": "Adjuvant therapy",
+     "level": "authority_required",
+     "restriction_code": "17782_18016_R",
+     "conditions": [
+      "Patient must be both: (i) initiating treatment, (ii) untreated with EGFR-TKI for non small cell lung cancer; or",
+      "Patient must be continuing existing PBS-subsidised treatment with this drug; or",
+      "Patient must be both: (i) transitioning from existing non-PBS to PBS-subsidised supply of this drug, (ii) untreated with EGFR-TKI at the time this drug was initiated; AND",
+      "The treatment must be for the purpose of adjuvant therapy following surgical resection; AND",
+      "Patient must have evidence of an activating epidermal growth factor receptor (EGFR) gene mutation known to confer sensitivity to treatment with EGFR tyrosine kinase inhibitors in tumour material; AND",
+      "Patient must have/have had a WHO performance status score of no greater than 1 at treatment initiation with this drug; AND",
+      "The treatment must be commenced within 26 weeks of surgery; AND",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this condition; AND",
+      "Patient must be undergoing treatment that does not occur beyond the following, whichever comes first: (i) the first instance of disease progression/recurrence, (ii) 3 years in total for this condition from the first administered dose; mark any remaining repeat prescriptions with the word 'cancelled'; where (i)/(ii) has occurred; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to one line of therapy at any disease staging for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14181J",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Early breast cancer",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "16756_16780_R",
+     "conditions": [
+      "The condition must be human epidermal growth factor receptor 2 (HER2) negative; AND",
+      "Patient must have received neoadjuvant or adjuvant chemotherapy; AND",
+      "The treatment must be adjuvant to surgical resection; AND",
+      "The condition must be associated with a class 4 or 5 BRCA1 or BRCA2 gene variant; AND",
+      "Patient must have received neoadjuvant chemotherapy, and residual invasive cancer is confirmed in the breast and/or resected lymph nodes (pathological complete response was not achieved); or",
+      "Patient must have received adjuvant chemotherapy for triple negative breast cancer, and has either: (a) node positive disease is present, (b) a primary tumour greater than 20 mm; or",
+      "Patient must have received adjuvant chemotherapy for hormone receptor positive breast cancer, and has at least 4 positive lymph nodes; AND",
+      "The treatment must not be a PBS-subsidised benefit beyond the following, whichever comes first: (i) a total of 52 weeks of treatment (including any non-PBS-subsidised supply), (ii) disease recurrence. Mark any remaining repeat prescriptions with the word 'cancelled' where (i)/(ii) has occurred; AND",
+      "The treatment must be commenced within 12 weeks of completing other therapy noting that other therapy can be any of the following therapy: (i) surgery, (ii) radiotherapy, (iii) chemotherapy; AND",
+      "The treatment must not in combination with any of the following: (i) abemaciclib, (ii) pembrolizumab, (iii) ribociclib.",
+      "Retain all pathology imaging and investigative test results in the patient's medical records.",
+      "Treatment with this drug for this condition is restricted to one line of therapy at any disease staging for breast cancer (i.e. if therapy has been prescribed for early disease, subsidy under metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14208T",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Early breast cancer",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "16756_16780_R",
+     "conditions": [
+      "The condition must be human epidermal growth factor receptor 2 (HER2) negative; AND",
+      "Patient must have received neoadjuvant or adjuvant chemotherapy; AND",
+      "The treatment must be adjuvant to surgical resection; AND",
+      "The condition must be associated with a class 4 or 5 BRCA1 or BRCA2 gene variant; AND",
+      "Patient must have received neoadjuvant chemotherapy, and residual invasive cancer is confirmed in the breast and/or resected lymph nodes (pathological complete response was not achieved); or",
+      "Patient must have received adjuvant chemotherapy for triple negative breast cancer, and has either: (a) node positive disease is present, (b) a primary tumour greater than 20 mm; or",
+      "Patient must have received adjuvant chemotherapy for hormone receptor positive breast cancer, and has at least 4 positive lymph nodes; AND",
+      "The treatment must not be a PBS-subsidised benefit beyond the following, whichever comes first: (i) a total of 52 weeks of treatment (including any non-PBS-subsidised supply), (ii) disease recurrence. Mark any remaining repeat prescriptions with the word 'cancelled' where (i)/(ii) has occurred; AND",
+      "The treatment must be commenced within 12 weeks of completing other therapy noting that other therapy can be any of the following therapy: (i) surgery, (ii) radiotherapy, (iii) chemotherapy; AND",
+      "The treatment must not in combination with any of the following: (i) abemaciclib, (ii) pembrolizumab, (iii) ribociclib.",
+      "Retain all pathology imaging and investigative test results in the patient's medical records.",
+      "Treatment with this drug for this condition is restricted to one line of therapy at any disease staging for breast cancer (i.e. if therapy has been prescribed for early disease, subsidy under metastatic disease is no longer available)."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14215E",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 6,
+   "listings": [
+    {
+     "indication": "Early breast cancer",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "17797_17981_R",
+     "conditions": [
+      "Patient must have received PBS-subsidised treatment with this drug as adjuvant therapy for this condition; AND",
+      "Patient must not have developed disease recurrence while receiving treatment with this drug for this condition; AND",
+      "The treatment must not be a PBS-subsidised benefit beyond a total of 52 weeks of treatment (including any non-PBS-subsidised supply); AND",
+      "The treatment must not in combination with any of the following: (i) abemaciclib, (ii) pembrolizumab, (iii) ribociclib; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14216F",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 6,
+   "listings": [
+    {
+     "indication": "Early breast cancer",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "17797_17981_R",
+     "conditions": [
+      "Patient must have received PBS-subsidised treatment with this drug as adjuvant therapy for this condition; AND",
+      "Patient must not have developed disease recurrence while receiving treatment with this drug for this condition; AND",
+      "The treatment must not be a PBS-subsidised benefit beyond a total of 52 weeks of treatment (including any non-PBS-subsidised supply); AND",
+      "The treatment must not in combination with any of the following: (i) abemaciclib, (ii) pembrolizumab, (iii) ribociclib; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14231B",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Urothelial carcinoma",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "18370_18370_R",
+     "conditions": [
+      "The treatment must be for each of: (i) adjuvant therapy that is/was initiated within 6 months of radical surgical resection, (ii) muscle invasive type disease, (iii) disease considered to be at high risk of recurrence based on pathologic staging of radical surgery tissue (ypT2-ypT4a or ypN+), but yet to recur, (iv) use as the sole PBS-subsidised anti-cancer treatment for this condition; AND",
+      "Patient must have received prior platinum containing neoadjuvant chemotherapy; AND",
+      "Patient must not have received prior treatment with a programmed cell death-1 (PD-1) inhibitor or a programmed cell death ligand-1 (PD-L1) inhibitor for this condition; AND",
+      "Patient must have/have had, at the time of initiating treatment with this drug, a WHO performance status no higher than 1; AND",
+      "Patient must be undergoing treatment with a dosing regimen as set out in the drug's Therapeutic Goods Administration (TGA) approved Product Information; AND",
+      "Patient must be undergoing treatment that does not occur beyond the following, whichever comes first: (i) the first instance of disease progression/recurrence, (ii) 12 months in total for this condition from the first administered dose; mark any remaining repeat prescriptions with the words 'cancelled' where (i)/(ii) has occurred.",
+      "An increase in repeat prescriptions, up to a value of 11, may only be sought where the prescribed dosing is 240 mg administered fortnightly."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14232C",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 360,
+   "amount_unit": "mg",
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "Resectable non-small cell lung cancer (NSCLC)",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "15471_15471_R",
+     "conditions": [
+      "The condition must be at least one of: (i) node positive, (ii) at least 4 cm in size; AND",
+      "The treatment must be for neoadjuvant use in a patient preparing for surgical resection; AND",
+      "Patient must have a WHO performance status of 0 or 1; AND",
+      "The treatment must be in combination with platinum-based chemotherapy; AND",
+      "Patient must not be undergoing treatment with more than 3 PBS-subsidised doses of this drug per lifetime for this indication.",
+      "In non-squamous type NSCLC where any of the following is known to be present, this drug must not be a PBS benefit: (i) activating epidermal growth factor receptor (EGFR) gene mutation, (ii) anaplastic lymphoma kinase (ALK) gene rearrangement."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14233D",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 360,
+   "amount_unit": "mg",
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "Resectable non-small cell lung cancer (NSCLC)",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "15471_15471_R",
+     "conditions": [
+      "The condition must be at least one of: (i) node positive, (ii) at least 4 cm in size; AND",
+      "The treatment must be for neoadjuvant use in a patient preparing for surgical resection; AND",
+      "Patient must have a WHO performance status of 0 or 1; AND",
+      "The treatment must be in combination with platinum-based chemotherapy; AND",
+      "Patient must not be undergoing treatment with more than 3 PBS-subsidised doses of this drug per lifetime for this indication.",
+      "In non-squamous type NSCLC where any of the following is known to be present, this drug must not be a PBS benefit: (i) activating epidermal growth factor receptor (EGFR) gene mutation, (ii) anaplastic lymphoma kinase (ALK) gene rearrangement."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14260M",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Urothelial carcinoma",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "18370_18370_R",
+     "conditions": [
+      "The treatment must be for each of: (i) adjuvant therapy that is/was initiated within 6 months of radical surgical resection, (ii) muscle invasive type disease, (iii) disease considered to be at high risk of recurrence based on pathologic staging of radical surgery tissue (ypT2-ypT4a or ypN+), but yet to recur, (iv) use as the sole PBS-subsidised anti-cancer treatment for this condition; AND",
+      "Patient must have received prior platinum containing neoadjuvant chemotherapy; AND",
+      "Patient must not have received prior treatment with a programmed cell death-1 (PD-1) inhibitor or a programmed cell death ligand-1 (PD-L1) inhibitor for this condition; AND",
+      "Patient must have/have had, at the time of initiating treatment with this drug, a WHO performance status no higher than 1; AND",
+      "Patient must be undergoing treatment with a dosing regimen as set out in the drug's Therapeutic Goods Administration (TGA) approved Product Information; AND",
+      "Patient must be undergoing treatment that does not occur beyond the following, whichever comes first: (i) the first instance of disease progression/recurrence, (ii) 12 months in total for this condition from the first administered dose; mark any remaining repeat prescriptions with the words 'cancelled' where (i)/(ii) has occurred.",
+      "An increase in repeat prescriptions, up to a value of 11, may only be sought where the prescribed dosing is 240 mg administered fortnightly."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14687B",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 150 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Metastatic breast cancer",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "17798_17909_R",
+     "conditions": [
+      "The condition must be human epidermal growth factor receptor 2 (HER2) negative; AND",
+      "The condition must be associated with a class 4 or 5 BRCA1 or BRCA2 gene variant; AND",
+      "Patient must have a World Health Organisation (WHO) Eastern Cooperative Oncology Group (ECOG) performance status score of 2 or less; AND",
+      "Patient must have received chemotherapy in the neoadjuvant, adjuvant or metastatic setting; AND",
+      "Patient must not have received PBS-subsidised treatment with this drug in any earlier line of treatment for breast cancer; AND",
+      "The condition must be triple negative breast cancer; or",
+      "The condition must be hormone-receptor positive breast cancer and the patient has either: (i) progressive disease after receiving endocrine therapy, (ii) been considered inappropriate for endocrine therapy; AND",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this PBS indication; AND",
+      "Must be treated by a medical practitioner.",
+      "Retain all pathology imaging and investigative test results in the patient's medical records. Do not submit copies of these as part of the authority application.",
+      "Treatment with this drug for this condition is restricted to one line of therapy at any disease staging for breast cancer (i.e. if therapy has been prescribed for early disease, subsidy under metastatic disease is no longer available)."
+     ]
+    },
+    {
+     "indication": "Metastatic breast cancer",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "17868_18002_R",
+     "conditions": [
+      "Patient must have received previous PBS-subsidised treatment with this drug in the metastatic setting; AND",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this PBS indication; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "14689D",
+   "drug_name": "Olaparib",
+   "brand_names": [
+    "Lynparza"
+   ],
+   "form": "olaparib 100 mg tablet, 56",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 112,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Metastatic breast cancer",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required",
+     "restriction_code": "17798_17909_R",
+     "conditions": [
+      "The condition must be human epidermal growth factor receptor 2 (HER2) negative; AND",
+      "The condition must be associated with a class 4 or 5 BRCA1 or BRCA2 gene variant; AND",
+      "Patient must have a World Health Organisation (WHO) Eastern Cooperative Oncology Group (ECOG) performance status score of 2 or less; AND",
+      "Patient must have received chemotherapy in the neoadjuvant, adjuvant or metastatic setting; AND",
+      "Patient must not have received PBS-subsidised treatment with this drug in any earlier line of treatment for breast cancer; AND",
+      "The condition must be triple negative breast cancer; or",
+      "The condition must be hormone-receptor positive breast cancer and the patient has either: (i) progressive disease after receiving endocrine therapy, (ii) been considered inappropriate for endocrine therapy; AND",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this PBS indication; AND",
+      "Must be treated by a medical practitioner.",
+      "Retain all pathology imaging and investigative test results in the patient's medical records. Do not submit copies of these as part of the authority application.",
+      "Treatment with this drug for this condition is restricted to one line of therapy at any disease staging for breast cancer (i.e. if therapy has been prescribed for early disease, subsidy under metastatic disease is no longer available)."
+     ]
+    },
+    {
+     "indication": "Metastatic breast cancer",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required",
+     "restriction_code": "17868_18002_R",
+     "conditions": [
+      "Patient must have received previous PBS-subsidised treatment with this drug in the metastatic setting; AND",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this PBS indication; AND",
+      "Patient must not have developed disease progression while receiving treatment with this drug for this condition; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15208K",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Intermediate or high risk of recurrence clear cell variant renal cell carcinoma (RCC)",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "17992_17992_R",
+     "conditions": [
+      "Patient must have: (i) pT2 with Grade 4 or sarcomatoid features; or (ii) pT3, with any grade without nodal involvement (N0) or distant metastases (M0); or (iii) pT4, any grade N0 and M0; or (iv) any pT, any grade with nodal involvement and M0; or (v) metastatic disease and has undergone complete resection of primary and metastatic lesions; AND",
+      "The treatment must be in addition to complete surgical resection; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have previously been treated with systemic therapy for this condition, prior to commencing treatment with this drug for this condition; AND",
+      "The treatment must be the sole PBS-subsidised anti-cancer therapy for this condition; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15210M",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Intermediate or high risk of recurrence clear cell variant renal cell carcinoma (RCC)",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "17992_17992_R",
+     "conditions": [
+      "Patient must have: (i) pT2 with Grade 4 or sarcomatoid features; or (ii) pT3, with any grade without nodal involvement (N0) or distant metastases (M0); or (iii) pT4, any grade N0 and M0; or (iv) any pT, any grade with nodal involvement and M0; or (v) metastatic disease and has undergone complete resection of primary and metastatic lesions; AND",
+      "The treatment must be in addition to complete surgical resection; AND",
+      "The treatment must commence within 12 weeks of complete resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have previously been treated with systemic therapy for this condition, prior to commencing treatment with this drug for this condition; AND",
+      "The treatment must be the sole PBS-subsidised anti-cancer therapy for this condition; AND",
+      "Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15224G",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 13,
+   "listings": [
+    {
+     "indication": "Immunotherapy sensitive advanced or metastatic cancer",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "18052_18070_R",
+     "conditions": [
+      "Patient must not have developed disease progression while receiving PBS-subsidised treatment with this drug for the condition which treatment was commenced for.",
+      "Patients must only receive a maximum of 240 mg every two weeks, 360 mg every three weeks, or 480 mg every four weeks under a weight based or flat dosing regimen."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15238B",
+   "drug_name": "Nivolumab",
+   "brand_names": [
+    "Opdivo"
+   ],
+   "form": "nivolumab 100 mg/10 mL injection, 10 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 480,
+   "amount_unit": "mg",
+   "repeats": 13,
+   "listings": [
+    {
+     "indication": "Immunotherapy sensitive advanced or metastatic cancer",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "18052_18070_R",
+     "conditions": [
+      "Patient must not have developed disease progression while receiving PBS-subsidised treatment with this drug for the condition which treatment was commenced for.",
+      "Patients must only receive a maximum of 240 mg every two weeks, 360 mg every three weeks, or 480 mg every four weeks under a weight based or flat dosing regimen."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15299F",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "High risk locally advanced carcinoma of the cervix",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required_streamlined",
+     "restriction_code": "18371_18371_R",
+     "conditions": [
+      "Patient must have high-risk, locally advanced cervical cancer of one of the following types: (i) squamous cell carcinoma, (ii) adenosquamous carcinoma, (iii) adenocarcinoma; AND",
+      "The treatment must be/have been commenced in combination with concurrent chemoradiotherapy; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have received prior PBS-subsidised treatment with a programmed cell death-1 (PD-1) inhibitor or a programmed cell death ligand-1 (PD-L1) inhibitor for carcinoma of the cervix; AND",
+      "The treatment must not exceed a total of (i) 24 months, (ii) 35 doses (based on a 3-weekly dose regimen), (iii) 17 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless if it was PBS/non-PBS subsidised; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    },
+    {
+     "indication": "High risk locally advanced carcinoma of the cervix",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required_streamlined",
+     "restriction_code": "18450_18450_R",
+     "conditions": [
+      "Patient must have previously received PBS-subsidised treatment with this drug for this indication; AND",
+      "Patient must not have experienced disease recurrence while being treated with this drug for this indication; AND",
+      "The treatment must be the sole PBS-subsidised anti-cancer therapy for this condition; AND",
+      "The treatment must not exceed a total of (i) 24 months, (ii) 35 doses (based on a 3-weekly dose regimen), (iii) 17 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless if it was PBS/non-PBS subsidised; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15314B",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "High risk locally advanced carcinoma of the cervix",
+     "treatment_phase": "Initial treatment",
+     "level": "authority_required_streamlined",
+     "restriction_code": "18371_18371_R",
+     "conditions": [
+      "Patient must have high-risk, locally advanced cervical cancer of one of the following types: (i) squamous cell carcinoma, (ii) adenosquamous carcinoma, (iii) adenocarcinoma; AND",
+      "The treatment must be/have been commenced in combination with concurrent chemoradiotherapy; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have received prior PBS-subsidised treatment with a programmed cell death-1 (PD-1) inhibitor or a programmed cell death ligand-1 (PD-L1) inhibitor for carcinoma of the cervix; AND",
+      "The treatment must not exceed a total of (i) 24 months, (ii) 35 doses (based on a 3-weekly dose regimen), (iii) 17 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless if it was PBS/non-PBS subsidised; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    },
+    {
+     "indication": "High risk locally advanced carcinoma of the cervix",
+     "treatment_phase": "Continuing treatment",
+     "level": "authority_required_streamlined",
+     "restriction_code": "18450_18450_R",
+     "conditions": [
+      "Patient must have previously received PBS-subsidised treatment with this drug for this indication; AND",
+      "Patient must not have experienced disease recurrence while being treated with this drug for this indication; AND",
+      "The treatment must be the sole PBS-subsidised anti-cancer therapy for this condition; AND",
+      "The treatment must not exceed a total of (i) 24 months, (ii) 35 doses (based on a 3-weekly dose regimen), (iii) 17 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless if it was PBS/non-PBS subsidised; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15329T",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Resectable locally advanced squamous cell carcinoma of the oral cavity, pharynx or larynx",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "18413_18413_R",
+     "conditions": [
+      "Patient must have stage III-IVB squamous cell carcinoma of the oral cavity, pharynx or larynx; AND",
+      "Patient must have tumour(s) that are resectable as assessed by the treating clinician; or",
+      "Patient must have undergone surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have experienced disease recurrence or progression while being treated with this drug for this condition; AND",
+      "The treatment must be commenced as neoadjuvant therapy and continued in combination with radiation therapy with or without chemotherapy after surgical resection; or",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this condition; AND",
+      "The treatment must not exceed a total of 12 cumulative months, either as: (i) 17 doses (based on a 3-weekly dose regimen), (ii) 8 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless of if it was PBS/non-PBS subsidised; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15335D",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Resectable locally advanced squamous cell carcinoma of the oral cavity, pharynx or larynx",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "18413_18413_R",
+     "conditions": [
+      "Patient must have stage III-IVB squamous cell carcinoma of the oral cavity, pharynx or larynx; AND",
+      "Patient must have tumour(s) that are resectable as assessed by the treating clinician; or",
+      "Patient must have undergone surgical resection; AND",
+      "Patient must have a WHO performance status of 1 or less; AND",
+      "Patient must not have experienced disease recurrence or progression while being treated with this drug for this condition; AND",
+      "The treatment must be commenced as neoadjuvant therapy and continued in combination with radiation therapy with or without chemotherapy after surgical resection; or",
+      "The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this condition; AND",
+      "The treatment must not exceed a total of 12 cumulative months, either as: (i) 17 doses (based on a 3-weekly dose regimen), (ii) 8 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless of if it was PBS/non-PBS subsidised; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15378J",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 40 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Non-small cell lung cancer (NSCLC)",
+     "treatment_phase": null,
+     "level": "authority_required",
+     "restriction_code": "18857_18888_R",
+     "conditions": [
+      "Patient must be each of: (i) initiating treatment with this drug; (ii) have not previously received PBS-subsidised treatment with this drug for this condition; or",
+      "Patient must be continuing treatment with this drug for this condition, with an absence of further disease progression while being treated with this drug; AND",
+      "Patient must have/have had a WHO performance status of no greater than 2 at treatment initiation with this drug for this condition; AND",
+      "Patient must have evidence of an activating epidermal growth factor receptor (EGFR) gene mutation known to confer sensitivity to treatment with EGFR tyrosine kinase inhibitors in tumour material; AND",
+      "Patient must not have evidence in tumour material of an activating epidermal growth factor receptor (EGFR) exon 20 insertion mutation; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to once per lifetime at any disease stage for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available).",
+      "Prescribers must refer to this drug's approved Therapeutic Goods Administration (TGA) Product Information (PI) for the relevant dosing regimens and treatment duration for the specific stage of NSCLC.",
+      "For patients receiving treatment with this drug as adjuvant therapy, treatment must cease upon disease progression, or after the completion of three years from the first administered dose, whichever comes first."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15392D",
+   "drug_name": "Osimertinib",
+   "brand_names": [
+    "Tagrisso"
+   ],
+   "form": "osimertinib 80 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "authority_required",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Non-small cell lung cancer (NSCLC)",
+     "treatment_phase": null,
+     "level": "authority_required",
+     "restriction_code": "18857_18888_R",
+     "conditions": [
+      "Patient must be each of: (i) initiating treatment with this drug; (ii) have not previously received PBS-subsidised treatment with this drug for this condition; or",
+      "Patient must be continuing treatment with this drug for this condition, with an absence of further disease progression while being treated with this drug; AND",
+      "Patient must have/have had a WHO performance status of no greater than 2 at treatment initiation with this drug for this condition; AND",
+      "Patient must have evidence of an activating epidermal growth factor receptor (EGFR) gene mutation known to confer sensitivity to treatment with EGFR tyrosine kinase inhibitors in tumour material; AND",
+      "Patient must not have evidence in tumour material of an activating epidermal growth factor receptor (EGFR) exon 20 insertion mutation; AND",
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine.",
+      "PBS-subsidised treatment with this drug is restricted to once per lifetime at any disease stage for NSCLC (i.e. if therapy has been prescribed for early disease, subsidy under locally advanced or metastatic disease is no longer available).",
+      "Prescribers must refer to this drug's approved Therapeutic Goods Administration (TGA) Product Information (PI) for the relevant dosing regimens and treatment duration for the specific stage of NSCLC.",
+      "For patients receiving treatment with this drug as adjuvant therapy, treatment must cease upon disease progression, or after the completion of three years from the first administered dose, whichever comes first."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15519T",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IP",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Immunotherapy sensitive advanced or metastatic cancer",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "19204_19192_R",
+     "conditions": [
+      "Patient must not have developed disease progression while receiving PBS-subsidised treatment with this drug for the condition which treatment was commenced for; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "15523B",
+   "drug_name": "Pembrolizumab",
+   "brand_names": [
+    "Keytruda"
+   ],
+   "form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+   "program_code": "IN",
+   "restriction_level": "authority_required_streamlined",
+   "max_quantity": null,
+   "max_amount": 400,
+   "amount_unit": "mg",
+   "repeats": 7,
+   "listings": [
+    {
+     "indication": "Immunotherapy sensitive advanced or metastatic cancer",
+     "treatment_phase": null,
+     "level": "authority_required_streamlined",
+     "restriction_code": "19204_19192_R",
+     "conditions": [
+      "Patient must not have developed disease progression while receiving PBS-subsidised treatment with this drug for the condition which treatment was commenced for; AND",
+      "Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or",
+      "Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "4309T",
+   "drug_name": "Carboplatin",
+   "brand_names": [
+    "Carboplatin Accord"
+   ],
+   "form": "carboplatin 450 mg/45 mL injection, 45 mL vial",
+   "program_code": "IP",
+   "restriction_level": "unrestricted",
+   "max_quantity": null,
+   "max_amount": 900,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": []
+  },
+  {
+   "item_code": "7222D",
+   "drug_name": "Carboplatin",
+   "brand_names": [
+    "Carboplatin Accord"
+   ],
+   "form": "carboplatin 450 mg/45 mL injection, 45 mL vial",
+   "program_code": "IN",
+   "restriction_level": "unrestricted",
+   "max_quantity": null,
+   "max_amount": 900,
+   "amount_unit": "mg",
+   "repeats": 5,
+   "listings": []
+  },
+  {
+   "item_code": "8245Y",
+   "drug_name": "Letrozole",
+   "brand_names": [
+    "ARX-LETROZOLE",
+    "Femara 2.5 mg",
+    "Femolet",
+    "Gynotril",
+    "LETROZOLE-WGR",
+    "Letrozole GH",
+    "Letrozole Sandoz",
+    "Pharmacor Letrozole 2.5"
+   ],
+   "form": "letrozole 2.5 mg tablet, 30",
+   "program_code": "GE",
+   "restriction_level": "restricted",
+   "max_quantity": 30,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 5,
+   "listings": [
+    {
+     "indication": "Breast cancer",
+     "treatment_phase": null,
+     "level": "restricted",
+     "restriction_code": "15992_5522_R",
+     "conditions": [
+      "The condition must be hormone receptor positive."
+     ]
+    }
+   ]
+  },
+  {
+   "item_code": "8362D",
+   "drug_name": "Capecitabine",
+   "brand_names": [
+    "Xelabine"
+   ],
+   "form": "capecitabine 500 mg tablet, 120",
+   "program_code": "GE",
+   "restriction_level": "restricted",
+   "max_quantity": 120,
+   "max_amount": null,
+   "amount_unit": null,
+   "repeats": 2,
+   "listings": [
+    {
+     "indication": "For prescribing by certain health practitioners",
+     "treatment_phase": null,
+     "level": "restricted",
+     "restriction_code": "17848_17848_R",
+     "conditions": [
+      "Must be treated by a medical practitioner; or",
+      "Must be treated by a nurse practitioner where both of the following are occurring: (i) patient care is being shared with a medical practitioner, (ii) the prescription continues existing therapy with this medicine."
+     ]
+    }
+   ]
+  }
+ ]
+}

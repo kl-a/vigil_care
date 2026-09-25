@@ -7908,6 +7908,24 @@ const DATA = [
     "type": "jsonb"
    },
    {
+    "allowed": [],
+    "default": null,
+    "name": "form",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "program_code",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
     "allowed": [
      "unrestricted",
      "restricted",
@@ -7938,6 +7956,24 @@ const DATA = [
     "references": null,
     "standard": false,
     "type": "integer"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "max_amount",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "numeric"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "amount_unit",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "text"
    },
    {
     "allowed": [],
@@ -7974,6 +8010,15 @@ const DATA = [
     "references": null,
     "standard": false,
     "type": "date"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "refresh_log_id",
+    "nullable": false,
+    "references": "pbs_refresh_log",
+    "standard": false,
+    "type": "uuid"
    },
    {
     "allowed": [],
@@ -8039,6 +8084,14 @@ const DATA = [
     "composite": false,
     "onDelete": "RESTRICT",
     "table": "user"
+   },
+   {
+    "columns": [
+     "refresh_log_id"
+    ],
+    "composite": false,
+    "onDelete": "RESTRICT",
+    "table": "pbs_refresh_log"
    }
   ],
   "immutable": false,
@@ -8047,6 +8100,15 @@ const DATA = [
     "name": "ix_pbs_item_deleted_by_user_id",
     "on": [
      "deleted_by_user_id"
+    ],
+    "unique": false,
+    "using": false,
+    "where": null
+   },
+   {
+    "name": "ix_pbs_item_refresh_log_id",
+    "on": [
+     "refresh_log_id"
     ],
     "unique": false,
     "using": false,
@@ -8125,6 +8187,36 @@ const DATA = [
     "references": null,
     "standard": false,
     "type": "text"
+   },
+   {
+    "allowed": [
+     "pbs_api",
+     "sample"
+    ],
+    "default": null,
+    "name": "source",
+    "nullable": false,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "safety_net_general",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "numeric"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "safety_net_concessional",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "numeric"
    },
    {
     "allowed": [],

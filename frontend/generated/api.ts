@@ -265,6 +265,57 @@ export interface paths {
         patch: operations["change_identity_patients__patient_id__identity_patch"];
         trace?: never;
     };
+    "/pbs/drugs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["search_pbs_drugs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pbs/drugs/{item_code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Drug */
+        get: operations["drug_pbs_drugs__item_code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pbs/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Schedule Status */
+        get: operations["schedule_status_pbs_schedule_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/pipeline-runs": {
         parameters: {
             query?: never;
@@ -1023,6 +1074,114 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** PbsDrug */
+        PbsDrug: {
+            /** Brand Names */
+            brand_names: string[];
+            /** Drug Name */
+            drug_name: string;
+            /** Items */
+            items: components["schemas"]["PbsItemView"][];
+            /**
+             * Schedule Date
+             * Format: date
+             */
+            schedule_date: string;
+        };
+        /**
+         * PbsDrugRow
+         * @description A search result: one drug and its items in the current schedule.
+         */
+        PbsDrugRow: {
+            /** Brand Names */
+            brand_names: string[];
+            /** Drug Name */
+            drug_name: string;
+            /** Item Code */
+            item_code: string;
+            /** Item Count */
+            item_count: number;
+        };
+        /** PbsItemView */
+        PbsItemView: {
+            /** Amount Unit */
+            amount_unit: string | null;
+            /** Brand Names */
+            brand_names: string[];
+            /** Copay Concessional */
+            copay_concessional: number | null;
+            /** Copay General */
+            copay_general: number | null;
+            /** Form */
+            form: string | null;
+            /** Item Code */
+            item_code: string;
+            /** Listings */
+            listings: components["schemas"]["PbsListingView"][];
+            /** Max Amount */
+            max_amount: number | null;
+            /** Max Quantity */
+            max_quantity: number | null;
+            /** Program Code */
+            program_code: string | null;
+            /** Repeats */
+            repeats: number | null;
+            /** Restriction Level */
+            restriction_level: string;
+            /**
+             * Schedule Date
+             * Format: date
+             */
+            schedule_date: string;
+        };
+        /**
+         * PbsListingView
+         * @description An item's PBS Listing for one indication, with its prescribing conditions.
+         */
+        PbsListingView: {
+            /** Conditions */
+            conditions: string[];
+            /** Indication */
+            indication: string;
+            /** Level */
+            level: string;
+            /** Restriction Code */
+            restriction_code: string;
+            /** Treatment Phase */
+            treatment_phase: string | null;
+        };
+        /** PbsRefreshView */
+        PbsRefreshView: {
+            /**
+             * Refreshed At
+             * Format: date-time
+             */
+            refreshed_at: string;
+            /** Schedule Date */
+            schedule_date: string | null;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+        };
+        /**
+         * PbsScheduleStatus
+         * @description What the lookup shows: which schedule, where it came from, and whether the last Refresh failed.
+         */
+        PbsScheduleStatus: {
+            current: components["schemas"]["PbsRefreshView"] | null;
+            /** Is Sample */
+            is_sample: boolean;
+            /** Item Count */
+            item_count: number;
+            last_refresh: components["schemas"]["PbsRefreshView"] | null;
+            /** Safety Net Concessional */
+            safety_net_concessional: number | null;
+            /** Safety Net General */
+            safety_net_general: number | null;
+            /** Schedule Date */
+            schedule_date: string | null;
         };
         /**
          * PipelineRunView
@@ -1872,6 +2031,88 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_pbs_drugs_get: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsDrugRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    drug_pbs_drugs__item_code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsDrug"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    schedule_status_pbs_schedule_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsScheduleStatus"];
                 };
             };
         };

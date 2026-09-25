@@ -389,6 +389,7 @@ erDiagram
     CANCER_TYPE ||--o{ TREATMENT_PROTOCOL : for
     TREATMENT_PROTOCOL ||--o{ PROTOCOL_DRUG : includes
     PROTOCOL_DRUG }o--o| PBS_ITEM : listed_as
+    PBS_REFRESH_LOG ||--o{ PBS_ITEM : loaded
     ONCOLOGY_COURSE_DETAIL }o--o| TREATMENT_PROTOCOL : follows
 
     TRIAL ||--o{ TRIAL_SITE : at
@@ -503,7 +504,7 @@ erDiagram
   - `pipeline_run.kind IN ('ingest', 'extract', 'match', 'report', 'pbs_refresh', 'trial_refresh', 'eviq_refresh', 'ocr', 'mask', 'redaction_job', 'reference_set_eval')`.
   - `pipeline_run.status` and `job.status IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')`.
   - `job_step.status IN ('pending', 'running', 'succeeded', 'failed', 'skipped')`.
-  - `pbs_refresh_log.status` and `eviq_refresh_log.status IN ('succeeded', 'partial', 'failed')`.
+  - `pbs_refresh_log.status` and `eviq_refresh_log.status IN ('succeeded', 'partial', 'failed')`; `pbs_refresh_log.source IN ('pbs_api', 'sample')`.
   - `llm_call_log.endpoint IN ('local_vlm', 'cloud')`.
 - **Domain rules as CHECKs:**
   - `treatment_course`: `regimen_name`/`regimen_planned` only when systemic.
@@ -667,8 +668,8 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 |-------|---------|-------------|
 | `treatment_protocol` *(Oncology)* | An eviQ standard-of-care protocol | `cancer_type_id`, `protocol_name`, `intent`, `line_of_therapy` (nullable), `disease_extent_required` (JSONB), `biomarker_requirements` (JSONB, e.g. `{"HER2": "positive"}`), `eviq_id`, `eviq_url`, `eviq_version`, `eviq_updated_on`, `last_checked_at`, `evidence_level`, `raw_data` (JSONB) |
 | `protocol_drug` *(Oncology)* | One drug in a protocol | As v1.1 |
-| `pbs_item` | PBS Schedule entry | As v1.1. `indications` (JSONB) holds per-indication restriction levels, from which PBS Listing is derived per Condition (by the owning module). |
-| `pbs_refresh_log`, `eviq_refresh_log` | Refresh history | `refreshed_at`, `item_count`, `status`, `error_detail`; `pbs_refresh_log` also keeps `schedule_date` (as v1.1). A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
+| `pbs_item` | PBS Schedule entry (oncology-relevant items only) | `item_code`, `drug_name` (its active ingredients), `brand_names` (JSONB), `form`, `program_code`, `restriction_level` (the item's benefit type), `indications` (JSONB: one per PBS restriction, `{indication, treatment_phase, level, restriction_code, conditions: [...]}`, from which PBS Listing is derived per Condition by the owning module), `max_quantity`, `max_amount` + `amount_unit` (infusions), `repeats`, `patient_copay_general`, `patient_copay_concessional`, `schedule_date`, `refresh_log_id` (FK: the Refresh that last loaded it), `raw_data`. Unique `(item_code, schedule_date)`: a Refresh upserts. The PBS Drug Lookup shows the items of the latest Refresh that loaded any, so a failed Refresh leaves the previous schedule visible. |
+| `pbs_refresh_log`, `eviq_refresh_log` | Refresh history, one row per attempt | `refreshed_at`, `item_count`, `status`, `error_detail` (a short code, e.g. `pbs_api_unreachable`); `pbs_refresh_log` also keeps `schedule_date`, `source` (`pbs_api`, or `sample`: the bundled sample, not for clinical use) and the schedule's Safety Net thresholds (`safety_net_general`, `safety_net_concessional`). A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
 
 **Trials & Matching**
 
@@ -725,6 +726,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
 | **Support views** (health, pipeline-run status and errors, the cloud request ledger's metadata, job queue, refresh logs, VLM worker status, audit counts) | ✅ | ✅ | ✅ | ✅ |
 | **Start a Refresh** (trial registries, PBS, eviQ) from the Support Views | ❌ | ❌ | ❌ | ✅ |
+| **PBS Drug Lookup** (public reference data, but a clinical tool: not in the developer admin's navigation) | ✅ | ✅ | ✅ | ❌ |
 
 **Developer admins** configure and support Vigil, and **can never access Patient data, in any environment**. Every Patient-data endpoint returns 403 for them, and the frontend hides those screens. Their Dashboard shows system status instead of Open Items. Troubleshooting that would need Patient data is done by a clinician, secretary or trial coordinator. Granting or removing the developer admin Job Title is recorded as a Verification.
 
@@ -965,7 +967,12 @@ The adapter:
 
 ### 10.2 PBS Schedule Adapter
 
-Unchanged from v1.1. The adapter pulls the oncology-relevant PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug`.
+The adapter pulls the oncology-relevant PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug` (Stage 11). Built in #19 as the Refresh Job Kind `refresh_pbs` (`backend/app/modules/pbs/`):
+
+- **Source:** the public PBS Schedule API v3 (`data-api.health.gov.au/pbs/api/v3`), with the key the Department publishes for public use (one request every 20 seconds, so a Refresh takes a few minutes). "Oncology-relevant" means ATC L01 (antineoplastic agents) and L02 (endocrine therapy). Each PBS restriction on an item becomes one indication: its text gives the indication and the prescribing conditions, and its authority method the level (Restricted, Authority Required, or Authority Required (streamlined)).
+- **Steps:** `fetch` asks the API which schedule is current; `store` fetches its items and upserts them, with the Refresh's `pbs_refresh_log` row, in one transaction.
+- **Failure:** every attempt writes a `pbs_refresh_log` row. A failed Refresh keeps the previous schedule visible (the lookup warns). If the API can't be reached and Vigil has no schedule from it yet, the **bundled sample** (`sample_schedule.json`: a few oncology drugs including pembrolizumab) loads instead, logged `partial` with `source = 'sample'` and shown as sample data, not for clinical use, so demos work offline.
+- **Tests** replay a recorded fixture of the API (`backend/tests/fixtures/pbs_api.json`), never the live service.
 
 PBS is presented at two levels:
 - **PBS Listing** (per drug, **for this indication**): Unrestricted / Restricted / Authority Required / Not Listed. Derived from `pbs_item.indications` against the Cancer Diagnosis's Cancer Type, Disease Extent and Biomarkers. "PBS-listed" is never shown without an indication.
@@ -1174,9 +1181,10 @@ POST   /treatment-protocols/refresh         eviQ refresh
 GET    /conditions/{id}/treatment-options   Treatment Options from the owning module (Oncology: eviQ + PBS Coverage)
 
 # PBS
-GET    /pbs/drugs
-GET    /pbs/drugs/{item_code}
-POST   /pbs/refresh
+GET    /pbs/schedule                        The schedule shown: its date, whether it's the sample, the last Refresh
+GET    /pbs/drugs?q=                        Search by drug, brand, active ingredient or item code
+GET    /pbs/drugs/{item_code}               The item's drug: every item, with its PBS Listing per indication
+                                            (a PBS Refresh is started with POST /refreshes {"kind": "refresh_pbs"})
 
 # Trials
 POST   /trials/refresh
@@ -1348,7 +1356,7 @@ vigil/
 │   │   │   │   └── review.py        # accept/edit/reject → Clinical Record + verification
 │   │   │   ├── clinical/            # Core Clinical Record: Condition, Treatment Course, imaging, labs, notes, plans
 │   │   │   ├── medications/         # + Condition reconciliation
-│   │   │   ├── pbs/                 # PBS adapter + PBS Listing (Core)
+│   │   │   ├── pbs/                 # PBS adapter (API client, bundled sample, Refresh), PBS Drug Lookup, PBS Listing (Core)
 │   │   │   ├── registry/            # Specialty Module contract, registry, per-Practice activation, config builder
 │   │   │   ├── trials/
 │   │   │   ├── matching/            # Match Runs, scope, aggregation, staleness

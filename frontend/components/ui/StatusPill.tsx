@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /** Semantic state colours (docs/frontend-design.md §4.1): good, caution, bad, neutral. */
 export type Tone = "pos" | "cau" | "neg" | "neu";
 
-const TONE: Record<Tone, string> = {
+export const TONE: Record<Tone, string> = {
   pos: "border-pos-bd bg-pos-bg text-pos",
   cau: "border-cau-bd bg-cau-bg text-cau",
   neg: "border-neg-bd bg-neg-bg text-neg",

@@ -10,6 +10,7 @@ from app.core.permissions import NotAllowed
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
 from app.modules.patients import router as patients
+from app.modules.pbs import router as pbs
 from app.modules.practice import router as practice
 from app.modules.practice import care_team_router, providers_router, sites_router
 from app.modules.registry import router as specialty_modules
@@ -56,6 +57,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(providers_router.router)
     app.include_router(patients.router)
     app.include_router(care_team_router.router)
+    app.include_router(pbs.router)
     app.include_router(jobs.router)
     app.include_router(specialty_modules.router)
     if settings.environment == "dev" and settings.dev_login_enabled:

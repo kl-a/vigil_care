@@ -23,3 +23,11 @@ def test_a_registered_handler_needs_its_job_kind_registered_by_a_migration(owner
     registered = {r["key"] for r in owner_db.execute("SELECT key FROM job_kind").fetchall()}
     assert set(registry().kinds) <= registered
     assert "refresh_pbs" in registered
+
+
+def test_every_core_job_kind_has_a_handler(owner_db: Any) -> None:
+    # Other tests register throwaway Job Kinds, all named test_...
+    rows = owner_db.execute("SELECT key FROM job_kind WHERE module_key IS NULL AND key NOT LIKE 'test\\_%'").fetchall()
+    core = {r["key"] for r in rows}
+    assert "refresh_pbs" in core
+    assert core <= set(registry().kinds)

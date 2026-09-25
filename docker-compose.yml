@@ -69,6 +69,8 @@ services:
       VIGIL_SESSION_SECRET: ${VIGIL_SESSION_SECRET:-}
       VIGIL_ENCRYPTION_KEY: ${VIGIL_ENCRYPTION_KEY:-}
       VIGIL_PREVIOUS_ENCRYPTION_KEYS: ${VIGIL_PREVIOUS_ENCRYPTION_KEYS:-}
+      VIGIL_PBS_API_URL: ${VIGIL_PBS_API_URL:-}
+      VIGIL_PBS_API_KEY: ${VIGIL_PBS_API_KEY:-}
     depends_on:
       migrate: { condition: service_completed_successfully }
 
