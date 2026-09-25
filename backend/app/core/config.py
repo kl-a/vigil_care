@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     # Read from VIGIL_ENV (the documented name), not the prefix-derived VIGIL_ENVIRONMENT.
     environment: Environment = Field(default="dev", validation_alias=AliasChoices("VIGIL_ENV", "environment"))
     dev_login_enabled: bool = False
-    database_url: str = "postgresql://vigil:vigil@localhost:5432/vigil"
+    database_url: str = "postgresql://vigil_app:vigil_app_dev@localhost:5432/vigil"
     vlm_worker_url: str | None = None
 
 

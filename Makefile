@@ -1,7 +1,7 @@
 # Vigil developer commands. Nothing is installed on the host outside backend/.venv and frontend/node_modules.
 BACKEND_PY := backend/.venv/bin/python
 
-.PHONY: setup up down test test-backend test-frontend typecheck gates api-types check-api-types ci
+.PHONY: setup up down test test-db test-backend test-frontend typecheck gates api-types check-api-types migrate erd ci
 
 setup: ## Create the backend venv and install frontend deps (local only)
 	cd backend && python3 -m venv .venv && .venv/bin/pip install -q -e '.[dev]'
@@ -15,7 +15,10 @@ down:
 
 test: test-backend test-frontend
 
-test-backend:
+test-db: ## Start the throwaway test database (in memory, port 55432)
+	docker compose --profile test up -d --wait db-test
+
+test-backend: test-db
 	cd backend && .venv/bin/pytest -q
 	cd eval && ../$(BACKEND_PY) -m pytest -q -p no:cacheprovider
 
@@ -28,6 +31,12 @@ typecheck:
 
 gates: ## Run the quality gates (test environment only; fails the build on any gate failure)
 	VIGIL_ENV=test $(BACKEND_PY) eval/gates.py
+
+migrate: ## Provision database roles and migrate the dev database to head
+	cd backend && .venv/bin/python -m app.db.provision
+
+erd: ## Regenerate the clickable data-model diagram (docs/data-model/index.html)
+	cd backend && .venv/bin/python -m app.db.erd
 
 api-types: ## Regenerate frontend types from the backend's OpenAPI schema
 	cd backend && .venv/bin/python -m app.openapi_export > openapi.json

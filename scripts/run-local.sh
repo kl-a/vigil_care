@@ -130,9 +130,13 @@ start_dev() {
   (cd "$ROOT/frontend" && npm ci --silent)
   ok "Frontend dependencies installed"
 
+  bold "Creating database roles and migrating the schema"
+  (cd "$ROOT/backend" && VIGIL_DB_ADMIN_URL="postgresql://vigil:vigil@127.0.0.1:$DB_PORT/vigil" .venv/bin/python -m app.db.provision)
+  ok "Schema at head"
+
   bold "Starting backend and frontend with hot reload"
   trap 'on_dev_failure' EXIT
-  (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DATABASE_URL="postgresql://vigil:vigil@127.0.0.1:$DB_PORT/vigil" \
+  (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
     nohup .venv/bin/uvicorn app.main:create_app --factory --reload --port "$BACKEND_PORT" >"$RUN_DIR/backend.log" 2>&1 &
     echo $! >"$RUN_DIR/backend.pid")
   (cd "$ROOT/frontend" && nohup npm run dev -- -p "$FRONTEND_PORT" >"$RUN_DIR/frontend.log" 2>&1 & echo $! >"$RUN_DIR/frontend.pid")
@@ -194,6 +198,7 @@ $(bold "Click-through guide (ticket #11: walking skeleton)")
      "Treatment Options" is an Oncology tab.
   5. Try the moon icon (dark theme), the sidebar toggle, and a bad URL like $FRONTEND_URL/nope (404 with the badge).
   6. Open $BACKEND_URL/health: {"status":"ok","environment":"dev","database":"ok",...}
+  7. Open docs/data-model/index.html in a browser to click through every table (ticket #2).
 
   Every screen is a placeholder for now; later tickets fill them in.
   Stop everything with: $0 --stop

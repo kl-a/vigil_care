@@ -172,6 +172,24 @@ _Avoid_: PASS/FAIL, Uncertain criterion
 Anything about a Patient that needs a User's attention: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step, a Stale Match Run, conflicting Biomarker results. Shown per Patient and practice-wide.
 _Avoid_: Task, alert, to-do
 
+### Operations
+
+**Job**:
+One unit of background work Vigil runs on its own, such as processing a Document or refreshing PBS data. Carries only IDs, never Patient data. A Job belongs to one Practice, or to none when it is system-wide (e.g. a refresh).
+_Avoid_: Task, background process
+
+**Job Kind**:
+The named kind of a Job (e.g. ingest a Document, refresh PBS), contributed by the Core or by a Specialty Module. A Job of an unknown Job Kind is rejected, and a Job whose Specialty Module is inactive for its Practice doesn't run.
+_Avoid_: Job type, task type
+
+**Refresh**:
+A Job that updates Vigil's copy of external reference data (PBS Schedule, eviQ Treatment Protocols, trial registries), started on a schedule or by a developer admin.
+_Avoid_: Sync, import
+
+**Support View**:
+A screen or endpoint for configuring and troubleshooting Vigil (health, Jobs, pipeline runs, Refresh history, cloud request metadata). Contains IDs only, never Patient data, so developer admins may use it.
+_Avoid_: Admin panel, logs (as the general term)
+
 ### Sharing across Practices (post-MVP)
 
 **Holding Practice**:
