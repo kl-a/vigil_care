@@ -301,3 +301,12 @@ def test_patient_payloads_to_the_cloud_name_their_document(seed: Seed, rejects: 
     with rejects(CheckViolation):
         seed.insert("cloud_request", practice_id=ids["practice"], purpose="extract", payload_kind="pseudonymised_text", payload_sha256="x", model_id="m")
     seed.insert("cloud_request", purpose="parse_criteria", payload_kind="public_text", payload_sha256="x", model_id="m")
+
+
+def test_a_practice_has_at_most_one_primary_site(seed: Seed, rejects: Rejects) -> None:
+    practice = seed.practice()
+    seed.site(practice, is_primary=True)
+    seed.site(practice, name="Hospital clinic")
+    seed.site(seed.practice(), is_primary=True)
+    with rejects(UniqueViolation):
+        seed.site(practice, name="Second rooms", is_primary=True)

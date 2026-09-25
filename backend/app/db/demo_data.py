@@ -23,7 +23,7 @@ from app.core.database import session_factory
 from app.core.vocabulary import JobTitle
 from app.db import metadata  # noqa: F401  (registers every table, so foreign keys resolve)
 from app.modules.accounts.models import PracticeMembership, User
-from app.modules.practice.models import Practice
+from app.modules.practice.models import Practice, Site
 from app.modules.registry.models import PracticeModule
 
 NAMESPACE = uuid.UUID("5b0f3c1e-0d6a-4a5e-9c1b-7a1d2c3e4f50")
@@ -69,6 +69,8 @@ def load(settings: Settings) -> None:
             _membership(db, PRACTICE_ID, user, user.job_title)
         # Dr Alex Rivera also consults at Northside: one login, a second Membership (#24).
         _membership(db, NORTHSIDE_ID, CLINICIAN, "clinician")
+        for site in SITES:
+            _site(db, site)
         _activate_oncology(db)
 
 
@@ -81,8 +83,6 @@ HARBOURSIDE = {
     "fax": "02 5550 0101",
     "email": "reception@harbourside-oncology.example.com",
     "abn": "00 000 000 000",
-    "lat": Decimal("-33.8688"),
-    "lng": Decimal("151.2093"),
 }
 NORTHSIDE = {
     "name": "Northside Oncology (synthetic)",
@@ -91,12 +91,32 @@ NORTHSIDE = {
     "fax": "02 5550 0201",
     "email": "reception@northside-oncology.example.com",
     "abn": "00 000 000 000",
-    "lat": Decimal("-33.7969"),
-    "lng": Decimal("151.1803"),
 }
 
 
-def _practice(db: Session, practice_id: uuid.UUID, details: dict[str, object]) -> None:
+@dataclass(frozen=True)
+class DemoSite:
+    practice_id: uuid.UUID
+    name: str
+    address: str
+    lat: Decimal
+    lng: Decimal
+    is_primary: bool = False
+
+    @property
+    def id(self) -> uuid.UUID:
+        return uuid.uuid5(NAMESPACE, f"site:{self.practice_id}:{self.name}")
+
+
+# Trial-site distances (Stage 10) are measured from each Site. Harbourside also runs a hospital clinic.
+SITES = (
+    DemoSite(PRACTICE_ID, "Harbourside rooms", "1 Example St, Sydney NSW 2000", Decimal("-33.8688"), Decimal("151.2093"), is_primary=True),
+    DemoSite(PRACTICE_ID, "Example Hospital clinic", "2 Example Rd, Camperdown NSW 2050", Decimal("-33.8898"), Decimal("151.1873")),
+    DemoSite(NORTHSIDE_ID, "Northside rooms", "2 Example Rd, Chatswood NSW 2067", Decimal("-33.7969"), Decimal("151.1803"), is_primary=True),
+)
+
+
+def _practice(db: Session, practice_id: uuid.UUID, details: dict[str, str]) -> None:
     practice = db.get(Practice, practice_id)
     if practice is None:
         db.add(Practice(id=practice_id, **details))
@@ -105,6 +125,25 @@ def _practice(db: Session, practice_id: uuid.UUID, details: dict[str, object]) -
     for field, value in details.items():  # fill in what older demo databases lack
         if getattr(practice, field) is None:
             setattr(practice, field, value)
+
+
+def _site(db: Session, site: DemoSite) -> None:
+    # Databases migrated from before #25 already have a primary Site per Practice (from its old location).
+    has_primary = db.scalars(select(Site.id).where(Site.practice_id == site.practice_id, Site.is_primary)).first()
+    if db.get(Site, site.id) is not None or (site.is_primary and has_primary is not None):
+        return
+    db.add(
+        Site(
+            id=site.id,
+            practice_id=site.practice_id,
+            name=site.name,
+            address=site.address,
+            lat=site.lat,
+            lng=site.lng,
+            is_primary=site.is_primary,
+        )
+    )
+    db.flush()
 
 
 def _user(db: Session, user: DemoUser) -> None:

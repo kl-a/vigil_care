@@ -532,6 +532,7 @@ erDiagram
 **Unique constraints:**
 - `patient_identity.patient_id`: one identity row per Patient.
 - `patient.pseudonym`: unique (e.g. `VG-0042`).
+- `site(practice_id) WHERE is_primary AND deleted_at IS NULL`: at most one primary Site per Practice.
 - `user.username`: unique across Vigil (one login per person).
 - `practice_membership(user_id, practice_id)`: one Membership per User per Practice.
 - `document(patient_id, original_sha256)`: no duplicate uploads of the same file for the same Patient.
@@ -589,8 +590,8 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `practice` | A Practice using Vigil. One row in the MVP; the operator adds more with a command (revisit-later #13). | `name`, `address` (registered), `phone`, `fax`, `email`, `abn` (nullable). *Planned (Sites ticket): `lat`/`lng` move to its primary Site.* |
-| `site` *(planned: Sites ticket, Stage 2)* | A place where the Practice sees Patients | `practice_id`, `name`, `address`, `lat`, `lng` (for trial-site distances), `is_primary` (exactly one per Practice) |
+| `practice` | A Practice using Vigil. One row in the MVP; the operator adds more with a command (revisit-later #13). | `name`, `address` (registered), `phone`, `fax`, `email`, `abn` (nullable). Its locations are its Sites. |
+| `site` | A place where the Practice sees Patients (its rooms, a hospital clinic). Trial-site distances are measured from each Site. | `practice_id`, `name`, `address`, `lat`, `lng` (for trial-site distances), `is_primary` (a partial unique index allows at most one live primary per Practice; the service keeps exactly one once a Site exists: the first is primary, another becomes primary by choosing it, and the primary can't be deleted). Managed in Settings by Job Titles that "Change Settings"; every change is a Verification on `subject_table = 'site'`. |
 | `user` | A person who logs into Vigil, with one login across Practices. Their Job Title and status are per Practice, in `practice_membership`. | `username` (**unique across Vigil**), `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at` |
 | `practice_membership` | A User's standing at one Practice. A session acts in one Practice at a time, with the Job Title held there. | `practice_id`, `user_id`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (nullable: their own Provider entry in this Practice's directory), `is_active` (deactivating affects only this Practice), `last_login_at`. Unique `(user_id, practice_id)`. Every Practice-scoped reference to a User (uploaded by, signed off by, deleted by, …) is a composite FK `(user_id, practice_id)` → `practice_membership(user_id, practice_id)`, so only a member of a Practice can act in it. |
 | `provider` | A clinician in the Practice's directory, internal or external | `practice_id` (whose directory), `title`, `first_name`, `last_name`, `provider_number` (nullable), `specialty`, `is_internal`, `organisation` (for external), `phone`, `email`, `fax`, `notes` |

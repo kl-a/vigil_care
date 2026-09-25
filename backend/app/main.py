@@ -9,6 +9,7 @@ from app.core.permissions import NotAllowed
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
 from app.modules.practice import router as practice
+from app.modules.practice import sites_router
 from app.modules.registry import router as specialty_modules
 
 SESSION_HOURS = 12
@@ -44,6 +45,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(accounts.router)
     app.include_router(users_router.router)
     app.include_router(practice.router)
+    app.include_router(sites_router.router)
     app.include_router(specialty_modules.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)

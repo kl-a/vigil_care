@@ -158,6 +158,42 @@ export interface paths {
         patch: operations["change_practice_practice_patch"];
         trace?: never;
     };
+    "/sites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sites */
+        get: operations["list_sites_sites_get"];
+        put?: never;
+        /** Add Site */
+        post: operations["add_site_sites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sites/{site_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Site */
+        delete: operations["delete_site_sites__site_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Site */
+        patch: operations["change_site_sites__site_id__patch"];
+        trace?: never;
+    };
     "/users": {
         parameters: {
             query?: never;
@@ -374,6 +410,20 @@ export interface components {
             version: string;
         };
         /**
+         * NewSite
+         * @description The first Site is the primary; another becomes primary by choosing it (`SiteChange`).
+         */
+        NewSite: {
+            /** Address */
+            address?: string | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lng */
+            lng?: number | null;
+            /** Name */
+            name: string;
+        };
+        /**
          * NewUser
          * @description Someone with a login at another Practice is added by username alone; a new login needs a display name.
          */
@@ -401,10 +451,6 @@ export interface components {
             email?: string | null;
             /** Fax */
             fax?: string | null;
-            /** Lat */
-            lat?: number | null;
-            /** Lng */
-            lng?: number | null;
             /** Name */
             name?: string | null;
             /** Phone */
@@ -412,7 +458,7 @@ export interface components {
         };
         /**
          * PracticeDetails
-         * @description The Practice's details (design doc §5 screen 19). Location is for trial-site distances.
+         * @description The Practice's details (design doc §5 screen 19). Its locations are its Sites.
          */
         PracticeDetails: {
             /** Abn */
@@ -428,14 +474,55 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string | null;
+        };
+        /**
+         * Removal
+         * @description Soft-deleting anything needs a reason (design doc §6.2).
+         */
+        Removal: {
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * SiteChange
+         * @description Only the fields sent are changed. The primary is moved by choosing another Site, never unset.
+         */
+        SiteChange: {
+            /** Address */
+            address?: string | null;
+            /** Is Primary */
+            is_primary?: true | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lng */
+            lng?: number | null;
+            /** Name */
+            name?: string | null;
+        };
+        /**
+         * SiteRow
+         * @description A place where the Practice sees Patients (#25). Trial-site distances are measured from it.
+         */
+        SiteRow: {
+            /** Address */
+            address: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Primary */
+            is_primary: boolean;
             /** Lat */
             lat: number | null;
             /** Lng */
             lng: number | null;
             /** Name */
             name: string;
-            /** Phone */
-            phone: string | null;
         };
         /**
          * UserChange
@@ -748,6 +835,127 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PracticeDetails"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sites_sites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteRow"][];
+                };
+            };
+        };
+    };
+    add_site_sites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewSite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_site_sites__site_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_site_sites__site_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteRow"];
                 };
             };
             /** @description Validation Error */

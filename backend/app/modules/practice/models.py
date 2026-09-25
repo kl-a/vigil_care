@@ -1,4 +1,4 @@
-"""Practice, Provider directory and Care Team (design doc §6.3)."""
+"""Practice, its Sites, Provider directory and Care Team (design doc §6.3)."""
 
 import uuid
 from datetime import date
@@ -40,8 +40,27 @@ class Practice(SharedEntity):
     fax: Mapped[str | None]
     email: Mapped[str | None]
     abn: Mapped[str | None]
+
+
+class Site(PracticeEntity):
+    """A place where the Practice sees Patients. Trial-site distances are measured from each Site."""
+
+    __tablename__ = "site"
+    __extra_args__ = (
+        # At most one primary Site per Practice; the service keeps it at exactly one once a Site exists.
+        Index(
+            "uq_site_practice_id_primary",
+            "practice_id",
+            unique=True,
+            postgresql_where=text("is_primary AND deleted_at IS NULL"),
+        ),
+    )
+
+    name: Mapped[str]
+    address: Mapped[str | None]
     lat: Mapped[Decimal | None]
     lng: Mapped[Decimal | None]
+    is_primary: Mapped[bool] = mapped_column(server_default=text("false"))
 
 
 class Provider(PracticeEntity):

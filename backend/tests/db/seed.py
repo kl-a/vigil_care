@@ -48,6 +48,10 @@ class Seed:
         """An existing login joins another Practice."""
         return self.insert("practice_membership", practice_id=practice_id, user_id=user_id, job_title=job_title, **values)
 
+    def site(self, practice_id: uuid.UUID, **values: Any) -> uuid.UUID:
+        values.setdefault("name", "Synthetic rooms")
+        return self.insert("site", practice_id=practice_id, **values)
+
     def provider(self, practice_id: uuid.UUID, **values: Any) -> uuid.UUID:
         values.setdefault("specialty", "medical_oncology")
         return self.insert(

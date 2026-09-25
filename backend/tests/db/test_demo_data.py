@@ -24,7 +24,12 @@ def _counts(database: DatabaseSettings) -> dict[str, Any]:
             ).fetchone(),
             "northside_members": conn.execute(MEMBERS, [demo_data.NORTHSIDE_ID]).fetchone(),
             "practices": conn.execute("SELECT count(*) FROM practice WHERE id = %s", [practice]).fetchone(),
-            "located": conn.execute("SELECT lat IS NOT NULL AND lng IS NOT NULL AND phone IS NOT NULL FROM practice WHERE id = %s", [practice]).fetchone(),
+            "located": conn.execute("SELECT phone IS NOT NULL FROM practice WHERE id = %s", [practice]).fetchone(),
+            "sites": conn.execute(
+                "SELECT array_agg(name || CASE WHEN is_primary THEN ' (primary)' ELSE '' END ORDER BY name) FROM site"
+                " WHERE practice_id = %s AND lat IS NOT NULL",
+                [practice],
+            ).fetchone(),
             "unmarked_names": conn.execute(
                 "SELECT count(*) FROM \"user\" u JOIN practice_membership m ON m.user_id = u.id"
                 " WHERE m.practice_id = ANY(%s) AND u.display_name NOT LIKE '%%(synthetic)'",
@@ -47,6 +52,7 @@ def test_demo_data_loads_two_practices_one_user_per_job_title_and_oncology(datab
     # Dr Alex Rivera works at both: one login, a Membership at each.
     assert counts["northside_members"] == (["Dr Alex Rivera (synthetic): clinician"],)
     assert counts["located"] == (True,)
+    assert counts["sites"] == (["Example Hospital clinic", "Harbourside rooms (primary)"],)
     assert counts["unmarked_names"] == (0,)
     assert counts["job_titles"] == (["clinician", "developer_admin", "secretary", "trial_coordinator"],)
     assert counts["oncology"] == (True,)

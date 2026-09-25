@@ -12,8 +12,6 @@ DETAILS = {
     "fax": "02 9000 0001",
     "email": "reception@harbourside.example",
     "abn": "51 824 753 556",
-    "lat": -33.8688,
-    "lng": 151.2093,
 }
 
 
@@ -32,7 +30,7 @@ def test_clinicians_and_developer_admins_change_the_details(sign_in: SignIn, job
     changed = client.patch("/practice", json=DETAILS)
     assert changed.status_code == 200
     assert changed.json() | {"id": None} == DETAILS | {"id": None}
-    assert client.get("/practice").json()["lat"] == -33.8688
+    assert client.get("/practice").json()["abn"] == "51 824 753 556"
 
 
 @pytest.mark.parametrize("job_title", ["trial_coordinator", "secretary"])
@@ -73,7 +71,7 @@ def test_one_practice_cant_read_or_change_another(sign_in: SignIn, committed: Se
 
 @pytest.mark.parametrize(
     "bad",
-    [{"name": " "}, {"lat": 91}, {"lng": -181}, {"abn": "12 345"}, {"email": "not-an-email"}],
+    [{"name": " "}, {"abn": "12 345"}, {"email": "not-an-email"}],
 )
 def test_invalid_details_are_refused(sign_in: SignIn, bad: dict[str, object]) -> None:
     client, _ = sign_in("clinician")

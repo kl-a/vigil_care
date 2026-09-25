@@ -29,8 +29,6 @@ def _as_details(practice: Practice) -> PracticeDetails:
         fax=practice.fax,
         email=practice.email,
         abn=practice.abn,
-        lat=float(practice.lat) if practice.lat is not None else None,
-        lng=float(practice.lng) if practice.lng is not None else None,
     )
 
 
