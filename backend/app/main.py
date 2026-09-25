@@ -3,12 +3,15 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import health
-from app.core.config import Settings, refuse_unsafe_startup
+from app.core.config import Settings, keystore, refuse_unsafe_startup
+from app.core.crypto import FieldCipher, TamperedCiphertext
 from app.core.database import DatabaseCheck, postgres_check, session_factory
 from app.core.permissions import NotAllowed
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
+from app.modules.patients import router as patients
 from app.modules.practice import router as practice
+from app.modules.practice import providers_router, sites_router
 from app.modules.registry import router as specialty_modules
 
 SESSION_HOURS = 12
@@ -30,6 +33,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.state.settings = settings
     app.state.database_check = database_check or postgres_check(settings.database_url)
     app.state.sessionmaker = session_factory(settings.database_url)
+    app.state.field_cipher = FieldCipher(keystore(settings))
     # Signed cookie holding only the User id and the Practice they act in.
     # Stage 13 adds the inactivity lock and HTTPS-only cookies.
     app.add_middleware(
@@ -40,10 +44,14 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
         same_site="lax",
     )
     app.add_exception_handler(NotAllowed, _not_allowed)
+    app.add_exception_handler(TamperedCiphertext, _undecryptable)
     app.include_router(health.router)
     app.include_router(accounts.router)
     app.include_router(users_router.router)
     app.include_router(practice.router)
+    app.include_router(sites_router.router)
+    app.include_router(providers_router.router)
+    app.include_router(patients.router)
     app.include_router(specialty_modules.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)
@@ -53,3 +61,11 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
 async def _not_allowed(request: Request, error: Exception) -> JSONResponse:
     """A service refused for the actor's Job Title (design doc §6.4)."""
     return JSONResponse({"detail": str(error)}, status_code=status.HTTP_403_FORBIDDEN)
+
+
+async def _undecryptable(request: Request, error: Exception) -> JSONResponse:
+    """Encrypted data that won't open: usually a database filled under a different VIGIL_ENCRYPTION_KEY."""
+    return JSONResponse(
+        {"detail": "Some Patient details can't be decrypted with the configured encryption key."},
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )

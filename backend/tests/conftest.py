@@ -1,3 +1,4 @@
+import base64
 import os
 import uuid
 from collections.abc import Callable, Iterator
@@ -13,11 +14,16 @@ from app.db.provision import DatabaseSettings, migrate, provision_roles
 from app.main import create_app
 
 
+TEST_ENCRYPTION_KEY = base64.b64encode(bytes([7] * 32)).decode()
+
+
 def make_settings(**overrides: object) -> Settings:
     values: dict[str, object] = {
         "environment": "test",
         "dev_login_enabled": False,
         "session_secret": "test-session-secret-" + "x" * 32,
+        # A fixed, test-only key (32 bytes of 0x07): never used outside tests.
+        "encryption_key": TEST_ENCRYPTION_KEY,
     }
     values.update(overrides)
     return Settings(**values)  # type: ignore[arg-type]

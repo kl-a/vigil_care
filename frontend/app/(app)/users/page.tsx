@@ -2,21 +2,27 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { useSignedInUser } from "@/components/shell/ViewerProvider";
+import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { JobTitleChip } from "@/components/users/JobTitleChip";
-import { ChangeJobTitleDialog, SetActiveDialog } from "@/components/users/UserDialogs";
+import { ChangeJobTitleDialog, LinkProviderDialog, SetActiveDialog } from "@/components/users/UserDialogs";
 import { messageOf } from "@/lib/api";
 import { JOB_TITLES, JOB_TITLE_LABEL, signOffName, type JobTitle } from "@/lib/jobTitles";
+import { isVisible } from "@/lib/stages";
 import { changeUser, createUser, formatWhen, listUsers, type UserChange, type UserRow } from "@/lib/users";
 
-type Dialog = { kind: "job_title" | "active"; user: UserRow } | null;
+type Dialog = { kind: "job_title" | "active" | "provider"; user: UserRow } | null;
+
+/** Linking a User to their Provider record arrives with the Provider directory (#7, Stage 2). */
+const PROVIDER_LINKS = { stage: 2, built: true };
 
 
 /** User Management (design doc §5 screen 18). Clinicians, secretaries and developer admins (§6.4). */
 export default function UserManagementPage() {
   const me = useSignedInUser();
+  const { showUpcoming } = useViewer();
+  const canLinkProviders = isVisible(PROVIDER_LINKS, showUpcoming);
   const [users, setUsers] = useState<UserRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -67,22 +73,27 @@ export default function UserManagementPage() {
                     <div className="font-mono text-[11px] text-muted-foreground">{user.username}</div>
                   </td>
                   <td className="px-3 py-2"><JobTitleChip jobTitle={user.job_title} /></td>
-                  <td className="px-3 py-2 text-muted-foreground">{user.provider_id ? "Linked" : "—"}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{user.provider_name ?? "—"}</td>
                   <td className="px-3 py-2">
                     <StatusPill tone={user.is_active ? "pos" : "neu"}>{user.is_active ? "Active" : "Inactive"}</StatusPill>
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{formatWhen(user.last_login_at)}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right">
-                    {user.id === me.id ? (
-                      <span className="text-xs text-muted-foreground">You</span>
-                    ) : (
-                      <span className="inline-flex gap-2">
-                        <button onClick={() => setDialog({ kind: "job_title", user })} className="text-xs font-medium text-primary">Change Job Title</button>
-                        <button onClick={() => setDialog({ kind: "active", user })} className={`text-xs font-medium ${user.is_active ? "text-neg" : "text-primary"}`}>
-                          {user.is_active ? "Deactivate" : "Reactivate"}
-                        </button>
-                      </span>
-                    )}
+                    <span className="inline-flex gap-2">
+                      {canLinkProviders && (
+                        <button onClick={() => setDialog({ kind: "provider", user })} className="text-xs font-medium text-primary">Link Provider</button>
+                      )}
+                      {user.id === me.id ? (
+                        <span className="text-xs text-muted-foreground">You</span>
+                      ) : (
+                        <>
+                          <button onClick={() => setDialog({ kind: "job_title", user })} className="text-xs font-medium text-primary">Change Job Title</button>
+                          <button onClick={() => setDialog({ kind: "active", user })} className={`text-xs font-medium ${user.is_active ? "text-neg" : "text-primary"}`}>
+                            {user.is_active ? "Deactivate" : "Reactivate"}
+                          </button>
+                        </>
+                      )}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -92,6 +103,9 @@ export default function UserManagementPage() {
       )}
       {dialog?.kind === "job_title" && (
         <ChangeJobTitleDialog user={dialog.user} actor={actor} onSubmit={(change) => apply(dialog.user, change)} onClose={() => setDialog(null)} />
+      )}
+      {dialog?.kind === "provider" && (
+        <LinkProviderDialog user={dialog.user} actor={actor} onSubmit={(change) => apply(dialog.user, change)} onClose={() => setDialog(null)} />
       )}
       {dialog?.kind === "active" && (
         <SetActiveDialog user={dialog.user} actor={actor} onSubmit={(change) => apply(dialog.user, change)} onClose={() => setDialog(null)} />

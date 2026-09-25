@@ -532,6 +532,7 @@ erDiagram
 **Unique constraints:**
 - `patient_identity.patient_id`: one identity row per Patient.
 - `patient.pseudonym`: unique (e.g. `VG-0042`).
+- `site(practice_id) WHERE is_primary AND deleted_at IS NULL`: at most one primary Site per Practice.
 - `user.username`: unique across Vigil (one login per person).
 - `practice_membership(user_id, practice_id)`: one Membership per User per Practice.
 - `document(patient_id, original_sha256)`: no duplicate uploads of the same file for the same Patient.
@@ -573,7 +574,7 @@ erDiagram
 | Role | Login | What it can do |
 |---|---|---|
 | `vigil_owner` | Yes (migrations only) | Owns every schema and table; runs Alembic. The running app never uses it. |
-| `vigil_app` | Yes (the backend) | `SELECT`, `INSERT`, `UPDATE` on the main schema. **No `DELETE` on any table** except `llm_cache`, `job` and `job_step`, so Patient data can only be soft-deleted. Reaches the `identity` schema only through `identity_access`. |
+| `vigil_app` | Yes (the backend) | `SELECT`, `INSERT`, `UPDATE` on the main schema. **No `DELETE` on any table** except `llm_cache`, `job` and `job_step`, so Patient data can only be soft-deleted. Reaches the `identity` schema only through `identity_access`. `USAGE` on `patient_pseudonym_seq`. |
 | `identity_access` | No | `USAGE` on the `identity` schema; `SELECT`, `INSERT`, `UPDATE` (never `DELETE`) on its tables. Granted only to `vigil_app`. |
 | `vigil_support` | Yes (support tooling) | Read-only on Support-data and registry tables (`job`, `job_step`, `job_kind`, `pipeline_run`, `llm_call_log`, `cloud_request`, the refresh logs, `specialty_module`, `practice_module`). **Never** the `identity` schema or any Patient data table. It's the database-level mirror of the developer admin's rule (§6.4). |
 
@@ -589,13 +590,13 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `practice` | A Practice using Vigil. One row in the MVP; the operator adds more with a command (revisit-later #13). | `name`, `address` (registered), `phone`, `fax`, `email`, `abn` (nullable). *Planned (Sites ticket): `lat`/`lng` move to its primary Site.* |
-| `site` *(planned: Sites ticket, Stage 2)* | A place where the Practice sees Patients | `practice_id`, `name`, `address`, `lat`, `lng` (for trial-site distances), `is_primary` (exactly one per Practice) |
+| `practice` | A Practice using Vigil. One row in the MVP; the operator adds more with a command (revisit-later #13). | `name`, `address` (registered), `phone`, `fax`, `email`, `abn` (nullable). Its locations are its Sites. |
+| `site` | A place where the Practice sees Patients (its rooms, a hospital clinic). Trial-site distances are measured from each Site. | `practice_id`, `name`, `address`, `lat`, `lng` (for trial-site distances), `is_primary` (a partial unique index allows at most one live primary per Practice; the service keeps exactly one once a Site exists: the first is primary, another becomes primary by choosing it, and the primary can't be deleted). Managed in Settings by Job Titles that "Change Settings"; every change is a Verification on `subject_table = 'site'`. |
 | `user` | A person who logs into Vigil, with one login across Practices. Their Job Title and status are per Practice, in `practice_membership`. | `username` (**unique across Vigil**), `display_name`, `password_hash` (argon2id), `totp_secret_encrypted`, `totp_enrolled_at` |
 | `practice_membership` | A User's standing at one Practice. A session acts in one Practice at a time, with the Job Title held there. | `practice_id`, `user_id`, `job_title` (clinician/trial_coordinator/secretary/developer_admin), `provider_id` (nullable: their own Provider entry in this Practice's directory), `is_active` (deactivating affects only this Practice), `last_login_at`. Unique `(user_id, practice_id)`. Every Practice-scoped reference to a User (uploaded by, signed off by, deleted by, …) is a composite FK `(user_id, practice_id)` → `practice_membership(user_id, practice_id)`, so only a member of a Practice can act in it. |
 | `provider` | A clinician in the Practice's directory, internal or external | `practice_id` (whose directory), `title`, `first_name`, `last_name`, `provider_number` (nullable), `specialty`, `is_internal`, `organisation` (for external), `phone`, `email`, `fax`, `notes` |
-| `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`), `sex`, `created_at`. No real identity here. |
-| `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted` |
+| `patient` | A Patient of the Practice | `practice_id`, `pseudonym` (stable reference used **only** on De-identified Exports, e.g. `VG-0042`; assigned from the `patient_pseudonym_seq` sequence, which starts at 100 and never reuses a number), `sex`, `created_at`. No real identity here. |
+| `patient_identity` | **Access-gated** Patient Identity (`identity` schema) | `patient_id`, `given_name`, `family_name`, `dob`, `medicare_number_encrypted`, `medicare_irn`, `ihi_encrypted` (nullable), `mrn`, `address_encrypted`, `phone_encrypted`, `mobile_encrypted`, `email_encrypted`, `next_of_kin_name`, `next_of_kin_phone_encrypted`. Each `_encrypted` value records the id of the key that sealed it (so values open after a key rotation) and is bound to its field and Patient (a ciphertext copied elsewhere won't open). Names, DOB and MRN stay plaintext so the Patient List can search them. Changes are `edit` Verifications on `subject_table = 'patient'` whose `before`/`after` are sealed with the same key (`{"fields": [...], "sealed": "…"}`): the audit spine names which fields changed but never holds identity in the clear. |
 | `care_team_member` | A Provider's role in one Patient's care | `patient_id`, `provider_id`, `role`, `is_primary`, `start_date`, `end_date` (null = current), `notes` |
 | `specialty_module` | Registry of installed Specialty Modules. "Installed" means the module's code ships with this build; its row and tables are created by migrations (the baseline registers `oncology`). | `key` (unique, e.g. `oncology`), `display_name`, `version` |
 | `practice_module` | Which modules are active for a Practice | `practice_id`, `module_key` (FK → `specialty_module.key`), `is_active`, `changed_by_user_id` (developer admin; each change also writes a Verification with action `activate_module`/`deactivate_module`). The bootstrap command (§15 Stage 13) activates Oncology; until then `make demo-data` activates it in dev for the new Practice, attributed to the first developer admin it creates ([revisit-later.md](revisit-later.md) #18). |
@@ -717,6 +718,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
 | **Manage Users** (create, deactivate, reset password/2FA, change Job Title) at this Practice: its Practice Memberships only | ✅ | ❌ | ✅ | ✅ |
+| **Manage the Provider directory** (add, edit, soft-delete Providers). Everyone signed in reads it, so User Management can link a User to their own Provider. | ✅ | ✅ | ✅ | ❌ |
 | **Activate / deactivate Specialty Modules** for the Practice | ❌ | ❌ | ❌ | ✅ |
 | Change Settings | ✅ | ❌ | ❌ | ✅ |
 | **View Patient data** (Patients, Patient Identity, Clinical Record, Documents, Extracted Facts, Match Runs, Redaction Jobs, exports, Open Items) | ✅ | ✅ | ✅ | ❌ **never** |
@@ -1288,6 +1290,7 @@ vigil/
 │   │   │   ├── base_model.py        # Entity: UUID, timestamps, soft delete; PracticeEntity / SupportEntity / SharedEntity
 │   │   │   ├── vocabulary.py        # Value sets shared by several modules (Job Titles, intents, statuses)
 │   │   │   ├── permissions.py       # can_verify(user, fact_kind), Job Title rules (§6.4)
+│   │   │   ├── crypto.py            # FieldCipher: AES-256-GCM with keys from the key interface
 │   │   │   └── seams/               # ─── Swappable infrastructure (ADR 0003) ───
 │   │   │       ├── storage.py       # LocalDiskStorage → BlobStorage later
 │   │   │       ├── keys.py          # LocalKeystore → KeyVault later
@@ -1309,7 +1312,7 @@ vigil/
 │   │   │
 │   │   ├── modules/
 │   │   │   ├── accounts/            # User, Practice Membership, login, 2FA, reauth
-│   │   │   ├── practice/            # Practice, Provider, Care Team
+│   │   │   ├── practice/            # Practice, Site, Provider, Care Team
 │   │   │   ├── patients/            # Patient, Patient Identity
 │   │   │   ├── documents/           # Document, Original/Working Copy, hold, move
 │   │   │   │   ├── normalise.py     # Deskew, greyscale, ≤300 dpi

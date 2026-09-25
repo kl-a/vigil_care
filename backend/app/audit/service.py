@@ -3,11 +3,12 @@
 import uuid
 from typing import Any, Literal, Protocol
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.audit.models import Verification
 from app.audit.schemas import VerificationEntry
+from app.core.base_model import Entity
 from app.core.vocabulary import JobTitle
 
 VerificationAction = Literal[
@@ -90,3 +91,16 @@ def history(db: Session, practice_id: uuid.UUID, subject_table: str, subject_id:
         )
         for v in rows
     ]
+
+
+def soft_delete(
+    db: Session, actor: Actor, row: Entity, *, subject_table: str, reason: str, before: dict[str, Any] | None = None
+) -> None:
+    """Soft-deletes `row` with the reason, recorded as a `delete` Verification. Nothing is hard-deleted."""
+    record_verification(
+        db, actor, subject_table=subject_table, subject_id=row.id, action="delete", before=before, reason=reason
+    )
+    row.deleted_at = func.now()
+    row.deleted_by_user_id = actor.id
+    row.deleted_reason = reason
+    db.flush()

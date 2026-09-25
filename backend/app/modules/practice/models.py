@@ -1,15 +1,16 @@
-"""Practice, Provider directory and Care Team (design doc §6.3)."""
+"""Practice, its Sites, Provider directory and Care Team (design doc §6.3)."""
 
 import uuid
 from datetime import date
 from decimal import Decimal
+from typing import Literal, get_args
 
-from sqlalchemy import Index, text
+from sqlalchemy import Index, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base_model import PracticeEntity, SharedEntity, allowed, practice_fk
 
-PROVIDER_SPECIALTIES = (
+ProviderSpecialty = Literal[
     "medical_oncology",
     "radiation_oncology",
     "surgery",
@@ -18,7 +19,8 @@ PROVIDER_SPECIALTIES = (
     "pathology",
     "radiology",
     "other",
-)
+]
+PROVIDER_SPECIALTIES: tuple[str, ...] = get_args(ProviderSpecialty)
 CARE_TEAM_ROLES = (
     "treating_oncologist",
     "referring_gp",
@@ -40,8 +42,27 @@ class Practice(SharedEntity):
     fax: Mapped[str | None]
     email: Mapped[str | None]
     abn: Mapped[str | None]
+
+
+class Site(PracticeEntity):
+    """A place where the Practice sees Patients. Trial-site distances are measured from each Site."""
+
+    __tablename__ = "site"
+    __extra_args__ = (
+        # At most one primary Site per Practice; the service keeps it at exactly one once a Site exists.
+        Index(
+            "uq_site_practice_id_primary",
+            "practice_id",
+            unique=True,
+            postgresql_where=text("is_primary AND deleted_at IS NULL"),
+        ),
+    )
+
+    name: Mapped[str]
+    address: Mapped[str | None]
     lat: Mapped[Decimal | None]
     lng: Mapped[Decimal | None]
+    is_primary: Mapped[bool] = mapped_column(server_default=text("false"))
 
 
 class Provider(PracticeEntity):
@@ -60,7 +81,7 @@ class Provider(PracticeEntity):
     first_name: Mapped[str]
     last_name: Mapped[str]
     provider_number: Mapped[str | None]
-    specialty: Mapped[str] = mapped_column(info=allowed(*PROVIDER_SPECIALTIES))
+    specialty: Mapped[ProviderSpecialty] = mapped_column(Text, info=allowed(*PROVIDER_SPECIALTIES))
     is_internal: Mapped[bool] = mapped_column(server_default=text("false"))
     organisation: Mapped[str | None]
     phone: Mapped[str | None]

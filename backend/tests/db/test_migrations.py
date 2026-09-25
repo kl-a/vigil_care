@@ -1,7 +1,8 @@
-"""Migration 0003 (#24) carries existing Users over to Practice Memberships, and back while that's lossless."""
+"""Data migrations carry existing rows forward: Users to Practice Memberships (0003, #24), a Practice's
+location to its primary Site (0004, #25)."""
 
 import uuid
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from typing import Any
 
 import psycopg
@@ -18,19 +19,30 @@ from tests.conftest import ADMIN_URL
 
 
 @pytest.fixture
-def before_memberships() -> Iterator[DatabaseSettings]:
-    """A throwaway database migrated only as far as 0002, when a User belonged to one Practice."""
-    name = f"vigil_migration_{uuid.uuid4().hex[:12]}"
-    with psycopg.connect(ADMIN_URL, autocommit=True) as admin:
-        admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
-    settings = DatabaseSettings(admin_url=make_url(ADMIN_URL).set(database=name).render_as_string(hide_password=False))
-    try:
-        provision_roles(settings)
-        migrate(settings, "0002_oncology")
-        yield settings
-    finally:
+def migrated_to() -> Iterator[Callable[[str], DatabaseSettings]]:
+    """Throwaway databases migrated only as far as a given revision."""
+    names: list[str] = []
+
+    def create(revision: str) -> DatabaseSettings:
+        name = f"vigil_migration_{uuid.uuid4().hex[:12]}"
+        names.append(name)
         with psycopg.connect(ADMIN_URL, autocommit=True) as admin:
+            admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
+        settings = DatabaseSettings(admin_url=make_url(ADMIN_URL).set(database=name).render_as_string(hide_password=False))
+        provision_roles(settings)
+        migrate(settings, revision)
+        return settings
+
+    yield create
+    with psycopg.connect(ADMIN_URL, autocommit=True) as admin:
+        for name in names:
             admin.execute(sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(name)))
+
+
+@pytest.fixture
+def before_memberships(migrated_to: Callable[[str], DatabaseSettings]) -> DatabaseSettings:
+    """When a User belonged to one Practice."""
+    return migrated_to("0002_oncology")
 
 
 def _owner(settings: DatabaseSettings) -> psycopg.Connection[dict[str, Any]]:
@@ -87,7 +99,7 @@ def test_each_user_becomes_a_login_with_one_membership(before_memberships: Datab
 
 
 def test_downgrading_refuses_to_lose_a_second_membership(before_memberships: DatabaseSettings) -> None:
-    migrate(before_memberships)
+    migrate(before_memberships, "0003_practice_memberships")
     with _owner(before_memberships) as conn:
         first, second = _id(conn, PRACTICE), _id(conn, PRACTICE)
         user = _id(conn, LOGIN, ["kim", "Kim"])
@@ -99,7 +111,7 @@ def test_downgrading_refuses_to_lose_a_second_membership(before_memberships: Dat
 
 
 def test_downgrading_one_membership_each_restores_the_old_user(before_memberships: DatabaseSettings) -> None:
-    migrate(before_memberships)
+    migrate(before_memberships, "0003_practice_memberships")
     with _owner(before_memberships) as conn:
         practice = _id(conn, PRACTICE)
         user = _id(conn, LOGIN, ["kim", "Kim"])
@@ -117,3 +129,17 @@ def test_a_username_shared_by_two_practices_stops_the_migration(before_membershi
             _old_user(conn, _id(conn, PRACTICE), "kim", "clinician")
     with pytest.raises(ProgrammingError, match="same username"):
         migrate(before_memberships)
+
+
+def test_a_practices_location_moves_to_its_primary_site(migrated_to: Callable[[str], DatabaseSettings]) -> None:
+    settings = migrated_to("0003_practice_memberships")
+    with _owner(settings) as conn:
+        located = _id(conn, "INSERT INTO practice (name, address, lat, lng) VALUES ('Harbourside', '1 Example St', -33.8688, 151.2093) RETURNING id")
+
+    migrate(settings)
+
+    with _owner(settings) as conn:
+        sites = conn.execute("SELECT name, address, lat::text, lng::text, is_primary FROM site WHERE practice_id = %s", [located]).fetchall()
+        assert sites == [{"name": "Harbourside", "address": "1 Example St", "lat": "-33.8688", "lng": "151.2093", "is_primary": True}]
+        columns = conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'practice'").fetchall()
+        assert {"lat", "lng"}.isdisjoint({c["column_name"] for c in columns})

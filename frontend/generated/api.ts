@@ -140,6 +140,58 @@ export interface paths {
         patch: operations["set_module_active_modules__key__patch"];
         trace?: never;
     };
+    "/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Patients */
+        get: operations["list_patients_patients_get"];
+        put?: never;
+        /** Create Patient */
+        post: operations["create_patient_patients_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Patient Detail */
+        get: operations["patient_detail_patients__patient_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Identity */
+        patch: operations["change_identity_patients__patient_id__identity_patch"];
+        trace?: never;
+    };
     "/practice": {
         parameters: {
             query?: never;
@@ -156,6 +208,79 @@ export interface paths {
         head?: never;
         /** Change Practice */
         patch: operations["change_practice_practice_patch"];
+        trace?: never;
+    };
+    "/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Providers */
+        get: operations["list_providers_providers_get"];
+        put?: never;
+        /** Add Provider */
+        post: operations["add_provider_providers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Provider Detail */
+        get: operations["provider_detail_providers__provider_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Provider */
+        delete: operations["delete_provider_providers__provider_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Provider */
+        patch: operations["change_provider_providers__provider_id__patch"];
+        trace?: never;
+    };
+    "/sites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sites */
+        get: operations["list_sites_sites_get"];
+        put?: never;
+        /** Add Site */
+        post: operations["add_site_sites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sites/{site_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Site */
+        delete: operations["delete_site_sites__site_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Site */
+        patch: operations["change_site_sites__site_id__patch"];
         trace?: never;
     };
     "/users": {
@@ -355,6 +480,97 @@ export interface components {
             /** Reauthenticated */
             reauthenticated: boolean;
         };
+        /**
+         * IdentityChange
+         * @description Only the fields sent are changed. Empty text clears an optional field; names can't be cleared.
+         */
+        IdentityChange: {
+            /** Address */
+            address?: string | null;
+            /** Dob */
+            dob?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Family Name */
+            family_name?: string | null;
+            /** Given Name */
+            given_name?: string | null;
+            /** Ihi */
+            ihi?: string | null;
+            /** Medicare Irn */
+            medicare_irn?: string | null;
+            /** Medicare Number */
+            medicare_number?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Mrn */
+            mrn?: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name?: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone?: string | null;
+            /** Phone */
+            phone?: string | null;
+        };
+        /**
+         * IdentityDetails
+         * @description Who the Patient is, shown in full inside Vigil and never sent outside the Practice Boundary (§9.3).
+         */
+        IdentityDetails: {
+            /** Address */
+            address: string | null;
+            /** Dob */
+            dob: string | null;
+            /** Email */
+            email: string | null;
+            /** Family Name */
+            family_name: string;
+            /** Given Name */
+            given_name: string;
+            /** Ihi */
+            ihi: string | null;
+            /** Medicare Irn */
+            medicare_irn: string | null;
+            /** Medicare Number */
+            medicare_number: string | null;
+            /** Mobile */
+            mobile: string | null;
+            /** Mrn */
+            mrn: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone: string | null;
+            /** Phone */
+            phone: string | null;
+        };
+        /**
+         * IdentityHistoryEntry
+         * @description One change to the Patient's identity: who, their Job Title then, what changed and when.
+         */
+        IdentityHistoryEntry: {
+            /** Action */
+            action: string;
+            /** After */
+            after: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Before */
+            before: {
+                [key: string]: unknown;
+            } | null;
+            /** By Display Name */
+            by_display_name: string;
+            /** By Job Title */
+            by_job_title: string;
+            /** Reason */
+            reason: string | null;
+        };
         /** ModuleChange */
         ModuleChange: {
             /** Is Active */
@@ -374,6 +590,83 @@ export interface components {
             version: string;
         };
         /**
+         * NewPatient
+         * @description A new Patient's identity. The Pseudonym is assigned, never chosen.
+         */
+        NewPatient: {
+            /** Address */
+            address?: string | null;
+            /** Dob */
+            dob?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Family Name */
+            family_name: string;
+            /** Given Name */
+            given_name: string;
+            /** Ihi */
+            ihi?: string | null;
+            /** Medicare Irn */
+            medicare_irn?: string | null;
+            /** Medicare Number */
+            medicare_number?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Mrn */
+            mrn?: string | null;
+            /** Next Of Kin Name */
+            next_of_kin_name?: string | null;
+            /** Next Of Kin Phone */
+            next_of_kin_phone?: string | null;
+            /** Phone */
+            phone?: string | null;
+        };
+        /** NewProvider */
+        NewProvider: {
+            /** Email */
+            email?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** First Name */
+            first_name: string;
+            /**
+             * Is Internal
+             * @default false
+             */
+            is_internal: boolean;
+            /** Last Name */
+            last_name: string;
+            /** Notes */
+            notes?: string | null;
+            /** Organisation */
+            organisation?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Provider Number */
+            provider_number?: string | null;
+            /**
+             * Specialty
+             * @enum {string}
+             */
+            specialty: "medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other";
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * NewSite
+         * @description The first Site is the primary; another becomes primary by choosing it (`SiteChange`).
+         */
+        NewSite: {
+            /** Address */
+            address?: string | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lng */
+            lng?: number | null;
+            /** Name */
+            name: string;
+        };
+        /**
          * NewUser
          * @description Someone with a login at another Practice is added by username alone; a new login needs a display name.
          */
@@ -389,6 +682,48 @@ export interface components {
             username: string;
         };
         /**
+         * PatientDetail
+         * @description The Patient header and Overview's identity card, with the identity's audit trail (newest first).
+         */
+        PatientDetail: {
+            /** Display Name */
+            display_name: string;
+            /** History */
+            history: components["schemas"]["IdentityHistoryEntry"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            identity: components["schemas"]["IdentityDetails"];
+            /** Pseudonym */
+            pseudonym: string;
+        };
+        /**
+         * PatientRow
+         * @description A Patient in the Patient List. Cancer Types and counts join in later stages.
+         */
+        PatientRow: {
+            /** Display Name */
+            display_name: string;
+            /** Dob */
+            dob: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mrn */
+            mrn: string | null;
+            /** Pseudonym */
+            pseudonym: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
          * PracticeChange
          * @description Only the fields sent are changed. Empty text clears an optional field.
          */
@@ -401,10 +736,6 @@ export interface components {
             email?: string | null;
             /** Fax */
             fax?: string | null;
-            /** Lat */
-            lat?: number | null;
-            /** Lng */
-            lng?: number | null;
             /** Name */
             name?: string | null;
             /** Phone */
@@ -412,7 +743,7 @@ export interface components {
         };
         /**
          * PracticeDetails
-         * @description The Practice's details (design doc §5 screen 19). Location is for trial-site distances.
+         * @description The Practice's details (design doc §5 screen 19). Its locations are its Sites.
          */
         PracticeDetails: {
             /** Abn */
@@ -428,24 +759,134 @@ export interface components {
              * Format: uuid
              */
             id: string;
-            /** Lat */
-            lat: number | null;
-            /** Lng */
-            lng: number | null;
             /** Name */
             name: string;
             /** Phone */
             phone: string | null;
         };
         /**
+         * ProviderChange
+         * @description Only the fields sent are changed. Empty text clears an optional field.
+         */
+        ProviderChange: {
+            /** Email */
+            email?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Is Internal */
+            is_internal?: boolean | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Organisation */
+            organisation?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Provider Number */
+            provider_number?: string | null;
+            /** Specialty */
+            specialty?: ("medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other") | null;
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * ProviderRow
+         * @description A clinician in the Practice's directory (#7): internal, or an external referrer, specialist or contact.
+         */
+        ProviderRow: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string | null;
+            /** Fax */
+            fax: string | null;
+            /** First Name */
+            first_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Internal */
+            is_internal: boolean;
+            /** Last Name */
+            last_name: string;
+            /** Notes */
+            notes: string | null;
+            /** Organisation */
+            organisation: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Provider Number */
+            provider_number: string | null;
+            /**
+             * Specialty
+             * @enum {string}
+             */
+            specialty: "medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other";
+            /** Title */
+            title: string | null;
+        };
+        /**
+         * Removal
+         * @description Soft-deleting anything needs a reason (design doc §6.2).
+         */
+        Removal: {
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * SiteChange
+         * @description Only the fields sent are changed. The primary is moved by choosing another Site, never unset.
+         */
+        SiteChange: {
+            /** Address */
+            address?: string | null;
+            /** Is Primary */
+            is_primary?: true | null;
+            /** Lat */
+            lat?: number | null;
+            /** Lng */
+            lng?: number | null;
+            /** Name */
+            name?: string | null;
+        };
+        /**
+         * SiteRow
+         * @description A place where the Practice sees Patients (#25). Trial-site distances are measured from it.
+         */
+        SiteRow: {
+            /** Address */
+            address: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Primary */
+            is_primary: boolean;
+            /** Lat */
+            lat: number | null;
+            /** Lng */
+            lng: number | null;
+            /** Name */
+            name: string;
+        };
+        /**
          * UserChange
-         * @description Change a Job Title and/or activate or deactivate. Deactivating needs a reason.
+         * @description Change a Job Title, activate or deactivate, and/or link their own Provider record (null unlinks).
+         *     Deactivating needs a reason.
          */
         UserChange: {
             /** Is Active */
             is_active?: boolean | null;
             /** Job Title */
             job_title?: ("clinician" | "trial_coordinator" | "secretary" | "developer_admin") | null;
+            /** Provider Id */
+            provider_id?: string | null;
             /** Reason */
             reason?: string | null;
         };
@@ -471,6 +912,8 @@ export interface components {
             last_login_at: string | null;
             /** Provider Id */
             provider_id: string | null;
+            /** Provider Name */
+            provider_name: string | null;
             /** Username */
             username: string;
         };
@@ -497,6 +940,8 @@ export interface components {
             last_login_at: string | null;
             /** Provider Id */
             provider_id: string | null;
+            /** Provider Name */
+            provider_name: string | null;
             /** Username */
             username: string;
         };
@@ -708,6 +1153,136 @@ export interface operations {
             };
         };
     };
+    list_patients_patients_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_patient_patients_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewPatient"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patient_detail_patients__patient_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_identity_patients__patient_id__identity_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     practice_details_practice_get: {
         parameters: {
             query?: never;
@@ -748,6 +1323,292 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PracticeDetails"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_providers_providers_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                specialty?: ("medical_oncology" | "radiation_oncology" | "surgery" | "general_practice" | "haematology" | "pathology" | "radiology" | "other") | null;
+                internal?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_provider_providers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProvider"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    provider_detail_providers__provider_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_provider_providers__provider_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_provider_providers__provider_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sites_sites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteRow"][];
+                };
+            };
+        };
+    };
+    add_site_sites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewSite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_site_sites__site_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_site_sites__site_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteRow"];
                 };
             };
             /** @description Validation Error */

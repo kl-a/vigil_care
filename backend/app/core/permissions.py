@@ -25,6 +25,7 @@ Permission = Literal[
     "sign_off_identified_export",
     "sign_off_deidentified_export",
     "manage_users",
+    "manage_providers",
     "activate_modules",
     "change_settings",
     "view_patient_data",
@@ -46,6 +47,9 @@ PERMISSIONS: Mapping[Permission, frozenset[JobTitle]] = {
     "sign_off_deidentified_export": _STAFF,
     # Rows 7–12.
     "manage_users": frozenset({"clinician", "secretary", "developer_admin"}),
+    # The Provider directory is read by everyone signed in (so User Management can link a User to theirs);
+    # the staff who work with referrers keep it up to date.
+    "manage_providers": _STAFF,
     "activate_modules": frozenset({"developer_admin"}),
     "change_settings": frozenset({"clinician", "developer_admin"}),
     "view_patient_data": _STAFF,

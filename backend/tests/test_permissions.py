@@ -52,6 +52,10 @@ def test_row_7_manage_users() -> None:
     assert allowed(lambda jt: may(jt, "manage_users")) == {"clinician", "secretary", "developer_admin"}
 
 
+def test_row_7b_manage_the_provider_directory() -> None:
+    assert allowed(lambda jt: may(jt, "manage_providers")) == {"clinician", "trial_coordinator", "secretary"}
+
+
 def test_row_8_activate_specialty_modules() -> None:
     assert allowed(lambda jt: may(jt, "activate_modules")) == {"developer_admin"}
 

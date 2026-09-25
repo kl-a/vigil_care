@@ -38,8 +38,9 @@ class UserRow(BaseModel):
     job_title: JobTitle
     is_active: bool
     last_login_at: datetime | None
-    # The User's own Provider record, if linked (Provider directory arrives with #7).
+    # The User's own Provider record in this Practice's directory, if linked (#7).
     provider_id: uuid.UUID | None
+    provider_name: str | None
 
 
 class HistoryEntry(BaseModel):
@@ -72,10 +73,12 @@ class NewUser(BaseModel):
 
 
 class UserChange(BaseModel):
-    """Change a Job Title and/or activate or deactivate. Deactivating needs a reason."""
+    """Change a Job Title, activate or deactivate, and/or link their own Provider record (null unlinks).
+    Deactivating needs a reason."""
 
     job_title: JobTitle | None = None
     is_active: bool | None = None
+    provider_id: uuid.UUID | None = None
     reason: str | None = None
 
     @model_validator(mode="after")
