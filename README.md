@@ -30,6 +30,7 @@
 | [docs/adr/](docs/adr/) | Architecture decisions |
 | [docs/quality-gates.md](docs/quality-gates.md) | Reference Set, deployment gates, masking leak tests, go-live checklist |
 | [docs/hardware-options.md](docs/hardware-options.md) | Where the OCR and vision models can run |
+| [docs/build-order.md](docs/build-order.md) | Where the build stands: stages, tickets in order, status, what's next |
 | [docs/revisit-later.md](docs/revisit-later.md) | Provisional decisions and deferred scope |
 
 ## Planned stack

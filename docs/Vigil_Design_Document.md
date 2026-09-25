@@ -1390,6 +1390,8 @@ vigil/
 
 ## 15. Build Stages
 
+> **Current status and ticket order:** [build-order.md](build-order.md).
+
 > **Principle (2026-09-25):** every stage ends with something a stakeholder can see and use. Each stage finishes with a **stage demo**: a short written script run from a laptop in dev against the synthetic demo Practice (`make demo-data`), shown to Dr De Souza, practice staff or anyone else we're presenting to. Nothing is hosted until the Azure move ([ADR 0003](adr/0003-local-mvp-with-cloud-seams.md)).
 >
 > **Rules:**

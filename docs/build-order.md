@@ -1,0 +1,104 @@
+# Build Order
+
+> **As of 2026-09-25.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
+
+**How the build is ordered**
+- Every stage ends with a **stage demo**: a scripted walkthrough in dev, on synthetic data, for stakeholders ([docs/demos/](demos/)).
+- The **Clinical Record is entered by hand first**. The document pipeline fills the same record later.
+- Screens appear only once built, and grow section by section.
+- **Login hardening comes last** (Stage 12) and is required before prod or any real Patient data.
+
+## Where we are
+
+| Status | Meaning |
+|---|---|
+| ✅ Done | Merged to `main` |
+| 🔨 Built | Committed on its branch, awaiting PR/merge |
+| ⏭️ Ready | All blockers done, so it can start now |
+| ⏳ Blocked | Waiting on the tickets listed |
+| 📋 Outline | Stage planned; tickets written when we get close |
+
+### Foundation
+
+| Ticket | What | Status |
+|---|---|---|
+| [#11](https://github.com/kl-a/vigil_care/issues/11) | Walking skeleton: stack, environments, health, app shell, gates harness | ✅ Done ([PR #12](https://github.com/kl-a/vigil_care/pull/12)) |
+| [#2](https://github.com/kl-a/vigil_care/issues/2) | Baseline schema, database guardrails, clickable data model | ✅ Done ([PR #21](https://github.com/kl-a/vigil_care/pull/21)) |
+
+### Stage 1 · Front door
+
+**Demo:** sign in as each Job Title and watch the screens change. Add a User and show the audit entry, edit the Practice details, and switch Oncology off and on.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#13](https://github.com/kl-a/vigil_care/issues/13) | Dev login as a seeded User, and demo data | #2 | 🔨 Built (`ticket-13-dev-login`) |
+| 2 | [#6](https://github.com/kl-a/vigil_care/issues/6) | Permissions, Verification and User Management basics | #13 | ⏳ Blocked |
+| 3 | [#14](https://github.com/kl-a/vigil_care/issues/14) | Practice details in Settings | #6 | ⏳ Blocked |
+| 3 | [#15](https://github.com/kl-a/vigil_care/issues/15) | Specialty Modules: contract, registry and Settings toggle | #6 | ⏳ Blocked |
+| any | [#16](https://github.com/kl-a/vigil_care/issues/16) | Show only built screens, and System status | none | ⏭️ Ready |
+
+### Stage 2 · Patients
+
+**Demo:** find Jane Citizen and edit her details, then show the audit entry and the encrypted fields in the database. Add her treating oncologist and referring GP.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#8](https://github.com/kl-a/vigil_care/issues/8) | Patients with encrypted Patient Identity (includes the key interface) | #6 | ⏳ Blocked |
+| 1 | [#7](https://github.com/kl-a/vigil_care/issues/7) | Provider directory | #6 | ⏳ Blocked |
+| 2 | [#17](https://github.com/kl-a/vigil_care/issues/17) | Soft-delete a Patient | #8 | ⏳ Blocked |
+| 2 | [#9](https://github.com/kl-a/vigil_care/issues/9) | Care Team | #8, #7 | ⏳ Blocked |
+
+### Stage 3 · PBS & Support Views
+
+**Demo:** look up pembrolizumab's PBS Listing per indication. As the developer admin, start a PBS Refresh and follow it in the Support Views.
+
+This stage can run alongside Stage 2.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6 | ⏳ Blocked |
+| 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | ⏳ Blocked |
+| 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | ⏳ Blocked |
+| 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | ⏳ Blocked |
+
+### Stages 4–12 (outlines)
+
+| Stage | Shows stakeholders | Depends on | Status |
+|---|---|---|---|
+| 4 · Clinical Record by hand | 4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan | 2, 3 | 📋 Outline |
+| 5 · Patient Summary | Patient Summary v1 and Open Items, from the hand-entered record | 4 | 📋 Outline |
+| 6 · Trials | 6a Trial Browser (can start after Stage 3), 6b Match Board | 4 | 📋 Outline |
+| 7 · Redaction Jobs | De-identification trust gate: OCR, masking, Redaction QA, leak check | 2 (placed after 5–6) | 📋 Outline |
+| 8 · Documents | Upload, pipeline, VLM worker, cloud ledger, Held Documents | 7 | 📋 Outline |
+| 9 · Extraction Review | Extracted Facts reviewed into the same Clinical Record | 8 | 📋 Outline |
+| 10 · Treatment Options | eviQ + PBS Coverage. **Blocked on eviQ terms of use** ([revisit-later.md](revisit-later.md) #9) | 3, 4 | 📋 Outline |
+| 11 · Exports | Identified and De-identified Exports with sign-off | 5, 7, 9 | 📋 Outline |
+| 12 · Login hardening & polish | 2FA, inactivity lock, re-authentication, bootstrap, onboarding, backup, polish. Tickets so far: [#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5) | all | 📋 Outline |
+
+## Critical path
+
+```mermaid
+flowchart LR
+    T2[#2 schema ✅] --> T13[#13 dev login 🔨]
+    T13 --> T6[#6 permissions + Users]
+    T6 --> T14[#14 Practice details]
+    T6 --> T15[#15 Specialty Modules]
+    T16[#16 built screens only] --> S1((Stage 1 demo))
+    T14 --> S1
+    T15 --> S1
+    T6 --> T8[#8 Patients] --> T17[#17 soft delete]
+    T6 --> T7[#7 Providers]
+    T8 --> T9[#9 Care Team]
+    T7 --> T9
+    T17 --> S2((Stage 2 demo))
+    T9 --> S2
+    T6 --> T18[#18 job queue] --> T19[#19 PBS Refresh] --> T20[#20 PBS Lookup]
+    T18 --> T10[#10 Support Views]
+    T20 --> S3((Stage 3 demo))
+    T10 --> S3
+```
+
+**Next up:**
+1. Merge #13.
+2. Build #6. It unblocks the rest of Stage 1 and all of Stages 2 and 3.
+3. #16 can be done at any point.
