@@ -41,7 +41,7 @@ class NoSuchProvider(ValueError):
 
 
 class EndsBeforeItStarts(ValueError):
-    pass
+    """A change would leave the membership ending before it starts."""
 
 
 def _is_current(member: CareTeamMember) -> bool:
@@ -63,8 +63,15 @@ def _row(member: CareTeamMember, provider_name: str) -> CareTeamRow:
 
 
 def _fields(member: CareTeamMember) -> dict[str, Any]:
-    """As a Verification records them (dates as ISO text)."""
-    return _row(member, "").model_dump(mode="json", include={"provider_id", "role", "is_primary", "start_date", "end_date", "notes"})
+    """The membership as a Verification records it (ids and dates as text)."""
+    return {
+        "provider_id": str(member.provider_id),
+        "role": member.role,
+        "is_primary": member.is_primary,
+        "start_date": member.start_date.isoformat() if member.start_date else None,
+        "end_date": member.end_date.isoformat() if member.end_date else None,
+        "notes": member.notes,
+    }
 
 
 def _live_patient(db: Session, actor: Actor, patient_id: uuid.UUID) -> None:
@@ -107,12 +114,17 @@ def _rows(db: Session, actor: Actor, members: list[CareTeamMember]) -> list[Care
     return [_row(member, names.get(member.provider_id, "Unknown Provider")) for member in members]
 
 
+def _care_team_order(row: CareTeamRow) -> tuple[bool, bool, int, str, str]:
+    """Current members first, the primary leading; then past ones, most recently ended first."""
+    most_recent_end_first = -row.end_date.toordinal() if row.end_date else 0
+    return (not row.is_current, not row.is_primary, most_recent_end_first, row.role, row.provider_name)
+
+
 def care_team(db: Session, actor: Actor, patient_id: uuid.UUID) -> list[CareTeamRow]:
-    """Current members first (primary, then by role), then past ones, most recently ended first."""
     require(actor.job_title, "view_patient_data")
     _live_patient(db, actor, patient_id)
     rows = _rows(db, actor, _members(db, actor.practice_id, patient_id))
-    return sorted(rows, key=lambda r: (not r.is_current, not r.is_primary, -(r.end_date.toordinal() if r.end_date else 0), r.role, r.provider_name))
+    return sorted(rows, key=_care_team_order)
 
 
 def add_member(db: Session, actor: Actor, patient_id: uuid.UUID, new: NewCareTeamMember) -> CareTeamRow:

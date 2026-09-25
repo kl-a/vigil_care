@@ -7,7 +7,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { messageOf } from "@/lib/api";
 import {
   addCareTeamMember, CARE_TEAM_ROLE_LABEL, CARE_TEAM_ROLES, changeCareTeamMember, formatDate, todayIso,
-  type CareTeamRole, type CareTeamRow,
+  type CareTeamChange, type CareTeamRole, type CareTeamRow,
 } from "@/lib/careTeam";
 import { listProviders, type ProviderRow } from "@/lib/providers";
 import { usePatient } from "./PatientContext";
@@ -17,7 +17,7 @@ import { usePatient } from "./PatientContext";
  * Ended memberships show as past. Every add, change or end is recorded under the User's name.
  */
 export function CareTeam() {
-  const { state, careTeam, reloadCareTeam } = usePatient();
+  const { state, careTeam, careTeamError, reloadCareTeam } = usePatient();
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (state.status !== "ready") return null;
@@ -25,7 +25,7 @@ export function CareTeam() {
   const current = careTeam?.filter((member) => member.is_current) ?? [];
   const past = careTeam?.filter((member) => !member.is_current) ?? [];
 
-  async function change(member: CareTeamRow, body: Parameters<typeof changeCareTeamMember>[2]) {
+  async function change(member: CareTeamRow, body: CareTeamChange) {
     setError(null);
     try {
       await changeCareTeamMember(patientId, member.id, body);
@@ -46,8 +46,8 @@ export function CareTeam() {
       {adding && (
         <AddMemberForm patientId={patientId} onCancel={() => setAdding(false)} onAdded={() => { setAdding(false); reloadCareTeam(); }} />
       )}
-      {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
-      {careTeam === null && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Care Team…</p>}
+      {(error ?? careTeamError) && <p role="alert" className="m-0 text-[13px] text-neg">{error ?? careTeamError}</p>}
+      {careTeam === null && !careTeamError && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Care Team…</p>}
       {careTeam && current.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">No one in the Care Team yet.</p>}
       {current.length > 0 && (
         <ul aria-label="Current Care Team" className="m-0 flex list-none flex-col gap-2 p-0">

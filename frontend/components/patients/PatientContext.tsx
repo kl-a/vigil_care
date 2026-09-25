@@ -14,8 +14,9 @@ interface PatientContextValue {
   state: PatientState;
   /** After a change: the backend's answer becomes the Patient everyone on the page sees. */
   update: (patient: PatientDetail) => void;
-  /** The Care Team (#9), or null while loading or if it couldn't be read. */
+  /** The Care Team (#9), or null while loading. */
   careTeam: CareTeamRow[] | null;
+  careTeamError: string | null;
   reloadCareTeam: () => void;
 }
 
@@ -33,11 +34,16 @@ export function PatientProvider({ patientId, children }: { patientId: string; ch
   useEffect(load, [load]);
   const update = useCallback((patient: PatientDetail) => setState({ status: "ready", patient }), []);
   const [careTeam, setCareTeam] = useState<CareTeamRow[] | null>(null);
+  const [careTeamError, setCareTeamError] = useState<string | null>(null);
   const reloadCareTeam = useCallback(() => {
-    fetchCareTeam(patientId).then(setCareTeam).catch(() => setCareTeam(null));
+    fetchCareTeam(patientId)
+      .then((team) => { setCareTeam(team); setCareTeamError(null); })
+      .catch((reason: unknown) => setCareTeamError(messageOf(reason)));
   }, [patientId]);
   useEffect(reloadCareTeam, [reloadCareTeam]);
-  return <PatientContext.Provider value={{ state, update, careTeam, reloadCareTeam }}>{children}</PatientContext.Provider>;
+  return (
+    <PatientContext.Provider value={{ state, update, careTeam, careTeamError, reloadCareTeam }}>{children}</PatientContext.Provider>
+  );
 }
 
 export function usePatient(): PatientContextValue {

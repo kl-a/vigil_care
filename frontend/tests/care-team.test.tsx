@@ -120,3 +120,13 @@ describe("Provider page", () => {
     expect(jane).toHaveTextContent("Current");
   });
 });
+
+describe("Care Team that can't be read", () => {
+  it("says why instead of loading forever", async () => {
+    patients.fetchPatient.mockResolvedValue({ id: "pt-1", pseudonym: "VG-0042", display_name: "Jane Citizen (synthetic)", identity: { dob: null, mrn: null }, history: [] });
+    careTeam.fetchCareTeam.mockRejectedValue(new Error("The request failed (500)."));
+    renderPatient();
+    expect(await screen.findByRole("alert")).toHaveTextContent("The request failed (500).");
+    expect(screen.queryByText("Loading Care Team…")).not.toBeInTheDocument();
+  });
+});
