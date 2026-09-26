@@ -1,9 +1,9 @@
 "use client";
 
-import { Lock } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
-import { useSignedInUser } from "@/components/shell/ViewerProvider";
+import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
@@ -13,6 +13,8 @@ import {
   type ConditionRow, type ConditionStatus, type Entered,
 } from "@/lib/clinical";
 import { JOB_TITLE_LABEL, isKnownJobTitle, signOffName } from "@/lib/jobTitles";
+import { conditionExtensionsFor } from "@/lib/modules/registry";
+import type { ConditionExtension } from "@/lib/modules/types";
 import { formatWhen } from "@/lib/users";
 
 type Values = { name: string; status: ConditionStatus; onset_date: string; notes: string };
@@ -33,8 +35,13 @@ function apiValues(values: Values) {
  */
 export function Conditions({ patientId }: { patientId: string }) {
   const me = useSignedInUser();
+  const { modules } = useViewer();
   const [rows, setRows] = useState<ConditionRow[] | null>(null);
-  const [canEnter, setCanEnter] = useState(false);
+  const [rights, setRights] = useState<Record<string, boolean>>({});
+  const canEnter = Boolean(rights.condition);
+  // A module's Condition extension, offered to those who may record one.
+  const extensions = conditionExtensionsFor(modules).filter((extension) => rights[extension.factKind]);
+  const [extension, setExtension] = useState<ConditionExtension | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<ConditionRow | null>(null);
@@ -46,7 +53,7 @@ export function Conditions({ patientId }: { patientId: string }) {
   }, [patientId]);
   useEffect(load, [load]);
   useEffect(() => {
-    fetchEntryRights().then((rights) => setCanEnter(Boolean(rights.condition))).catch(() => setCanEnter(false));
+    fetchEntryRights().then(setRights).catch(() => setRights({}));
   }, []);
 
   return (
@@ -56,10 +63,24 @@ export function Conditions({ patientId }: { patientId: string }) {
         {canEnter ? (
           !adding && <button onClick={() => { setAdding(true); setEditing(null); }} className="h-7 rounded-md border border-border px-2 text-xs font-medium hover:bg-muted">Add Condition</button>
         ) : (
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Lock aria-hidden className="h-3 w-3" />Needs clinician/coordinator</span>
+          <EntryLock />
         )}
       </div>
-      {adding && (
+      {adding && extensions.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {extensions.map((option) => (
+            <label key={option.factKind} className="inline-flex items-center gap-1.5 text-[13px]">
+              <input type="checkbox" checked={extension === option} onChange={(e) => setExtension(e.target.checked ? option : null)} />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      )}
+      {adding && extension && (
+        <extension.Form patientId={patientId} onCancel={() => { setAdding(false); setExtension(null); }}
+          onSaved={() => { setAdding(false); setExtension(null); load(); }} />
+      )}
+      {adding && !extension && (
         <ConditionForm label="New Condition" submitLabel="Add Condition" initial={EMPTY} onCancel={() => setAdding(false)}
           onSubmit={async (values) => { await addCondition(patientId, apiValues(values)); setAdding(false); load(); }} />
       )}
@@ -96,7 +117,12 @@ export function Conditions({ patientId }: { patientId: string }) {
                   <td className="px-3 py-2"><StatusPill tone={row.status === "active" ? "cau" : "neu"}>{CONDITION_STATUS_LABEL[row.status]}</StatusPill></td>
                   <td className="whitespace-nowrap px-3 py-2 tabular-nums">{formatDate(row.onset_date)}</td>
                   <td className="px-3 py-2 text-xs text-muted-foreground"><EnteredBy entered={row.entered} /></td>
-                  {canEnter && (
+                  {canEnter && row.extended_by_module && (
+                    <td className="px-3 py-2 text-right text-xs text-muted-foreground">
+                      {modules.active_modules.includes(row.extended_by_module) ? "Changed in its own sub-tab" : "Read-only: its module isn't active"}
+                    </td>
+                  )}
+                  {canEnter && !row.extended_by_module && (
                     <td className="whitespace-nowrap px-3 py-2 text-right">
                       <span className="inline-flex gap-2">
                         <button onClick={() => { setEditing(row); setAdding(false); }} className="text-xs font-medium text-primary">Edit</button>

@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/cancer-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cancer Types */
+        get: operations["cancer_types_cancer_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/clinical/entry-rights": {
         parameters: {
             query?: never;
@@ -253,6 +270,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/{patient_id}/cancer-diagnoses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Cancer Diagnoses */
+        get: operations["list_cancer_diagnoses_patients__patient_id__cancer_diagnoses_get"];
+        put?: never;
+        /** Record Cancer Diagnosis */
+        post: operations["record_cancer_diagnosis_patients__patient_id__cancer_diagnoses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/cancer-diagnoses/{diagnosis_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Cancer Diagnosis */
+        delete: operations["remove_cancer_diagnosis_patients__patient_id__cancer_diagnoses__diagnosis_id__delete"];
+        options?: never;
+        head?: never;
+        /** Correct Cancer Diagnosis */
+        patch: operations["correct_cancer_diagnosis_patients__patient_id__cancer_diagnoses__diagnosis_id__patch"];
+        trace?: never;
+    };
     "/patients/{patient_id}/care-team": {
         parameters: {
             query?: never;
@@ -286,6 +339,42 @@ export interface paths {
         head?: never;
         /** Change Member */
         patch: operations["change_member_patients__patient_id__care_team__member_id__patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/clinical-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Clinical Notes */
+        get: operations["list_clinical_notes_patients__patient_id__clinical_notes_get"];
+        put?: never;
+        /** Add Clinical Note */
+        post: operations["add_clinical_note_patients__patient_id__clinical_notes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/clinical-notes/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Clinical Note */
+        delete: operations["remove_clinical_note_patients__patient_id__clinical_notes__note_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Clinical Note */
+        patch: operations["change_clinical_note_patients__patient_id__clinical_notes__note_id__patch"];
         trace?: never;
     };
     "/patients/{patient_id}/conditions": {
@@ -352,6 +441,159 @@ export interface paths {
         get: operations["inactive_module_facts_patients__patient_id__inactive_module_facts_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/lab-panels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Lab Panel
+         * @description A panel of results in one save, with one Verification.
+         */
+        post: operations["add_lab_panel_patients__patient_id__lab_panels_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/labs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Lab Results
+         * @description Newest first.
+         */
+        get: operations["list_lab_results_patients__patient_id__labs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/labs/{result_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Lab Result */
+        delete: operations["remove_lab_result_patients__patient_id__labs__result_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Lab Result */
+        patch: operations["change_lab_result_patients__patient_id__labs__result_id__patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/management-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Management Plans
+         * @description Newest first: the first is the current plan.
+         */
+        get: operations["list_management_plans_patients__patient_id__management_plans_get"];
+        put?: never;
+        /** Add Management Plan */
+        post: operations["add_management_plan_patients__patient_id__management_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/management-plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Management Plan */
+        delete: operations["remove_management_plan_patients__patient_id__management_plans__plan_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Management Plan */
+        patch: operations["change_management_plan_patients__patient_id__management_plans__plan_id__patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/next-steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Next Steps
+         * @description Open ones first, soonest due first.
+         */
+        get: operations["list_next_steps_patients__patient_id__next_steps_get"];
+        put?: never;
+        /** Add Next Step */
+        post: operations["add_next_step_patients__patient_id__next_steps_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/next-steps/{step_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Next Step */
+        delete: operations["remove_next_step_patients__patient_id__next_steps__step_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Next Step */
+        patch: operations["change_next_step_patients__patient_id__next_steps__step_id__patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/next-steps/{step_id}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Next Step Done */
+        post: operations["mark_next_step_done_patients__patient_id__next_steps__step_id__done_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -698,6 +940,91 @@ export interface components {
             segment: string;
         };
         /**
+         * CancerDiagnosisChange
+         * @description Only the fields that change, and why (once for the whole save). Clinicians only.
+         */
+        CancerDiagnosisChange: {
+            /** Cancer Status */
+            cancer_status?: ("active" | "no_evidence_of_disease" | "unknown") | null;
+            /** Disease Extent */
+            disease_extent?: ("localised" | "locally_advanced" | "metastatic" | "unknown") | null;
+            /** Disease Extent As Of */
+            disease_extent_as_of?: string | null;
+            /** Dx Date */
+            dx_date?: string | null;
+            /** Histology */
+            histology?: string | null;
+            /** Laterality */
+            laterality?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Primary Site */
+            primary_site?: string | null;
+            /** Reason */
+            reason: string;
+            /** Stage */
+            stage?: string | null;
+            /** Stage System */
+            stage_system?: string | null;
+        };
+        /** CancerDiagnosisRow */
+        CancerDiagnosisRow: {
+            /**
+             * Cancer Status
+             * @enum {string}
+             */
+            cancer_status: "active" | "no_evidence_of_disease" | "unknown";
+            cancer_type: components["schemas"]["CancerTypeOption"];
+            /**
+             * Condition Id
+             * Format: uuid
+             */
+            condition_id: string;
+            /**
+             * Disease Extent
+             * @enum {string}
+             */
+            disease_extent: "localised" | "locally_advanced" | "metastatic" | "unknown";
+            /** Disease Extent As Of */
+            disease_extent_as_of: string | null;
+            /** Dx Date */
+            dx_date: string | null;
+            entered: components["schemas"]["Entered"] | null;
+            /** Histology */
+            histology: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Laterality */
+            laterality: string | null;
+            /** Name */
+            name: string;
+            /** Primary Site */
+            primary_site: string | null;
+            /** Stage */
+            stage: string | null;
+            /** Stage System */
+            stage_system: string | null;
+        };
+        /**
+         * CancerTypeOption
+         * @description A Cancer Type (site + histology, no subtypes), keyed to MeSH so it matches the trial registries.
+         */
+        CancerTypeOption: {
+            /** Display Name */
+            display_name: string;
+            /** Key */
+            key: string;
+            /** Mesh Id */
+            mesh_id: string | null;
+            /** Mesh Term */
+            mesh_term: string | null;
+            /** Staging Systems */
+            staging_systems: string[];
+        };
+        /**
          * CareTeamChange
          * @description Only the fields sent are changed. Ending a membership is setting its `end_date`; the primary is moved
          *     by choosing another member, never unset.
@@ -746,6 +1073,47 @@ export interface components {
             role: "treating_oncologist" | "referring_gp" | "referring_specialist" | "surgeon" | "radiation_oncologist" | "trial_site_contact";
             /** Start Date */
             start_date: string | null;
+        };
+        /** ClinicalNoteChange */
+        ClinicalNoteChange: {
+            /** Author Provider Id */
+            author_provider_id?: string | null;
+            /** Content */
+            content?: string | null;
+            /** Note Date */
+            note_date?: string | null;
+            /** Note Type */
+            note_type?: ("clinical_note" | "letter_to_referrer" | "discharge_summary") | null;
+            /** Reason */
+            reason: string;
+            /** Recipient Provider Id */
+            recipient_provider_id?: string | null;
+        };
+        /** ClinicalNoteRow */
+        ClinicalNoteRow: {
+            /** Author Name */
+            author_name: string | null;
+            /** Author Provider Id */
+            author_provider_id: string | null;
+            /** Content */
+            content: string | null;
+            entered: components["schemas"]["Entered"] | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Note Date */
+            note_date: string | null;
+            /**
+             * Note Type
+             * @enum {string}
+             */
+            note_type: "clinical_note" | "letter_to_referrer" | "discharge_summary";
+            /** Recipient Name */
+            recipient_name: string | null;
+            /** Recipient Provider Id */
+            recipient_provider_id: string | null;
         };
         /**
          * ConditionChange
@@ -847,6 +1215,19 @@ export interface components {
              * Format: uuid
              */
             user_id: string;
+        };
+        /**
+         * Done
+         * @description Who marked a Next Step done, and when.
+         */
+        Done: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** By */
+            by: string;
         };
         /**
          * DrugOption
@@ -1089,6 +1470,103 @@ export interface components {
             /** System Wide */
             system_wide: boolean;
         };
+        /** LabPanelRow */
+        LabPanelRow: {
+            /**
+             * Collected At
+             * Format: date-time
+             */
+            collected_at: string;
+            /** Panel */
+            panel: string | null;
+            /**
+             * Panel Id
+             * Format: uuid
+             */
+            panel_id: string;
+            /** Results */
+            results: components["schemas"]["LabResultRow"][];
+        };
+        /** LabResultChange */
+        LabResultChange: {
+            /** Analyte */
+            analyte?: string | null;
+            /** Reason */
+            reason: string;
+            /** Ref High */
+            ref_high?: number | string | null;
+            /** Ref Low */
+            ref_low?: number | string | null;
+            /** Unit */
+            unit?: string | null;
+            /** Value */
+            value?: number | string | null;
+            /** Value Text */
+            value_text?: string | null;
+        };
+        /** LabResultRow */
+        LabResultRow: {
+            /** Analyte */
+            analyte: string;
+            /**
+             * Collected At
+             * Format: date-time
+             */
+            collected_at: string;
+            entered: components["schemas"]["Entered"] | null;
+            /** Flag */
+            flag: ("low" | "normal" | "high" | "critical") | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Panel */
+            panel: string | null;
+            /** Panel Id */
+            panel_id: string | null;
+            /** Ref High */
+            ref_high: string | null;
+            /** Ref Low */
+            ref_low: string | null;
+            /** Unit */
+            unit: string | null;
+            /** Value */
+            value: string | null;
+            /** Value Text */
+            value_text: string | null;
+        };
+        /** ManagementPlanChange */
+        ManagementPlanChange: {
+            /** Authored By Provider Id */
+            authored_by_provider_id?: string | null;
+            /** Plan Date */
+            plan_date?: string | null;
+            /** Plan Text */
+            plan_text?: string | null;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * ManagementPlanRow
+         * @description The treating clinician's plan, exactly as written, with who wrote it (a Provider) and who entered it.
+         */
+        ManagementPlanRow: {
+            /** Author Name */
+            author_name: string | null;
+            /** Authored By Provider Id */
+            authored_by_provider_id: string | null;
+            entered: components["schemas"]["Entered"] | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Plan Date */
+            plan_date: string | null;
+            /** Plan Text */
+            plan_text: string;
+        };
         /** ModuleChange */
         ModuleChange: {
             /** Is Active */
@@ -1119,6 +1597,42 @@ export interface components {
             /** Version */
             version: string;
         };
+        /**
+         * NewCancerDiagnosis
+         * @description A primary cancer: a Condition, extended by Oncology. `name` defaults to the Cancer Type's name.
+         */
+        NewCancerDiagnosis: {
+            /**
+             * Cancer Status
+             * @default unknown
+             * @enum {string}
+             */
+            cancer_status: "active" | "no_evidence_of_disease" | "unknown";
+            /** Cancer Type */
+            cancer_type: string;
+            /**
+             * Disease Extent
+             * @default unknown
+             * @enum {string}
+             */
+            disease_extent: "localised" | "locally_advanced" | "metastatic" | "unknown";
+            /** Disease Extent As Of */
+            disease_extent_as_of?: string | null;
+            /** Dx Date */
+            dx_date?: string | null;
+            /** Histology */
+            histology?: string | null;
+            /** Laterality */
+            laterality?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Primary Site */
+            primary_site?: string | null;
+            /** Stage */
+            stage?: string | null;
+            /** Stage System */
+            stage_system?: string | null;
+        };
         /** NewCareTeamMember */
         NewCareTeamMember: {
             /** End Date */
@@ -1143,6 +1657,22 @@ export interface components {
             /** Start Date */
             start_date?: string | null;
         };
+        /** NewClinicalNote */
+        NewClinicalNote: {
+            /** Author Provider Id */
+            author_provider_id?: string | null;
+            /** Content */
+            content: string;
+            /** Note Date */
+            note_date?: string | null;
+            /**
+             * Note Type
+             * @enum {string}
+             */
+            note_type: "clinical_note" | "letter_to_referrer" | "discharge_summary";
+            /** Recipient Provider Id */
+            recipient_provider_id?: string | null;
+        };
         /** NewCondition */
         NewCondition: {
             /** Name */
@@ -1157,6 +1687,62 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "resolved";
+        };
+        /**
+         * NewLabPanel
+         * @description Bloods entered as a panel: one save, one Verification.
+         */
+        NewLabPanel: {
+            /**
+             * Collected On
+             * Format: date
+             */
+            collected_on: string;
+            /** Collected Time */
+            collected_time?: string | null;
+            /** Panel */
+            panel?: string | null;
+            /** Results */
+            results: components["schemas"]["NewLabResult"][];
+        };
+        /**
+         * NewLabResult
+         * @description One value of a panel: a number, or text for results that aren't a plain number (e.g. "<5").
+         */
+        NewLabResult: {
+            /** Analyte */
+            analyte: string;
+            /** Ref High */
+            ref_high?: number | string | null;
+            /** Ref Low */
+            ref_low?: number | string | null;
+            /** Unit */
+            unit?: string | null;
+            /** Value */
+            value?: number | string | null;
+            /** Value Text */
+            value_text?: string | null;
+        };
+        /** NewManagementPlan */
+        NewManagementPlan: {
+            /** Authored By Provider Id */
+            authored_by_provider_id?: string | null;
+            /** Plan Date */
+            plan_date?: string | null;
+            /** Plan Text */
+            plan_text: string;
+        };
+        /** NewNextStep */
+        NewNextStep: {
+            /** Description */
+            description: string;
+            /** Due Date */
+            due_date?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "rescan" | "mdt" | "trial_window" | "review" | "other";
         };
         /**
          * NewPatient
@@ -1249,6 +1835,39 @@ export interface components {
             job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
             /** Username */
             username: string;
+        };
+        /** NextStepChange */
+        NextStepChange: {
+            /** Description */
+            description?: string | null;
+            /** Due Date */
+            due_date?: string | null;
+            /** Kind */
+            kind?: ("rescan" | "mdt" | "trial_window" | "review" | "other") | null;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * NextStepRow
+         * @description A dated item alongside the Management Plan; `done` says who marked it done, and when.
+         */
+        NextStepRow: {
+            /** Description */
+            description: string;
+            done: components["schemas"]["Done"] | null;
+            /** Due Date */
+            due_date: string | null;
+            entered: components["schemas"]["Entered"] | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "rescan" | "mdt" | "trial_window" | "review" | "other";
         };
         /**
          * PatientDetail
@@ -1881,6 +2500,26 @@ export interface operations {
             };
         };
     };
+    cancer_types_cancer_types_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancerTypeOption"][];
+                };
+            };
+        };
+    };
     entry_rights_clinical_entry_rights_get: {
         parameters: {
             query?: never;
@@ -2219,6 +2858,142 @@ export interface operations {
             };
         };
     };
+    list_cancer_diagnoses_patients__patient_id__cancer_diagnoses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancerDiagnosisRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_cancer_diagnosis_patients__patient_id__cancer_diagnoses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCancerDiagnosis"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancerDiagnosisRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_cancer_diagnosis_patients__patient_id__cancer_diagnoses__diagnosis_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                diagnosis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    correct_cancer_diagnosis_patients__patient_id__cancer_diagnoses__diagnosis_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                diagnosis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancerDiagnosisChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancerDiagnosisRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     patient_care_team_patients__patient_id__care_team_get: {
         parameters: {
             query?: never;
@@ -2308,6 +3083,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CareTeamRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_clinical_notes_patients__patient_id__clinical_notes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_clinical_note_patients__patient_id__clinical_notes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewClinicalNote"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_clinical_note_patients__patient_id__clinical_notes__note_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                note_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_clinical_note_patients__patient_id__clinical_notes__note_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                note_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicalNoteChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicalNoteRow"];
                 };
             };
             /** @description Validation Error */
@@ -2510,6 +3421,446 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModuleFacts"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_lab_panel_patients__patient_id__lab_panels_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewLabPanel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabPanelRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_lab_results_patients__patient_id__labs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabResultRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_lab_result_patients__patient_id__labs__result_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                result_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_lab_result_patients__patient_id__labs__result_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                result_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LabResultChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabResultRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_management_plans_patients__patient_id__management_plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementPlanRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_management_plan_patients__patient_id__management_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewManagementPlan"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementPlanRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_management_plan_patients__patient_id__management_plans__plan_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_management_plan_patients__patient_id__management_plans__plan_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManagementPlanChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementPlanRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_next_steps_patients__patient_id__next_steps_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextStepRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_next_step_patients__patient_id__next_steps_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewNextStep"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextStepRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_next_step_patients__patient_id__next_steps__step_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                step_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_next_step_patients__patient_id__next_steps__step_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                step_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NextStepChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextStepRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_next_step_done_patients__patient_id__next_steps__step_id__done_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                step_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextStepRow"];
                 };
             };
             /** @description Validation Error */

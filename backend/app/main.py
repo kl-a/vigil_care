@@ -7,6 +7,7 @@ from app.core.config import Settings, keystore, refuse_unsafe_startup
 from app.core.crypto import FieldCipher, TamperedCiphertext
 from app.core.database import DatabaseCheck, postgres_check, session_factory
 from app.core.permissions import NotAllowed
+from app.modules.registry.registry import installed_modules
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
 from app.modules.patients import router as patients
@@ -64,6 +65,9 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(pbs.router)
     app.include_router(jobs.router)
     app.include_router(specialty_modules.router)
+    for module in installed_modules().values():
+        if module.router is not None:
+            app.include_router(module.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)
     return app

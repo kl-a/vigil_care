@@ -9,6 +9,7 @@ import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 
+from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -70,3 +71,6 @@ class SpecialtyModule:
     # A module owns tools, not visibility (ADR 0004, amended): when it's inactive for a Practice, the Core
     # shows its recorded facts read-only through this view, so no clinician loses sight of them.
     read_only_view: ReadOnlyView | None = None
+    # The module's own API (its screens' endpoints), mounted for every installed module; its services refuse
+    # Practices where the module isn't active.
+    router: APIRouter | None = None

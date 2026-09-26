@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 /** Places in Core screens where Specialty Modules contribute UI (design doc §4.1). */
 export type SectionSlotName = "patient-overview" | "patient-summary" | "clinical-data-tabs";
@@ -46,9 +46,22 @@ export interface SectionDefinition {
   render: () => ReactNode;
 }
 
+/**
+ * A Condition a module extends (e.g. Oncology: a primary cancer → Cancer Diagnosis). "Add Condition" offers it,
+ * as `label`, to Users who may enter `factKind`; the module's Form then records it.
+ */
+export interface ConditionExtension {
+  factKind: string;
+  label: string;
+  Form: ComponentType<{ patientId: string; onSaved: () => void; onCancel: () => void }>;
+}
+
 /** A module's frontend: renderers for the sections and screens its backend declares. */
 export interface ModuleManifest {
   key: ModuleKey;
   sections: Record<string, () => ReactNode>;
   patientTabs: Record<string, { screen: ScreenInfo; slot?: SectionSlotName }>;
+  /** Its Clinical Data sub-tabs (sections in "clinical-data-tabs") that are built; the rest stay hidden. */
+  builtSections?: readonly string[];
+  conditionExtension?: ConditionExtension;
 }

@@ -5,6 +5,13 @@
   "sections": [
     {
       "module": "oncology",
+      "id": "cancer-diagnosis",
+      "slot": "clinical-data-tabs",
+      "title": "Cancer Diagnosis",
+      "order": 5
+    },
+    {
+      "module": "oncology",
       "id": "response-assessments",
       "slot": "clinical-data-tabs",
       "title": "Response Assessments",

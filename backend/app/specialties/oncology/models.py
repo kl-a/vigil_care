@@ -44,6 +44,9 @@ class CancerType(SharedEntity):
 
     key: Mapped[str]
     display_name: Mapped[str]
+    # MeSH, so our terms match the trial registries' conditions (#37), e.g. "Breast Neoplasms", "D001943".
+    mesh_term: Mapped[str | None]
+    mesh_id: Mapped[str | None]
     icd10_codes: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
     staging_systems: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))

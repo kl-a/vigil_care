@@ -22,6 +22,7 @@ Permission = Literal[
     "verify_document_type",
     "review_redaction",
     "hold_document",
+    "manage_next_steps",
     "sign_off_identified_export",
     "sign_off_deidentified_export",
     "manage_users",
@@ -41,12 +42,14 @@ SUPPORT_TAG = "support"
 _STAFF: frozenset[JobTitle] = frozenset({"clinician", "trial_coordinator", "secretary"})
 
 PERMISSIONS: Mapping[Permission, frozenset[JobTitle]] = {
-    # Row 1: Patient Identity, Care Team, Document Type, redaction review, holding a Document.
+    # Row 1: Patient Identity, Care Team, Document Type, redaction review, holding a Document, Next Steps.
     "verify_patient_identity": _STAFF,
     "verify_care_team": _STAFF,
     "verify_document_type": _STAFF,
     "review_redaction": _STAFF,
     "hold_document": _STAFF,
+    # Row 1 too (#45): booking an MDT or a re-scan is often the secretary's job.
+    "manage_next_steps": _STAFF,
     # Rows 5–6: export sign-off.
     "sign_off_identified_export": _STAFF,
     "sign_off_deidentified_export": _STAFF,

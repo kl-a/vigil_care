@@ -9,6 +9,8 @@
 
 import uuid
 from collections.abc import Collection, Iterable
+from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel
@@ -18,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.audit import service as audit
 from app.audit.models import Verification
 from app.audit.service import Actor
-from app.core.base_model import Entity
+from app.core.base_model import Entity, PracticeEntity
 from app.core.changes import blank_to_none, changed_fields
 from app.core.permissions import NotAllowed, VerificationRights, require
 from app.modules.accounts.service import display_names
@@ -48,8 +50,12 @@ def entry_rights(db: Session, actor: Actor) -> dict[str, bool]:
     return {kind: active.can_verify(actor.job_title, kind) for kind in sorted(active.fact_kinds())}
 
 
-def require_view(db: Session, actor: Actor, patient_id: uuid.UUID) -> None:
+def require_patient_data(actor: Actor) -> None:
     require(actor.job_title, "view_patient_data")
+
+
+def require_view(db: Session, actor: Actor, patient_id: uuid.UUID) -> None:
+    require_patient_data(actor)
     if not patient_names(db, actor.practice_id, {patient_id}):
         raise PatientNotFound()
 
@@ -60,6 +66,29 @@ def require_entry(db: Session, actor: Actor, patient_id: uuid.UUID, fact_kind: s
     active = rights(db, actor)
     if fact_kind not in active.fact_kinds() or not active.can_verify(actor.job_title, fact_kind):
         raise NotAllowed("Your Job Title can't enter this.")
+
+
+def live_row[M: PracticeEntity](db: Session, actor: Actor, model: type[M], patient_id: uuid.UUID, row_id: uuid.UUID) -> M:
+    """One of the Patient's live rows of `model` in the actor's Practice, or RecordNotFound."""
+    row = db.scalars(
+        select(model).where(
+            model.id == row_id,
+            model.practice_id == actor.practice_id,
+            model.patient_id == patient_id,  # type: ignore[attr-defined]
+        )
+    ).one_or_none()
+    if row is None:
+        raise RecordNotFound()
+    return row
+
+
+def audit_value(value: Any) -> Any:
+    """A value as a Verification's before/after records it: dates as ISO text, numbers and ids as text."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    if isinstance(value, (Decimal, uuid.UUID)):
+        return str(value)
+    return value
 
 
 def entered_by(actor: Actor) -> dict[str, Any]:
@@ -81,13 +110,16 @@ def correct(
     change: BaseModel,
     reason: str,
     required: Collection[str] = (),
+    exclude: Collection[str] = (),
 ) -> None:
     """Applies the fields of `change` that differ from `current` (the row as its Verifications record it) and
-    records one Verification for the whole save, with the reason. Nothing changed, nothing recorded."""
-    changed = changed_fields(current, change, required=required, mode="json", exclude=("reason",))
+    records one Verification for the whole save, with the reason. Nothing changed, nothing recorded. `exclude`
+    names fields of `change` that aren't the row's."""
+    skip = {"reason", *exclude}
+    changed = changed_fields(current, change, required=required, mode="json", exclude=skip)
     if not changed:
         return
-    for field, value in blank_to_none(change.model_dump(exclude_unset=True, exclude={"reason"})).items():
+    for field, value in blank_to_none(change.model_dump(exclude_unset=True, exclude=skip)).items():
         if field in changed:
             setattr(row, field, value)
     audit.record_verification(

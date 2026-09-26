@@ -5,7 +5,7 @@ may extend a Condition (Oncology: a Cancer Diagnosis); the Condition itself is C
 """
 
 import uuid
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -13,9 +13,10 @@ from sqlalchemy.orm import Session
 from app.audit import service as audit
 from app.audit.service import Actor
 from app.core.changes import blank_to_none
+from app.core.permissions import NotAllowed
 from app.modules.clinical import entry
 from app.modules.clinical.models import Condition
-from app.modules.clinical.schemas import ConditionChange, ConditionRow, NewCondition
+from app.modules.clinical.schemas import ConditionChange, ConditionRow, ConditionStatus, NewCondition
 
 # Its fact kind in Verification Rights, and its table as a Verification's subject: the same name, two roles.
 FACT_KIND = "condition"
@@ -36,22 +37,11 @@ def _rows(db: Session, actor: Actor, conditions: list[Condition]) -> list[Condit
     entered = entry.entered(db, actor.practice_id, SUBJECT, (c.id for c in conditions))
     return [
         ConditionRow(
-            id=c.id, name=c.name, status=c.status, onset_date=c.onset_date, notes=c.notes,  # type: ignore[arg-type]
+            id=c.id, name=c.name, status=cast(ConditionStatus, c.status), onset_date=c.onset_date, notes=c.notes,
             extended_by_module=c.extended_by_module, entered=entered.get(c.id),
         )
         for c in conditions
     ]
-
-
-def _condition(db: Session, actor: Actor, patient_id: uuid.UUID, condition_id: uuid.UUID) -> Condition:
-    condition = db.scalars(
-        select(Condition).where(
-            Condition.id == condition_id, Condition.patient_id == patient_id, Condition.practice_id == actor.practice_id
-        )
-    ).one_or_none()
-    if condition is None:
-        raise entry.RecordNotFound()
-    return condition
 
 
 def extended_conditions(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID, module_key: str) -> dict[uuid.UUID, str]:
@@ -85,11 +75,60 @@ def add_condition(db: Session, actor: Actor, patient_id: uuid.UUID, new: NewCond
     return row
 
 
+def _not_extended(condition: Condition) -> None:
+    """A Condition a Specialty Module extends is changed through that module, never from the Core, which would
+    bypass the module's rights."""
+    if condition.extended_by_module:
+        raise NotAllowed("This Condition is recorded through a Specialty Module; change it there.")
+
+
+def create_extended(
+    db: Session, actor: Actor, patient_id: uuid.UUID, module_key: str, name: str
+) -> Condition:
+    """For Specialty Modules, which check their own rights first: a Condition the module extends, signed off."""
+    condition = Condition(patient_id=patient_id, name=name, extended_by_module=module_key, **entry.entered_by(actor))
+    db.add(condition)
+    entry.record_added(db, actor, SUBJECT, condition, _fields(condition))
+    return condition
+
+
+def _extended(db: Session, actor: Actor, condition_id: uuid.UUID) -> Condition:
+    """A live Condition of the actor's Practice that a module extends, or RecordNotFound."""
+    condition = db.scalars(
+        select(Condition).where(
+            Condition.id == condition_id, Condition.practice_id == actor.practice_id, Condition.extended_by_module.is_not(None)
+        )
+    ).one_or_none()
+    if condition is None:
+        raise entry.RecordNotFound()
+    return condition
+
+
+def rename_extended(db: Session, actor: Actor, condition_id: uuid.UUID, name: str, reason: str) -> None:
+    """For Specialty Modules: correct the name of a Condition the module extends (one Verification, with why)."""
+    condition = _extended(db, actor, condition_id)
+    if name != condition.name:
+        before = _fields(condition)
+        condition.name = name
+        audit.record_verification(
+            db, actor, subject_table=SUBJECT, subject_id=condition.id, action="edit",
+            before={"name": before["name"]}, after={"name": name}, reason=reason,
+        )
+        db.flush()
+
+
+def remove_extended(db: Session, actor: Actor, condition_id: uuid.UUID, reason: str) -> None:
+    """For Specialty Modules: remove a Condition along with the module's extension of it."""
+    condition = _extended(db, actor, condition_id)
+    audit.soft_delete(db, actor, condition, subject_table=SUBJECT, reason=reason, before=_fields(condition))
+
+
 def change_condition(
     db: Session, actor: Actor, patient_id: uuid.UUID, condition_id: uuid.UUID, change: ConditionChange
 ) -> ConditionRow:
     entry.require_entry(db, actor, patient_id, FACT_KIND)
-    condition = _condition(db, actor, patient_id, condition_id)
+    condition = entry.live_row(db, actor, Condition, patient_id, condition_id)
+    _not_extended(condition)
     entry.correct(db, actor, SUBJECT, condition, _fields(condition), change, change.reason, required=("name", "status"))
     [row] = _rows(db, actor, [condition])
     return row
@@ -97,5 +136,6 @@ def change_condition(
 
 def remove_condition(db: Session, actor: Actor, patient_id: uuid.UUID, condition_id: uuid.UUID, reason: str) -> None:
     entry.require_entry(db, actor, patient_id, FACT_KIND)
-    condition = _condition(db, actor, patient_id, condition_id)
+    condition = entry.live_row(db, actor, Condition, patient_id, condition_id)
+    _not_extended(condition)
     audit.soft_delete(db, actor, condition, subject_table=SUBJECT, reason=reason, before=_fields(condition))

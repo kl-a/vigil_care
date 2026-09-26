@@ -277,13 +277,15 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | Extension point | What a module contributes | Oncology example |
 |---|---|---|
 | Clinical Record | Extension tables (via ordinary migrations; **no runtime DDL**) and fact kinds with Pydantic schemas | `cancer_diagnosis`, `biomarker`, `recurrence` |
-| Condition extension | Which Conditions it extends, and how | A Condition that is a cancer → Cancer Diagnosis |
+| Condition extension | Which Conditions it extends, and how; the frontend offers it in "Add Condition" to Users who may enter it (a Condition it extends is then changed only through the module) | "This is a primary cancer" → Cancer Diagnosis |
 | Document Types | Document Types, classification hints, extraction prompts | `pathology_molecular` |
 | Verification rights | Rows added to §6.4 for its fact kinds | Stage: clinician only |
 | Patient Summary & Clinical Data | UI sections and tabs | Diagnosis block, Biomarkers tab |
 | Trial matching | Its criteria attribute vocabulary and evaluators | `required_biomarker`, `prior_systemic_lines` |
 | Treatment Options (optional) | A Treatment Option source | eviQ + PBS |
 | Open Items | Extra Open Item types | Differing Biomarker Results, Suspected Recurrences |
+| API | Its own router, mounted for every installed module; its services refuse Practices where it isn't active (#37) | `/cancer-types`, `/patients/{id}/cancer-diagnoses` |
+| Read-only view | Its recorded facts in plain words, shown by the Core when it's inactive (ADR 0004, amended; #35) | "Breast cancer: Stage IIA (TNM) at diagnosis, 1 Mar 2024; metastatic" |
 
 2. **Module registry.** The Core discovers modules only through the registry and **never imports a module**. Modules may import the Core's public service interfaces, never another module.
 3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers. *(Built with each extension point's first behaviour; the Treatment Options lookup in Stage 11. The contract, registry and Builder exist from Stage 1, #15.)*
@@ -650,7 +652,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | `imaging_study` | One imaging examination | `patient_id`, `modality` (CT/MRI/PET/PET-CT/bone/ultrasound/X-ray), `body_region`, `study_date`, `impression` (verbatim), `comparison_date`, + provenance |
 | `finding` | One observation in a single study (**not linked across studies**) | `imaging_study_id`, `patient_id`, `condition_id` (nullable: attributed only when the report says so), `site`, `laterality`, `description`, `size_mm` (nullable), `suv_max` (nullable), `is_new` (nullable), `is_measurable` (nullable: ≥10 mm on CT, for trial criteria), + provenance |
 | `response_assessment` *(Oncology)* | Stated direction of a Cancer Diagnosis at a point in time | `patient_id`, `cancer_diagnosis_id` (nullable = unattributed; unattributed rows show as Needs Information), `assessed_on`, `direction`, `source`, `imaging_study_id` (nullable), `overrides_id` (nullable: a clinician override of an earlier row), + provenance |
-| `lab_result` | One lab value | As v1.1 (`analyte`, `value`, `unit`, `ref_low`, `ref_high`, `flag`, `collected_at`, `panel`) + `value_text` for non-numeric results + provenance |
+| `lab_result` | One lab value | As v1.1 (`analyte`, `value`, `unit`, `ref_low`, `ref_high`, `flag`, `collected_at`, `panel`) + `value_text` for non-numeric results + `panel_id` (the panel it was entered in: one save, one Verification whose subject is the panel, #42) + provenance. `flag` comes from the reference range entered with it, the report's own (low/normal/high; none without a number or a range). |
 | `performance_status` *(Oncology)* | ECOG or KPS at a point in time | As v1.1 + provenance |
 | `cns_status` *(Oncology)* | CNS disease status (first-class because it gates most trials) | As v1.1 + provenance |
 
@@ -717,7 +719,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 
 | Value | Clinician | Trial coordinator | Secretary | Developer admin |
 |---|---|---|---|---|
-| Patient Identity, Care Team, Document Type, redaction review, holding a Document, **Next Steps** (add, mark done) | ✅ | ✅ | ✅ | ❌ |
+| Patient Identity, Care Team, Document Type, redaction review, holding a Document, **Next Steps** (add, mark done, correct or remove with a reason) | ✅ | ✅ | ✅ | ❌ |
 | Lab results, Medications, Conditions (non-cancer), Imaging studies, Findings, *(Oncology)* Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
 | Treatment Courses, *(Oncology)* Biomarkers | ✅ | ✅ | ❌ | ❌ |
 | *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution (confirm, new primary instead, rule out), Response Assessment overrides and attribution, Line of Therapy overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
@@ -1153,24 +1155,30 @@ POST   /patients/{id}/conditions            Direct entry (a Verification)
 PATCH  /patients/{id}/conditions/{cid}      Correct: only the changed fields + `reason` (one per save)
 DELETE /patients/{id}/conditions/{cid}      Remove: soft delete with `reason`
 GET    /patients/{id}/inactive-module-facts Facts of modules inactive at this Practice, read-only in plain words
-GET    /conditions/{id}/cancer-diagnosis    (Oncology) Stage, Disease Extent, Biomarkers, Recurrences
-PUT    /conditions/{id}/cancer-diagnosis    (Oncology) Create/update: clinician, reauth
+GET    /cancer-types                        (Oncology) Cancer Types with their MeSH term and ID
+GET    /patients/{id}/cancer-diagnoses      (Oncology) Each primary: Stage at diagnosis, Disease Extent now
+POST   /patients/{id}/cancer-diagnoses      (Oncology) Record a primary cancer (its Condition too): clinician, reauth
+PATCH  /patients/{id}/cancer-diagnoses/{cd} (Oncology) Correct (reason once per save): clinician, reauth
+DELETE /patients/{id}/cancer-diagnoses/{cd} (Oncology) Remove it and its Condition, with reason
 POST   /recurrences/{id}/attribute          Confirm / reclassify as new primary (clinician, reauth)
 GET    /cancer-diagnoses/{id}/biomarkers    (Oncology) Full history + Differing Biomarker Results flags
 GET    /patients/{id}/treatment-courses
 GET    /patients/{id}/imaging               Imaging studies + Findings
 GET    /patients/{id}/response-assessments
 POST   /response-assessments                Clinician override
-GET    /patients/{id}/labs
+GET    /patients/{id}/labs                  Newest first
+POST   /patients/{id}/lab-panels            A panel in one save, one Verification (subject `lab_panel`)
+PATCH  /patients/{id}/labs/{lid}            Correct one value (reason); flag recomputed
+DELETE /patients/{id}/labs/{lid}            Remove one value (reason)
 GET    /patients/{id}/performance-status
 GET    /patients/{id}/cns-status
 GET    /patients/{id}/conditions/reconcile
 POST   /patients/{id}/conditions/reconcile
-GET    /patients/{id}/management-plan
-GET    /patients/{id}/next-steps
-POST   /patients/{id}/next-steps
-PATCH  /next-steps/{id}                     Mark done
-GET    /patients/{id}/clinical-notes
+GET    /patients/{id}/management-plans      Newest first (the current plan, then its history); POST adds one, verbatim
+PATCH  /patients/{id}/management-plans/{m}  Correct (reason); DELETE removes (reason)
+GET    /patients/{id}/next-steps            Open first, soonest due; POST adds (any staff)
+POST   /patients/{id}/next-steps/{n}/done   Mark done (any staff); PATCH corrects, DELETE removes (reason)
+GET    /patients/{id}/clinical-notes        Newest first; POST adds; PATCH corrects, DELETE removes (reason)
 GET    /patients/{id}/timeline
 DELETE /{record-type}/{id}                  Soft delete with reason (verification row); never hard
 

@@ -5842,6 +5842,15 @@ const DATA = [
    {
     "allowed": [],
     "default": null,
+    "name": "panel_id",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "uuid"
+   },
+   {
+    "allowed": [],
+    "default": null,
     "name": "source_fact_id",
     "nullable": true,
     "references": "extracted_fact",
@@ -5983,6 +5992,15 @@ const DATA = [
     "name": "ix_lab_result_entered_by_user_id",
     "on": [
      "entered_by_user_id"
+    ],
+    "unique": false,
+    "using": false,
+    "where": null
+   },
+   {
+    "name": "ix_lab_result_panel_id",
+    "on": [
+     "panel_id"
     ],
     "unique": false,
     "using": false,
@@ -12901,6 +12919,24 @@ const DATA = [
     "default": null,
     "name": "display_name",
     "nullable": false,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "mesh_term",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "mesh_id",
+    "nullable": true,
     "references": null,
     "standard": false,
     "type": "text"

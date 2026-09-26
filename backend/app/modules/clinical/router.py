@@ -1,4 +1,4 @@
-"""The Clinical Record entered by hand (#35, design doc §5 screen 9). Refusals (403) come from the services."""
+"""The Clinical Record entered by hand (#35, #42, #45; design doc §5 screen 9). Refusals (403) come from the services."""
 
 import uuid
 
@@ -6,8 +6,12 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
-from app.modules.clinical import conditions, entry
-from app.modules.clinical.schemas import ConditionChange, ConditionRow, ModuleFacts, NewCondition
+from app.modules.clinical import conditions, entry, labs, plan_and_notes
+from app.modules.clinical.schemas import (
+    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, LabPanelRow, LabResultChange, LabResultRow,
+    ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewLabPanel, NewManagementPlan,
+    NewNextStep, NextStepChange, NextStepRow,
+)
 
 router = APIRouter(tags=["clinical record"])
 
@@ -64,6 +68,171 @@ def change_condition(patient_id: uuid.UUID, condition_id: uuid.UUID, change: Con
 def remove_condition(patient_id: uuid.UUID, condition_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
     try:
         conditions.remove_condition(db, actor, patient_id, condition_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Plan and notes (#45) -----------------------------------------------------------------------------------
+
+
+def _invalid(error: ValueError) -> HTTPException:
+    code = status.HTTP_409_CONFLICT if isinstance(error, plan_and_notes.AlreadyDone) else status.HTTP_422_UNPROCESSABLE_CONTENT
+    return HTTPException(code, str(error))
+
+
+@router.get("/patients/{patient_id}/management-plans")
+def list_management_plans(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ManagementPlanRow]:
+    """Newest first: the first is the current plan."""
+    try:
+        return plan_and_notes.management_plans(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/management-plans", status_code=status.HTTP_201_CREATED)
+def add_management_plan(patient_id: uuid.UUID, new: NewManagementPlan, actor: SignedIn, db: Db) -> ManagementPlanRow:
+    try:
+        return plan_and_notes.add_management_plan(db, actor, patient_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except plan_and_notes.NoSuchProvider as error:
+        raise _invalid(error) from None
+
+
+@router.patch("/patients/{patient_id}/management-plans/{plan_id}")
+def change_management_plan(patient_id: uuid.UUID, plan_id: uuid.UUID, change: ManagementPlanChange, actor: SignedIn, db: Db) -> ManagementPlanRow:
+    try:
+        return plan_and_notes.change_management_plan(db, actor, patient_id, plan_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except plan_and_notes.NoSuchProvider as error:
+        raise _invalid(error) from None
+
+
+@router.delete("/patients/{patient_id}/management-plans/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_management_plan(patient_id: uuid.UUID, plan_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        plan_and_notes.remove_management_plan(db, actor, patient_id, plan_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/patients/{patient_id}/clinical-notes")
+def list_clinical_notes(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ClinicalNoteRow]:
+    try:
+        return plan_and_notes.clinical_notes(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/clinical-notes", status_code=status.HTTP_201_CREATED)
+def add_clinical_note(patient_id: uuid.UUID, new: NewClinicalNote, actor: SignedIn, db: Db) -> ClinicalNoteRow:
+    try:
+        return plan_and_notes.add_clinical_note(db, actor, patient_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except plan_and_notes.NoSuchProvider as error:
+        raise _invalid(error) from None
+
+
+@router.patch("/patients/{patient_id}/clinical-notes/{note_id}")
+def change_clinical_note(patient_id: uuid.UUID, note_id: uuid.UUID, change: ClinicalNoteChange, actor: SignedIn, db: Db) -> ClinicalNoteRow:
+    try:
+        return plan_and_notes.change_clinical_note(db, actor, patient_id, note_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except plan_and_notes.NoSuchProvider as error:
+        raise _invalid(error) from None
+
+
+@router.delete("/patients/{patient_id}/clinical-notes/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_clinical_note(patient_id: uuid.UUID, note_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        plan_and_notes.remove_clinical_note(db, actor, patient_id, note_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/patients/{patient_id}/next-steps")
+def list_next_steps(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[NextStepRow]:
+    """Open ones first, soonest due first."""
+    try:
+        return plan_and_notes.next_steps(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/next-steps", status_code=status.HTTP_201_CREATED)
+def add_next_step(patient_id: uuid.UUID, new: NewNextStep, actor: SignedIn, db: Db) -> NextStepRow:
+    try:
+        return plan_and_notes.add_next_step(db, actor, patient_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/next-steps/{step_id}/done")
+def mark_next_step_done(patient_id: uuid.UUID, step_id: uuid.UUID, actor: SignedIn, db: Db) -> NextStepRow:
+    try:
+        return plan_and_notes.mark_next_step_done(db, actor, patient_id, step_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except plan_and_notes.AlreadyDone as error:
+        raise _invalid(error) from None
+
+
+@router.patch("/patients/{patient_id}/next-steps/{step_id}")
+def change_next_step(patient_id: uuid.UUID, step_id: uuid.UUID, change: NextStepChange, actor: SignedIn, db: Db) -> NextStepRow:
+    try:
+        return plan_and_notes.change_next_step(db, actor, patient_id, step_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.delete("/patients/{patient_id}/next-steps/{step_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_next_step(patient_id: uuid.UUID, step_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        plan_and_notes.remove_next_step(db, actor, patient_id, step_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Labs (#42) -------------------------------------------------------------------------------------------
+
+
+@router.get("/patients/{patient_id}/labs")
+def list_lab_results(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[LabResultRow]:
+    """Newest first."""
+    try:
+        return labs.lab_results(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/lab-panels", status_code=status.HTTP_201_CREATED)
+def add_lab_panel(patient_id: uuid.UUID, new: NewLabPanel, actor: SignedIn, db: Db) -> LabPanelRow:
+    """A panel of results in one save, with one Verification."""
+    try:
+        return labs.add_panel(db, actor, patient_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.patch("/patients/{patient_id}/labs/{result_id}")
+def change_lab_result(patient_id: uuid.UUID, result_id: uuid.UUID, change: LabResultChange, actor: SignedIn, db: Db) -> LabResultRow:
+    try:
+        return labs.change_result(db, actor, patient_id, result_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.delete("/patients/{patient_id}/labs/{result_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_lab_result(patient_id: uuid.UUID, result_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        labs.remove_result(db, actor, patient_id, result_id, removal.reason)
     except tuple(_MISSING) as error:
         raise _missing(error) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -1,5 +1,5 @@
 import { INSTALLED_MODULES } from "@/modules";
-import type { ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName } from "./types";
+import type { ConditionExtension, ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName } from "./types";
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "overview", label: "Overview", slot: "patient-overview", screen: { number: 4, title: "Patient Overview", purpose: "Clinical profile for one Patient.", stage: 2, built: true } },
@@ -37,4 +37,20 @@ export function patientTabsFor(config: ModuleConfiguration): PatientTab[] {
   });
   const trials = CORE_PATIENT_TABS.findIndex((tab) => tab.segment === "trials");
   return [...CORE_PATIENT_TABS.slice(0, trials), ...moduleTabs, ...CORE_PATIENT_TABS.slice(trials)];
+}
+
+/** The Clinical Data tab's module sub-tabs: the active modules' "clinical-data-tabs" sections that are built. */
+export function clinicalDataTabsFor(config: ModuleConfiguration): SectionDefinition[] {
+  return sectionsFor("clinical-data-tabs", config).filter((section) => {
+    const owner = config.sections.find((s) => s.id === section.id && s.slot === "clinical-data-tabs")?.module;
+    return owner ? manifest(owner)?.builtSections?.includes(section.id) === true : false;
+  });
+}
+
+/** The Condition extensions of the Practice's active modules (e.g. "This is a primary cancer"). */
+export function conditionExtensionsFor(config: ModuleConfiguration): ConditionExtension[] {
+  return config.active_modules.flatMap((key) => {
+    const extension = manifest(key)?.conditionExtension;
+    return extension ? [extension] : [];
+  });
 }
