@@ -45,11 +45,17 @@ class PbsItem(SharedEntity):
     brand_names: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
     form: Mapped[str | None]
     program_code: Mapped[str | None]
+    program_title: Mapped[str | None]
+    # WHO ATC codes, e.g. ["N06BA02"]: their first letter is the therapeutic group.
+    atc_codes: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
     restriction_level: Mapped[str] = mapped_column(info=allowed(*RESTRICTION_LEVELS))
     # Per-indication restriction levels; PBS Listing per Condition is derived from these.
     # [{"indication", "treatment_phase", "level", "restriction_code", "conditions": [...]}]
     indications: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
+    # Per prescription: the most units (e.g. tablets) and packs; `pack_size` units come in a pack.
     max_quantity: Mapped[int | None]
+    max_packs: Mapped[int | None]
+    pack_size: Mapped[int | None]
     # Infusions are prescribed by amount (e.g. 200 mg), not by packs.
     max_amount: Mapped[Decimal | None]
     amount_unit: Mapped[str | None]

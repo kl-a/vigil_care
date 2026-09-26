@@ -266,7 +266,10 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 - Disclaimer line.
 
 **14. PBS Drug Lookup**
-- Search, then a drug detail: item code (mono), PBS Listing per indication (table), co-payments, prescribing conditions, Safety Net, schedule date.
+- Opens on every drug in the PBS Schedule, A–Z, as a table: drug and brands, forms and strengths, therapeutic group, listing types (badges). 50 to a page, with the total.
+- Filters: search (drug, brand or item code), therapeutic group (with "Cancer drugs"), PBS program, listing type. Search, filters and page live in the page address; "← Back to results" returns to the same list.
+- A drug's page, in labelled sections: header (drug, brands, therapeutic group, schedule date); **PBS Items** table (item code in mono, form and strength, program, maximum per prescription with its unit, repeats, listing types); **When it can be prescribed** (indication, treatment phase, PBS Listing, prescribing conditions; items with the same restrictions shown once); **What the patient pays** (co-payments and Safety Net, once).
+- The Sample Schedule is flagged on both pages as out of date and for demos only.
 
 **16. Exports**
 - Template picker, then a **Kind** selector with two large radio cards and no default: "Identified Export: full patient details, for a clinician" and "De-identified Export: Pseudonym only, masked (violet)".

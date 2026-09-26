@@ -2,9 +2,9 @@
 developer admin. Each attempt writes a `pbs_refresh_log` row: succeeded, partial or failed.
 
 - `fetch` asks the PBS Schedule API which schedule is current. If the API can't be reached: with a schedule
-  from the API already loaded, the attempt fails and that schedule stays visible; with none, the bundled
-  sample is used instead (partial, marked as sample data), so demos work offline.
-- `store` fetches the schedule's oncology-relevant items and stores them, with their log row, in one
+  from the API already loaded, the attempt fails and that schedule stays visible; with none, the Sample
+  Schedule is used instead (partial, marked as sample data), so demos work offline.
+- `store` fetches every PBS Item in the schedule and stores them, with their log row, in one
   transaction. Items are upserted on (item code, schedule date), so running it again is safe.
 """
 
@@ -98,7 +98,7 @@ def _logged(step: Step) -> Step:
 
 
 def _store(db: Session, schedule: PbsSchedule, reason: str | None) -> PbsRefreshLog:
-    """Sample data is always partial: it's a few drugs, not the schedule."""
+    """Sample data is always partial: it's an out-of-date copy, not the current schedule."""
     if schedule.source == "sample":
         status, detail = "partial", reason or "sample_loaded"
     elif schedule.skipped:
@@ -125,9 +125,13 @@ def _store(db: Session, schedule: PbsSchedule, reason: str | None) -> PbsRefresh
             "brand_names": list(item.brand_names),
             "form": item.form,
             "program_code": item.program_code,
+            "program_title": item.program_title,
+            "atc_codes": list(item.atc_codes),
             "restriction_level": item.restriction_level,
             "indications": [listing.as_json() for listing in item.listings],
             "max_quantity": item.max_quantity,
+            "max_packs": item.max_packs,
+            "pack_size": item.pack_size,
             "max_amount": item.max_amount,
             "amount_unit": item.amount_unit,
             "repeats": item.repeats,

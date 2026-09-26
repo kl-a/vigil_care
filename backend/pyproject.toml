@@ -27,7 +27,7 @@ include = ["app*"]
 
 [tool.setuptools.package-data]
 "app.db" = ["erd_template.html"]
-"app.modules.pbs" = ["sample_schedule.json"]
+"app.modules.pbs" = ["sample_schedule.json.gz"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

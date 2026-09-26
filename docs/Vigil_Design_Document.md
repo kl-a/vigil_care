@@ -324,7 +324,7 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | 11 | **Treatment Options** | Standard-of-care options for one Condition (Oncology module: eviQ) | Condition selector (Cancer Diagnoses in the MVP). Treatment Options matched on Cancer Type + Disease Extent/intent + next Line of Therapy + Biomarkers. Each shows: protocol name, intent, line, drugs, **PBS Listing per drug** (Unrestricted / Restricted / Authority Required / Not Listed for this indication), **PBS Coverage** badge (Fully / Partially / Not Covered, naming the gap), co-payment, eviQ link and "as of <eviQ version date>". Stale-data warning if the eviQ refresh failed. |
 | 12 | **Trial Browser** | Explore the local trial database | Filter by phase/status/site/condition/drug. Trial detail: parsed criteria (each marked "about the target cancer" or "whole person"), sites with distance from the practice, registry link, last refreshed. |
 | 13 | **Match Board** | Patient vs trials | **Target Condition selector** (preselected when the Patient has one active Condition in the relevant module). "Run match". Three columns: **Potentially Eligible / Needs Information / Excluded**. Each trial card expands to per-criterion evidence (**Met / Not Met / Unknown**, with rationale and source data). **Stale banner** (Clinical Record changed, trial data refreshed, or run over a month old) with a Re-run button; stale runs remain viewable. Diff vs the previous run. |
-| 14 | **PBS Drug Lookup** | Quick drug reference | Search by drug name or active ingredient. PBS item code, PBS Listing per indication, co-payment (general + concessional), prescribing conditions, Safety Net info, schedule date. |
+| 14 | **PBS Drug Lookup** | Quick drug reference, across the whole PBS Schedule | Opens on every drug, A–Z, 50 to a page; filter by search (drug, brand, active ingredient or item code), therapeutic group (ATC, with a Cancer drugs shortcut), PBS program and listing type. The list's state is in the page address, so going back returns to it. A drug's page, in labelled sections: its PBS Items (item code, form and strength, program, maximum per prescription with its unit, repeats, listing types); when it can be prescribed (PBS Listing per indication, prescribing conditions; items with the same restrictions shown once); what the patient pays (co-payments and Safety Net, once). Schedule date throughout. |
 | 15 | **Patient Summary** | "At a Glance" consultation page (Tier 3) | **Registration:** name, DOB, age, Medicare number, address, contact details, mobile. **Diagnosis** (Oncology section; one block per Cancer Diagnosis): Cancer Type, histology, Stage (at diagnosis), Disease Extent (now), Biomarker chips (latest, with discordance flag), Recurrences (site, date, confirmed/suspected). **Most Recent Results:** latest bloods (flagged values, sparklines), latest scans with Response Assessment (responding/stable/progressing) and key Findings. **Recent Treatment:** Treatment Courses in the last 6 months, current Regimen, Line of Therapy, best response. **Clinical Notes:** most recent note, most recent letter to referrer. **Management:** Management Plan quoted verbatim with source link, plus **Next Steps**. **Medical History:** Comorbidities (active/resolved), current Medications. **Open Items.** Each section shows "last updated" linking to its source. Print-friendly layout. |
 | 16 | **Exports** | Generate and sign off reports | Template picker (treatment summary, trial matching report, Patient Summary snapshot, combined). **Kind selector, no default: Identified Export or De-identified Export** (the latter labelled with the Pseudonym and masked). Live preview. **Sign-off step:** the User confirms and signs off (recorded with name, Job Title, time, recipient). Export to PDF/DOCX. Vigil never sends the file; the User sends or prints it. Export history. |
 | 17 | **Provider Management** | Manage the Practice's provider directory | Internal and external Providers: title, name, provider number, specialty, contact details. Link to Patients with **Care Team** roles (treating oncologist, referring GP, referring specialist, surgeon, radiation oncologist, trial-site contact). |
@@ -668,8 +668,8 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 |-------|---------|-------------|
 | `treatment_protocol` *(Oncology)* | An eviQ standard-of-care protocol | `cancer_type_id`, `protocol_name`, `intent`, `line_of_therapy` (nullable), `disease_extent_required` (JSONB), `biomarker_requirements` (JSONB, e.g. `{"HER2": "positive"}`), `eviq_id`, `eviq_url`, `eviq_version`, `eviq_updated_on`, `last_checked_at`, `evidence_level`, `raw_data` (JSONB) |
 | `protocol_drug` *(Oncology)* | One drug in a protocol | As v1.1 |
-| `pbs_item` | PBS Schedule entry (oncology-relevant items only) | `item_code`, `drug_name` (its active ingredients), `brand_names` (JSONB), `form`, `program_code`, `restriction_level` (the item's benefit type), `indications` (JSONB: one per PBS restriction, `{indication, treatment_phase, level, restriction_code, conditions: [...]}`, from which PBS Listing is derived per Condition by the owning module), `max_quantity`, `max_amount` + `amount_unit` (infusions), `repeats`, `patient_copay_general`, `patient_copay_concessional`, `schedule_date`, `refresh_log_id` (FK: the Refresh that last loaded it), `raw_data`. Unique `(item_code, schedule_date)`: a Refresh upserts. The PBS Drug Lookup shows the items of the latest Refresh that loaded any, so a failed Refresh leaves the previous schedule visible. |
-| `pbs_refresh_log`, `eviq_refresh_log` | Refresh history, one row per attempt | `refreshed_at`, `item_count`, `status`, `error_detail` (a short code, e.g. `pbs_api_unreachable`); `pbs_refresh_log` also keeps `schedule_date`, `source` (`pbs_api`, or `sample`: the bundled sample, not for clinical use) and the schedule's Safety Net thresholds (`safety_net_general`, `safety_net_concessional`). A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
+| `pbs_item` | A PBS Item: one entry in the PBS Schedule (every item, from every PBS program) | `item_code`, `drug_name` (its active ingredients), `brand_names` (JSONB), `form`, `program_code` + `program_title`, `atc_codes` (JSONB: its WHO ATC codes; the first letter is the therapeutic group), `restriction_level` (the item's benefit type), `indications` (JSONB: one per PBS restriction, `{indication, treatment_phase, level, restriction_code, conditions: [...]}`, from which PBS Listing is derived per Condition by the owning module), `max_quantity` (units per prescription), `max_packs` + `pack_size`, `max_amount` + `amount_unit` (infusions), `repeats`, `patient_copay_general`, `patient_copay_concessional`, `schedule_date`, `refresh_log_id` (FK: the Refresh that last loaded it), `raw_data`. Unique `(item_code, schedule_date)`: a Refresh upserts. The PBS Drug Lookup shows the items of the latest Refresh that loaded any, so a failed Refresh leaves the previous schedule visible. |
+| `pbs_refresh_log`, `eviq_refresh_log` | Refresh history, one row per attempt | `refreshed_at`, `item_count`, `status`, `error_detail` (a short code, e.g. `pbs_api_unreachable`); `pbs_refresh_log` also keeps `schedule_date`, `source` (`pbs_api`, or `sample`: the Sample Schedule, out of date, for demos only) and the schedule's Safety Net thresholds (`safety_net_general`, `safety_net_concessional`). A failed eviQ refresh shows a stale-data warning; the old protocols stay visible. |
 
 **Trials & Matching**
 
@@ -967,11 +967,12 @@ The adapter:
 
 ### 10.2 PBS Schedule Adapter
 
-The adapter pulls the oncology-relevant PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug` (Stage 11). Built in #19 as the Refresh Job Kind `refresh_pbs` (`backend/app/modules/pbs/`):
+The adapter pulls the whole PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug` (Stage 11). Built in #19 as the Refresh Job Kind `refresh_pbs`, and widened to every PBS Item in #30 (`backend/app/modules/pbs/`):
 
-- **Source:** the public PBS Schedule API v3 (`data-api.health.gov.au/pbs/api/v3`), with the key the Department publishes for public use (one request every 20 seconds, so a Refresh takes a few minutes). "Oncology-relevant" means ATC L01 (antineoplastic agents) and L02 (endocrine therapy). Each PBS restriction on an item becomes one indication: its text gives the indication and the prescribing conditions, and its authority method the level (Restricted, Authority Required, or Authority Required (streamlined)).
+- **Source:** the public PBS Schedule API v3 (`data-api.health.gov.au/pbs/api/v3`), with the Subscription-Key set as `VIGIL_PBS_API_KEY` in `.env`, never committed (one request every 20 seconds, so a Refresh takes a few minutes; without a key it fails with `pbs_api_key_missing`). Every PBS Item is kept (about 7,000), with its ATC codes, its program's title (from `/programs`) and its pack size. ATC files a drug by its main use, so the Lookup's therapeutic groups are for browsing, not a statement of what a drug may be used for; "Cancer drugs" is ATC L01 (antineoplastic agents) and L02 (endocrine therapy). Each PBS restriction on an item becomes one indication: its text gives the indication and the prescribing conditions, and its authority method the level (Restricted, Authority Required, or Authority Required (streamlined)).
 - **Steps:** `fetch` asks the API which schedule is current; `store` fetches its items and upserts them, with the Refresh's `pbs_refresh_log` row, in one transaction.
-- **Failure:** every attempt writes a `pbs_refresh_log` row. A failed Refresh keeps the previous schedule visible (the lookup warns). If the API can't be reached and Vigil has no schedule from it yet, the **bundled sample** (`sample_schedule.json`: a few oncology drugs including pembrolizumab) loads instead, logged `partial` with `source = 'sample'` and shown as sample data, not for clinical use, so demos work offline.
+- **Failure:** every attempt writes a `pbs_refresh_log` row. A failed Refresh keeps the previous schedule visible (the lookup warns). If the API can't be reached (or there's no key) and Vigil has no schedule from it yet, the **Sample Schedule** (`sample_schedule.json.gz`: the whole PBS Schedule of 1 September 2026) loads instead, logged `partial` with `source = 'sample'` and shown as out of date, for demos only, not for clinical use, so demos work offline.
+- **Snapshots:** `backend/scripts/pbs_snapshot.py` takes the Sample Schedule and the tests' recorded fixture from the live API in one run.
 - **Tests** replay a recorded fixture of the API (`backend/tests/fixtures/pbs_api.json`), never the live service.
 
 PBS is presented at two levels:
@@ -1182,7 +1183,11 @@ GET    /conditions/{id}/treatment-options   Treatment Options from the owning mo
 
 # PBS
 GET    /pbs/schedule                        The schedule shown: its date, whether it's the sample, the last Refresh
-GET    /pbs/drugs?q=                        Search by drug, brand, active ingredient or item code
+GET    /pbs/filters                         Therapeutic groups and PBS programs in the current schedule
+GET    /pbs/drugs?q=&group=&program=&level=&page=
+                                     Every drug, A–Z, 50 to a page, narrowed by search (drug, brand, active
+                                     ingredient or item code), therapeutic group (ATC letter or "cancer"),
+                                     program and listing type
 GET    /pbs/drugs/{item_code}               The item's drug: every item, with its PBS Listing per indication
                                             (a PBS Refresh is started with POST /refreshes {"kind": "refresh_pbs"})
 
@@ -1356,7 +1361,7 @@ vigil/
 │   │   │   │   └── review.py        # accept/edit/reject → Clinical Record + verification
 │   │   │   ├── clinical/            # Core Clinical Record: Condition, Treatment Course, imaging, labs, notes, plans
 │   │   │   ├── medications/         # + Condition reconciliation
-│   │   │   ├── pbs/                 # PBS adapter (API client, bundled sample, Refresh), PBS Drug Lookup, PBS Listing (Core)
+│   │   │   ├── pbs/                 # PBS adapter (API client, Sample Schedule, Refresh), PBS Drug Lookup, PBS Listing (Core)
 │   │   │   ├── registry/            # Specialty Module contract, registry, per-Practice activation, config builder
 │   │   │   ├── trials/
 │   │   │   ├── matching/            # Match Runs, scope, aggregation, staleness
@@ -1522,7 +1527,7 @@ flowchart LR
 
 **What:**
 - **Job queue:** the queue interface, Job Kinds and the worker. A developer admin can start a Refresh (§6.4). This part is mostly back end.
-- **PBS adapter:** a monthly Refresh from the PBS Schedule API into `pbs_item`. A bundled sample keeps demos working offline.
+- **PBS adapter:** a monthly Refresh of the whole PBS Schedule from the PBS Schedule API into `pbs_item`. The Sample Schedule (an out-of-date copy) keeps demos working offline.
 - **PBS Drug Lookup screen** (§5 screen 14).
 - **Support Views:** Jobs, pipeline runs and Refresh history, and the developer admin's system-status Dashboard. A quality gate checks that **no Patient data appears in support data** (§6.4).
 

@@ -272,8 +272,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Search */
-        get: operations["search_pbs_drugs_get"];
+        /**
+         * Drugs
+         * @description Every drug in the current PBS Schedule, A–Z, narrowed by the filters (none: all of them).
+         */
+        get: operations["drugs_pbs_drugs_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -291,6 +294,23 @@ export interface paths {
         };
         /** Drug */
         get: operations["drug_pbs_drugs__item_code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pbs/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Filters */
+        get: operations["filters_pbs_filters_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1081,6 +1101,8 @@ export interface components {
             brand_names: string[];
             /** Drug Name */
             drug_name: string;
+            /** Groups */
+            groups: components["schemas"]["PbsOption"][];
             /** Items */
             items: components["schemas"]["PbsItemView"][];
             /**
@@ -1090,23 +1112,56 @@ export interface components {
             schedule_date: string;
         };
         /**
+         * PbsDrugPage
+         * @description A page of the drugs matching the filters, A–Z.
+         */
+        PbsDrugPage: {
+            /** Drugs */
+            drugs: components["schemas"]["PbsDrugRow"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
          * PbsDrugRow
-         * @description A search result: one drug and its items in the current schedule.
+         * @description One drug in the list, summarising all its PBS Items in the current schedule.
          */
         PbsDrugRow: {
             /** Brand Names */
             brand_names: string[];
             /** Drug Name */
             drug_name: string;
+            /** Forms */
+            forms: string[];
+            /** Groups */
+            groups: components["schemas"]["PbsOption"][];
             /** Item Code */
             item_code: string;
             /** Item Count */
             item_count: number;
+            /** Levels */
+            levels: string[];
+        };
+        /**
+         * PbsFilters
+         * @description What the list can be filtered by, as found in the current schedule. `groups` starts with the Cancer
+         *     drugs shortcut when there are any.
+         */
+        PbsFilters: {
+            /** Groups */
+            groups: components["schemas"]["PbsOption"][];
+            /** Programs */
+            programs: components["schemas"]["PbsOption"][];
         };
         /** PbsItemView */
         PbsItemView: {
             /** Amount Unit */
             amount_unit: string | null;
+            /** Atc Codes */
+            atc_codes: string[];
             /** Brand Names */
             brand_names: string[];
             /** Copay Concessional */
@@ -1121,10 +1176,16 @@ export interface components {
             listings: components["schemas"]["PbsListingView"][];
             /** Max Amount */
             max_amount: number | null;
+            /** Max Packs */
+            max_packs: number | null;
             /** Max Quantity */
             max_quantity: number | null;
+            /** Pack Size */
+            pack_size: number | null;
             /** Program Code */
             program_code: string | null;
+            /** Program Title */
+            program_title: string | null;
             /** Repeats */
             repeats: number | null;
             /** Restriction Level */
@@ -1150,6 +1211,16 @@ export interface components {
             restriction_code: string;
             /** Treatment Phase */
             treatment_phase: string | null;
+        };
+        /**
+         * PbsOption
+         * @description A code and what to call it, e.g. a therapeutic group ("N", "Nervous system") or a PBS program.
+         */
+        PbsOption: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
         };
         /** PbsRefreshView */
         PbsRefreshView: {
@@ -2035,10 +2106,15 @@ export interface operations {
             };
         };
     };
-    search_pbs_drugs_get: {
+    drugs_pbs_drugs_get: {
         parameters: {
             query?: {
                 q?: string;
+                group?: string | null;
+                program?: string | null;
+                level?: string | null;
+                page?: number;
+                page_size?: number;
             };
             header?: never;
             path?: never;
@@ -2052,7 +2128,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PbsDrugRow"][];
+                    "application/json": components["schemas"]["PbsDrugPage"];
                 };
             };
             /** @description Validation Error */
@@ -2093,6 +2169,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    filters_pbs_filters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsFilters"];
                 };
             };
         };

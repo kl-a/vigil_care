@@ -47,8 +47,14 @@ class ScheduleItem:
     brand_names: tuple[str, ...] = ()
     form: str | None = None
     program_code: str | None = None
+    program_title: str | None = None
+    # WHO ATC codes, e.g. ("N06BA02",): their first letter is the therapeutic group.
+    atc_codes: tuple[str, ...] = ()
     listings: tuple[Listing, ...] = ()
+    # Per prescription: the most units (e.g. tablets) and packs; `pack_size` units come in a pack.
     max_quantity: int | None = None
+    max_packs: int | None = None
+    pack_size: int | None = None
     max_amount: Decimal | None = None
     amount_unit: str | None = None
     repeats: int | None = None
@@ -89,6 +95,6 @@ class ScheduleSource(Protocol):
         ...
 
     def fetch(self, ref: ScheduleRef) -> Schedule:
-        """Every oncology-relevant item in the schedule. Raises SourceUnreachable."""
+        """Every PBS Item in the schedule. Raises SourceUnreachable."""
         ...
 

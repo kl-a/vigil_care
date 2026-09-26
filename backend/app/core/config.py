@@ -17,10 +17,8 @@ DEV_SESSION_SECRET = "dev-only-session-secret-never-use-outside-dev"
 MIN_SESSION_SECRET_LENGTH = 32
 # Encrypts Patient Identity in dev (synthetic data only). Refused outside dev, so a real key must be set there.
 DEV_ENCRYPTION_KEY = "ZGV2LW9ubHktZW5jcnlwdGlvbi1rZXktbmV2ZXItdXM="
-# The PBS Schedule API (design doc §10.2), with the key the Department of Health publishes for public use (not a
-# secret; limited to one request every 20 seconds).
+# The PBS Schedule API (design doc §10.2). Its key is set in .env (VIGIL_PBS_API_KEY), never committed.
 PBS_API_URL = "https://data-api.health.gov.au/pbs/api/v3"
-PBS_API_PUBLIC_KEY = ""
 
 
 class StartupRefused(RuntimeError):
@@ -35,9 +33,9 @@ class Settings(BaseSettings):
     dev_login_enabled: bool = False
     database_url: str = "postgresql://vigil_app:vigil_app_dev@localhost:5432/vigil"
     vlm_worker_url: str | None = None
-    # Unreachable (e.g. offline), a first PBS Refresh loads the bundled sample instead.
+    # Unreachable (e.g. offline) or with no key, a first PBS Refresh loads the Sample Schedule instead.
     pbs_api_url: str = PBS_API_URL
-    pbs_api_key: str = PBS_API_PUBLIC_KEY
+    pbs_api_key: str = ""
     pbs_api_min_interval: float = 20.0
     session_secret: str = DEV_SESSION_SECRET
     # Base64 of a random 32-byte key (e.g. `openssl rand -base64 32`), behind the key interface (ADR 0003).
@@ -54,13 +52,8 @@ class Settings(BaseSettings):
     @field_validator("pbs_api_url")
     @classmethod
     def _unset_pbs_url_means_default(cls, value: str) -> str:
-        # Docker Compose passes an empty string when VIGIL_PBS_API_URL isn't set; likewise the key.
+        # Docker Compose passes an empty string when VIGIL_PBS_API_URL isn't set.
         return value or PBS_API_URL
-
-    @field_validator("pbs_api_key")
-    @classmethod
-    def _unset_pbs_key_means_public_key(cls, value: str) -> str:
-        return value or PBS_API_PUBLIC_KEY
 
     @field_validator("encryption_key")
     @classmethod

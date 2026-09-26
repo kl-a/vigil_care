@@ -1,5 +1,10 @@
 {
- "about": "Recorded from the PBS Schedule API v3 (data-api.health.gov.au/pbs/api/v3) on 2026-09-25, schedule 4333 (1 September 2026). Each table is trimmed to pembrolizumab, letrozole and carboplatin, plus rifaximin (not oncology). Tests replay it; they never call the live service.",
+ "about": "Recorded from the PBS Schedule API v3 on 2026-09-26, the schedule of 2026-09-01, by scripts/pbs_snapshot.py. Each table is trimmed to Carboplatin, Dexamfetamine, Duloxetine, Letrozole, Pembrolizumab, Rifaximin. Tests replay it; they never call the live service.",
+ "copyright": [
+  "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
+  "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
+  "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
+ ],
  "responses": [
   {
    "path": "/schedules",
@@ -8,61 +13,8 @@
    },
    "body": {
     "_meta": {
-     "info": {
-      "publisher": {
-       "name": "Department of Health",
-       "url": "http://www.health.gov.au/"
-      },
-      "messages": [
-       {
-        "type": "copyright",
-        "content": [
-         "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
-         "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
-         "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
-        ]
-       }
-      ]
-     },
-     "processing_time": "39 milliseconds",
-     "processing_time_ms": 39,
-     "total_records": 1,
-     "page": 1,
-     "limit": 10,
-     "sort": "",
-     "sort_fields": "",
-     "count": 1,
-     "distinct": false,
-     "fields": "",
-     "filter_params": {
-      "schedule_code": [
-       "4333"
-      ],
-      "revision_number": null,
-      "start_tsp": null,
-      "effective_date": null,
-      "effective_month": null,
-      "effective_year": null,
-      "publication_status": null,
-      "approved_for_release": null,
-      "get_latest_schedule_only": true
-     },
-     "filter": ""
+     "total_records": 1
     },
-    "_links": [
-     {
-      "href": "/api/v3/schedules?get_latest_schedule_only=true&page=1&limit=10",
-      "rel": "self"
-     },
-     {
-      "href": "/api/v3/schedules?get_latest_schedule_only=true&page=1&limit=10",
-      "rel": "first"
-     },
-     {
-      "href": "/api/v3/schedules?get_latest_schedule_only=true&page=1&limit=10",
-      "rel": "last"
-     }
-    ],
     "data": [
      {
       "revision_number": 1,
@@ -83,61 +35,8 @@
    },
    "body": {
     "_meta": {
-     "info": {
-      "publisher": {
-       "name": "Department of Health",
-       "url": "http://www.health.gov.au/"
-      },
-      "messages": [
-       {
-        "type": "copyright",
-        "content": [
-         "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
-         "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
-         "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
-        ]
-       }
-      ]
-     },
-     "processing_time": "49 milliseconds",
-     "processing_time_ms": 49,
-     "total_records": 1,
-     "page": 1,
-     "limit": 10,
-     "sort": "",
-     "sort_fields": "",
-     "count": 1,
-     "distinct": false,
-     "fields": "",
-     "filter_params": {
-      "schedule_code": [
-       "4333"
-      ],
-      "general": null,
-      "concessional": null,
-      "safety_net_general": null,
-      "safety_net_concessional": null,
-      "safety_net_card_issue": null,
-      "increased_discount_limit": null,
-      "safety_net_ctg_contribution": null,
-      "get_latest_schedule_only": false
-     },
-     "filter": ""
+     "total_records": 1
     },
-    "_links": [
-     {
-      "href": "/api/v3/copayments?schedule_code=4333&page=1&limit=10",
-      "rel": "self"
-     },
-     {
-      "href": "/api/v3/copayments?schedule_code=4333&page=1&limit=10",
-      "rel": "first"
-     },
-     {
-      "href": "/api/v3/copayments?schedule_code=4333&page=1&limit=10",
-      "rel": "last"
-     }
-    ],
     "data": [
      {
       "general": 25,
@@ -153,6 +52,106 @@
    }
   },
   {
+   "path": "/programs",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 1
+   },
+   "body": {
+    "_meta": {
+     "total_records": 17
+    },
+    "data": [
+     {
+      "program_code": "CA",
+      "program_title": "Section 100 (Highly Specialised Drugs) - Community Access",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "CT",
+      "program_title": "Section 100 (Efficient Funding of Chemotherapy) - Related Benefits",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "DB",
+      "program_title": "Prescriber Bag (Dr Bag)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "EP",
+      "program_title": "Extemporaneous Preparations",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "GE",
+      "program_title": "General Schedule",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "GH",
+      "program_title": "Section 100 (Growth Hormone)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "HB",
+      "program_title": "Section 100 (Highly Specialised Drugs) - Public Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "HS",
+      "program_title": "Section 100 (Highly Specialised Drugs) - Private Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "IF",
+      "program_title": "Section 100 (IVF Treatment)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "IN",
+      "program_title": "Section 100 (Efficient Funding of Chemotherapy) - Private Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "IP",
+      "program_title": "Section 100 (Efficient Funding of Chemotherapy) - Public Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "MF",
+      "program_title": "Section 100 (Botulinum Toxin Program)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "PL",
+      "program_title": "Palliative Care",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "PQ",
+      "program_title": "Section 100 (Paraplegic and Quadriplegic Program)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "R1",
+      "program_title": "Repatriation Pharmaceutical Benefits (RPBS)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "TY",
+      "program_title": "Section 100 (Special Authority Items) - Private Hospital",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "TZ",
+      "program_title": "Section 100 (Special Authority Items) - Public Hospital",
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
    "path": "/item-atc-relationships",
    "params": {
     "schedule_code": 4333,
@@ -161,47 +160,18 @@
    },
    "body": {
     "_meta": {
-     "info": {
-      "publisher": {
-       "name": "Department of Health",
-       "url": "http://www.health.gov.au/"
-      },
-      "messages": [
-       {
-        "type": "copyright",
-        "content": [
-         "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
-         "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
-         "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
-        ]
-       }
-      ]
-     },
-     "processing_time": "66 milliseconds",
-     "processing_time_ms": 66,
-     "total_records": 19,
-     "page": 1,
-     "limit": 10000,
-     "sort": "",
-     "sort_fields": "",
-     "count": 19,
-     "distinct": false,
-     "fields": "",
-     "filter_params": {
-      "atc_code": null,
-      "schedule_code": [
-       "4333"
-      ],
-      "pbs_code": null,
-      "atc_priority_pct": null,
-      "get_latest_schedule_only": false
-     },
-     "filter": ""
+     "total_records": 6844
     },
     "data": [
      {
       "atc_code": "A07AA11",
       "pbs_code": "10001J",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06BA02",
+      "pbs_code": "1165H",
       "atc_priority_pct": 100,
       "schedule_code": 4333
      },
@@ -244,6 +214,12 @@
      {
       "atc_code": "L02BG04",
       "pbs_code": "13939P",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06AX21",
+      "pbs_code": "14712H",
       "atc_priority_pct": 100,
       "schedule_code": 4333
      },
@@ -312,6 +288,18 @@
       "pbs_code": "8245Y",
       "atc_priority_pct": 100,
       "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06AX21",
+      "pbs_code": "9155W",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06AX21",
+      "pbs_code": "9156X",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
      }
     ]
    }
@@ -320,119 +308,13 @@
    "path": "/items",
    "params": {
     "schedule_code": 4333,
-    "fields": "pbs_code,drug_name,schedule_form,brand_name,program_code,benefit_type_code,maximum_prescribable_pack,maximum_quantity_units,number_of_repeats,maximum_amount,unit_of_measure,infusible_indicator",
+    "fields": "pbs_code,drug_name,schedule_form,brand_name,program_code,benefit_type_code,maximum_prescribable_pack,maximum_quantity_units,pack_size,number_of_repeats,maximum_amount,unit_of_measure,infusible_indicator",
     "limit": 10000,
     "page": 1
    },
    "body": {
     "_meta": {
-     "info": {
-      "publisher": {
-       "name": "Department of Health",
-       "url": "http://www.health.gov.au/"
-      },
-      "messages": [
-       {
-        "type": "copyright",
-        "content": [
-         "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
-         "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
-         "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
-        ]
-       }
-      ]
-     },
-     "processing_time": "238 milliseconds",
-     "processing_time_ms": 238,
-     "total_records": 33,
-     "page": 1,
-     "limit": 10000,
-     "sort": "",
-     "sort_fields": "",
-     "count": 33,
-     "distinct": false,
-     "fields": "pbs_code,drug_name,schedule_form,brand_name,program_code,benefit_type_code,maximum_prescribable_pack,maximum_quantity_units,number_of_repeats,maximum_amount,unit_of_measure,infusible_indicator",
-     "filter_params": {
-      "schedule_code": [
-       "4333"
-      ],
-      "li_item_id": null,
-      "drug_name": null,
-      "li_drug_name": null,
-      "li_form": null,
-      "schedule_form": null,
-      "brand_name": null,
-      "program_code": null,
-      "pbs_code": null,
-      "benefit_type_code": null,
-      "caution_indicator": null,
-      "note_indicator": null,
-      "manner_of_administration": null,
-      "moa_preferred_term": null,
-      "maximum_prescribable_pack": null,
-      "maximum_quantity_units": null,
-      "number_of_repeats": null,
-      "organisation_id": null,
-      "manufacturer_code": null,
-      "pack_size": null,
-      "pricing_quantity": null,
-      "pack_not_to_be_broken_ind": null,
-      "claimed_price": null,
-      "determined_price": null,
-      "determined_qty": null,
-      "safety_net_resupply_rule_days": null,
-      "safety_net_resup_rule_cnt_ind": null,
-      "extemporaneous_indicator": null,
-      "extemporaneous_standard": null,
-      "doctors_bag_group_id": null,
-      "section100_only_indicator": null,
-      "doctors_bag_only_indicator": null,
-      "brand_substitution_group_id": null,
-      "brand_substitution_group_code": null,
-      "continued_dispensing_emergency": null,
-      "continued_dispensing_flag": null,
-      "supply_only_indicator": null,
-      "supply_only_date": null,
-      "non_effective_date": null,
-      "weighted_avg_disclosed_price": null,
-      "originator_brand_indicator": null,
-      "paper_med_chart_eligible_ind": null,
-      "elect_med_chart_eligible_ind": null,
-      "hsptl_med_chart_eligible_ind": null,
-      "paper_med_chart_duration": null,
-      "elect_med_chart_duration": null,
-      "hsptl_chart_acute_duration": null,
-      "hsptl_chart_sub_acute_duration": null,
-      "hsptl_chart_chronic_duration": null,
-      "pack_content": null,
-      "vial_content": null,
-      "infusible_indicator": null,
-      "unit_of_measure": null,
-      "maximum_amount": null,
-      "formulary": null,
-      "water_added_ind": null,
-      "section_19a_expiry_date": null,
-      "container_fee_type": null,
-      "policy_applied_bio_sim_up_flag": null,
-      "policy_applied_imdq60_flag": null,
-      "policy_applied_imdq60_base_flag": null,
-      "policy_applied_indig_phar_flag": null,
-      "therapeutic_exemption_indicator": null,
-      "premium_exemption_group_id": null,
-      "doctors_bag_group_title": null,
-      "therapeutic_group_id": null,
-      "therapeutic_group_title": null,
-      "advanced_notice_date": null,
-      "supply_only_end_date": null,
-      "first_listed_date": null,
-      "legal_unar_ind": null,
-      "legal_car_ind": null,
-      "proportional_price": null,
-      "li_substitution_group_id": null,
-      "innovator_indicator": null,
-      "get_latest_schedule_only": false
-     },
-     "filter": ""
+     "total_records": 14964
     },
     "data": [
      {
@@ -444,6 +326,22 @@
       "benefit_type_code": "A",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 56,
+      "pack_size": 56,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "1165H",
+      "drug_name": "Dexamfetamine",
+      "schedule_form": "dexamfetamine sulfate 5 mg tablet, 100",
+      "brand_name": "Aspen Pharmacare Australia Pty Ltd",
+      "program_code": "GE",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 100,
+      "pack_size": 100,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -458,6 +356,7 @@
       "benefit_type_code": "A",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 200,
       "unit_of_measure": "mg",
@@ -472,6 +371,7 @@
       "benefit_type_code": "A",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 3,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -486,6 +386,7 @@
       "benefit_type_code": "A",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 3,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -500,6 +401,7 @@
       "benefit_type_code": "A",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 200,
       "unit_of_measure": "mg",
@@ -514,6 +416,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -528,6 +431,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -542,6 +446,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -556,6 +461,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -570,6 +476,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -584,6 +491,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -598,6 +506,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -612,6 +521,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -626,6 +536,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -640,7 +551,128 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 2,
       "maximum_quantity_units": 60,
+      "pack_size": 30,
       "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "APO-Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Blooms The Chemist Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxecor",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DULOXETINE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DYTREX 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Tixol 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
       "maximum_amount": null,
       "unit_of_measure": null,
       "infusible_indicator": "N"
@@ -654,6 +686,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -668,6 +701,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -682,6 +716,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -696,6 +731,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -710,6 +746,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -724,6 +761,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -738,6 +776,7 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
@@ -752,11 +791,28 @@
       "benefit_type_code": "S",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 7,
       "maximum_amount": 400,
       "unit_of_measure": "mg",
       "infusible_indicator": "Y"
-     },
+     }
+    ]
+   }
+  },
+  {
+   "path": "/items",
+   "params": {
+    "schedule_code": 4333,
+    "fields": "pbs_code,drug_name,schedule_form,brand_name,program_code,benefit_type_code,maximum_prescribable_pack,maximum_quantity_units,pack_size,number_of_repeats,maximum_amount,unit_of_measure,infusible_indicator",
+    "limit": 10000,
+    "page": 2
+   },
+   "body": {
+    "_meta": {
+     "total_records": 14964
+    },
+    "data": [
      {
       "pbs_code": "4309T",
       "drug_name": "Carboplatin",
@@ -766,6 +822,7 @@
       "benefit_type_code": "U",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 5,
       "maximum_amount": 900,
       "unit_of_measure": "mg",
@@ -780,6 +837,7 @@
       "benefit_type_code": "U",
       "maximum_prescribable_pack": null,
       "maximum_quantity_units": null,
+      "pack_size": 1,
       "number_of_repeats": 5,
       "maximum_amount": 900,
       "unit_of_measure": "mg",
@@ -794,6 +852,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -808,6 +867,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -822,6 +882,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -836,6 +897,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -850,6 +912,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -864,6 +927,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -878,6 +942,7 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -892,6 +957,247 @@
       "benefit_type_code": "R",
       "maximum_prescribable_pack": 1,
       "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "APO-Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Blooms The Chemist Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Duloxecor",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz 30",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "DULOXETINE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "DYTREX 30",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Tixol 30",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "APO-Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Blooms The Chemist Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxecor",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DULOXETINE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DYTREX 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Tixol 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
       "number_of_repeats": 5,
       "maximum_amount": null,
       "unit_of_measure": null,
@@ -909,44 +1215,7 @@
    },
    "body": {
     "_meta": {
-     "info": {
-      "publisher": {
-       "name": "Department of Health",
-       "url": "http://www.health.gov.au/"
-      },
-      "messages": [
-       {
-        "type": "copyright",
-        "content": [
-         "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
-         "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
-         "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
-        ]
-       }
-      ]
-     },
-     "processing_time": "90 milliseconds",
-     "processing_time_ms": 90,
-     "total_records": 79,
-     "page": 1,
-     "limit": 10000,
-     "sort": "",
-     "sort_fields": "",
-     "count": 79,
-     "distinct": false,
-     "fields": "",
-     "filter_params": {
-      "res_code": null,
-      "pbs_code": null,
-      "benefit_type_code": null,
-      "restriction_indicator": null,
-      "schedule_code": [
-       "4333"
-      ],
-      "res_position": null,
-      "get_latest_schedule_only": false
-     },
-     "filter": ""
+     "total_records": 23550
     },
     "data": [
      {
@@ -974,6 +1243,30 @@
       "schedule_code": 4333
      },
      {
+      "res_code": "13099_N",
+      "pbs_code": "1165H",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16627_16596_R",
+      "pbs_code": "1165H",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16628_16629_R",
+      "pbs_code": "1165H",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
       "res_code": "25071_N",
       "pbs_code": "12120X",
       "benefit_type_code": "A",
@@ -1180,7 +1473,22 @@
       "restriction_indicator": "Y",
       "res_position": 2,
       "schedule_code": 4333
-     },
+     }
+    ]
+   }
+  },
+  {
+   "path": "/item-restriction-relationships",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 2
+   },
+   "body": {
+    "_meta": {
+     "total_records": 23550
+    },
+    "data": [
      {
       "res_code": "21501_N",
       "pbs_code": "13739D",
@@ -1270,6 +1578,14 @@
       "schedule_code": 4333
      },
      {
+      "res_code": "16542_15553_R",
+      "pbs_code": "14712H",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
       "res_code": "21501_N",
       "pbs_code": "15208K",
       "benefit_type_code": "S",
@@ -1556,7 +1872,22 @@
       "restriction_indicator": "Y",
       "res_position": 1,
       "schedule_code": 4333
-     },
+     }
+    ]
+   }
+  },
+  {
+   "path": "/item-restriction-relationships",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 3
+   },
+   "body": {
+    "_meta": {
+     "total_records": 23550
+    },
+    "data": [
      {
       "res_code": "12335_N",
       "pbs_code": "8245Y",
@@ -1580,6 +1911,22 @@
       "restriction_indicator": "Y",
       "res_position": 1,
       "schedule_code": 4333
+     },
+     {
+      "res_code": "16543_5650_R",
+      "pbs_code": "9155W",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16543_5650_R",
+      "pbs_code": "9156X",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
      }
     ]
    }
@@ -1594,54 +1941,7 @@
    },
    "body": {
     "_meta": {
-     "info": {
-      "publisher": {
-       "name": "Department of Health",
-       "url": "http://www.health.gov.au/"
-      },
-      "messages": [
-       {
-        "type": "copyright",
-        "content": [
-         "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
-         "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
-         "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
-        ]
-       }
-      ]
-     },
-     "processing_time": "3346 milliseconds",
-     "processing_time_ms": 3346,
-     "total_records": 21,
-     "page": 1,
-     "limit": 10000,
-     "sort": "",
-     "sort_fields": "",
-     "count": 21,
-     "distinct": false,
-     "fields": "res_code,treatment_phase,authority_method,li_html_text",
-     "filter_params": {
-      "res_code": null,
-      "schedule_code": [
-       "4333"
-      ],
-      "treatment_phase": null,
-      "authority_method": null,
-      "treatment_of_code": null,
-      "restriction_number": null,
-      "li_html_text": null,
-      "schedule_html_text": null,
-      "note_indicator": null,
-      "caution_indicator": null,
-      "complex_authority_rqrd_ind": null,
-      "assessment_type_code": null,
-      "criteria_relationship": null,
-      "variation_rule_applied": null,
-      "first_listing_date": null,
-      "written_authority_required": null,
-      "get_latest_schedule_only": false
-     },
-     "filter": ""
+     "total_records": 3581
     },
     "data": [
      {
@@ -1664,6 +1964,12 @@
      },
      {
       "res_code": "12369_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "13099_N",
       "treatment_phase": null,
       "authority_method": null,
       "li_html_text": null
@@ -1697,6 +2003,30 @@
       "treatment_phase": null,
       "authority_method": "RESTRICTED",
       "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Breast cancer</p><br/><p>The condition must be hormone receptor positive.</p>"
+     },
+     {
+      "res_code": "16542_15553_R",
+      "treatment_phase": null,
+      "authority_method": "RESTRICTED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Major depressive disorders</p><br/><p>The condition must be stable for the prescriber to consider the listed maximum quantity of this medicine suitable for this patient.</p>"
+     },
+     {
+      "res_code": "16543_5650_R",
+      "treatment_phase": null,
+      "authority_method": "RESTRICTED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Major depressive disorders</p>"
+     },
+     {
+      "res_code": "16627_16596_R",
+      "treatment_phase": null,
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Attention deficit hyperactivity disorder</p><br/><p>Must be treated by a health practitioner who is any of: (i) a medical practitioner, (ii) a nurse practitioner who is continuing treatment with this medicine (of any strength) that was initiated by a medical practitioner as a PBS benefit.</p> <p align=\"justify\">Treatment must be in accordance with the law of the relevant State or Territory.</p>"
+     },
+     {
+      "res_code": "16628_16629_R",
+      "treatment_phase": null,
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Narcolepsy</p><br/><p>Must be treated by a health practitioner who is any of: (i) a medical practitioner, (ii) a nurse practitioner who is continuing treatment with this medicine (of any strength) that was initiated by a medical practitioner as a PBS benefit.</p>"
      },
      {
       "res_code": "17266_4306_R",

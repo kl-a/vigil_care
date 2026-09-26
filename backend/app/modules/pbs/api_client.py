@@ -1,8 +1,9 @@
 """PBS Schedule API client (design doc §10.2): the Department of Health's public PBS API v3.
 
-A fetch reads the whole schedule's item, ATC and restriction tables (one request per page) and keeps the
-oncology-relevant items: ATC L01 (antineoplastic agents) and L02 (endocrine therapy). The public API allows
-one request every 20 seconds, so `HttpTransport` waits between requests and a fetch takes a few minutes.
+A fetch reads the whole schedule's program, item, ATC and restriction tables (one request per page) and keeps
+every PBS Item. The public API allows one request every 20 seconds, so `HttpTransport` waits between requests
+and a fetch takes a few minutes. The key (`VIGIL_PBS_API_KEY`) is never committed; without one, a fetch fails
+with `pbs_api_key_missing`.
 Tests give the client a recorded fixture (tests/fixtures/pbs_api.json) through `Transport`, never the service.
 """
 
@@ -25,12 +26,11 @@ from app.modules.pbs.schedule import Copayments, Listing, Schedule, ScheduleItem
 # A GET of `path` with query `params`, returning the decoded JSON body. Raises SourceUnreachable.
 Transport = Callable[[str, Mapping[str, str | int]], Mapping[str, Any]]
 
-ONCOLOGY_ATC = ("L01", "L02")
 PAGE_SIZE = 10000
 ITEM_FIELDS = (
     "pbs_code", "drug_name", "schedule_form", "brand_name", "program_code", "benefit_type_code",
-    "maximum_prescribable_pack", "maximum_quantity_units", "number_of_repeats", "maximum_amount", "unit_of_measure",
-    "infusible_indicator",
+    "maximum_prescribable_pack", "maximum_quantity_units", "pack_size", "number_of_repeats", "maximum_amount",
+    "unit_of_measure", "infusible_indicator",
 )
 RESTRICTION_FIELDS = ("res_code", "treatment_phase", "authority_method", "li_html_text")
 
@@ -69,6 +69,8 @@ class HttpTransport:
         self._last: float | None = None
 
     def __call__(self, path: str, params: Mapping[str, str | int]) -> Mapping[str, Any]:
+        if not self._key:
+            raise SourceUnreachable("pbs_api_key_missing")
         url = f"{self._base_url}{path}?{urllib.parse.urlencode(params)}"
         request = urllib.request.Request(url, headers={"Subscription-Key": self._key, "Accept": "application/json"})
         for _ in range(self.RATE_LIMIT_RETRIES):
@@ -108,14 +110,14 @@ class PbsApiClient:
     def fetch(self, ref: ScheduleRef) -> Schedule:
         schedule = {"schedule_code": ref.schedule_code}
         copayments = self._copayments(self._data(self._get("/copayments", schedule)))
-        oncology = {
-            row["pbs_code"] for row in self._all("/item-atc-relationships", schedule)
-            if str(row.get("atc_code") or "").startswith(ONCOLOGY_ATC)
-        }
+        programs = {row["program_code"]: row["program_title"] for row in self._all("/programs", schedule)}
+        atc_codes: dict[str, set[str]] = {}
+        for row in self._all("/item-atc-relationships", schedule):
+            if row.get("atc_code"):
+                atc_codes.setdefault(row["pbs_code"], set()).add(str(row["atc_code"]))
         rows_by_code: dict[str, list[Mapping[str, Any]]] = {}
         for row in self._all("/items", {**schedule, "fields": ",".join(ITEM_FIELDS)}):
-            if row["pbs_code"] in oncology:
-                rows_by_code.setdefault(row["pbs_code"], []).append(row)
+            rows_by_code.setdefault(row["pbs_code"], []).append(row)
         links: dict[str, list[Mapping[str, Any]]] = {}
         for link in self._all("/item-restriction-relationships", schedule):
             # Restrictions only ("Y"); notes and cautions ("N") aren't indications.
@@ -130,7 +132,7 @@ class PbsApiClient:
 
         items, skipped = [], 0
         for code in sorted(rows_by_code):
-            item = _item(rows_by_code[code], links.get(code, []), restrictions)
+            item = _item(rows_by_code[code], links.get(code, []), restrictions, atc_codes.get(code, set()), programs)
             if item is None:
                 skipped += 1
             else:
@@ -167,7 +169,11 @@ class PbsApiClient:
 
 
 def _item(
-    rows: list[Mapping[str, Any]], links: list[Mapping[str, Any]], restrictions: Mapping[str, Mapping[str, Any]]
+    rows: list[Mapping[str, Any]],
+    links: list[Mapping[str, Any]],
+    restrictions: Mapping[str, Mapping[str, Any]],
+    atc_codes: set[str],
+    programs: Mapping[str, str],
 ) -> ScheduleItem | None:
     """One PBS item from its rows (one per brand). None if Vigil can't read its benefit type."""
     first = rows[0]
@@ -187,8 +193,12 @@ def _item(
         brand_names=tuple(sorted({row["brand_name"] for row in rows if row.get("brand_name")})),
         form=first.get("schedule_form"),
         program_code=first.get("program_code"),
+        program_title=programs.get(first.get("program_code") or ""),
+        atc_codes=tuple(sorted(atc_codes)),
         listings=tuple(listings),
-        max_quantity=first.get("maximum_quantity_units") or first.get("maximum_prescribable_pack"),
+        max_quantity=first.get("maximum_quantity_units"),
+        max_packs=first.get("maximum_prescribable_pack"),
+        pack_size=first.get("pack_size"),
         max_amount=_decimal(first.get("maximum_amount")) if infusion else None,
         amount_unit=first.get("unit_of_measure") if infusion else None,
         repeats=first.get("number_of_repeats"),

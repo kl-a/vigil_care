@@ -17,7 +17,7 @@ export function PbsListingBadge({ level }: { level: string }) {
   return (
     <span className={`inline-flex w-fit items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium ${TONE[tone]}`}>
       <Icon aria-hidden className="h-3 w-3" />
-      {streamlined ? `${label} (streamlined)` : label}
+      {streamlined ? `${label} (Streamlined)` : label}
     </span>
   );
 }
