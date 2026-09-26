@@ -81,7 +81,7 @@ This stage can run alongside Stage 2.
 | 10 · Trials | 10a Trial Browser (public data; can start any time after Stage 3), 10b Match Board | 9 | 📋 Outline |
 | 11 · Treatment Options | eviQ + PBS Coverage. **Blocked on eviQ terms of use** ([revisit-later.md](revisit-later.md) #9) | 3, 4 | 📋 Outline |
 | 12 · Exports | Identified and De-identified Exports with sign-off | 5, 7, 9 (10 for trial reports) | 📋 Outline |
-| 13 · Login hardening & polish | 2FA, inactivity lock, re-authentication, bootstrap, onboarding, backup, polish. Tickets so far: [#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5) | all | 📋 Outline |
+| 13 · Login hardening & polish | 2FA, inactivity lock, re-authentication, bootstrap, onboarding, backup, polish. Tickets so far: [#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5), [#32](https://github.com/kl-a/vigil_care/issues/32) (runbook) | all | 📋 Outline |
 
 ## Critical path
 
@@ -114,5 +114,7 @@ flowchart LR
 **Next up:**
 1. Merge Stage 3 (#18, #19, #10, #20, #30, #31): it's built and shipped, ready for its demo ([docs/demos/stage-3.md](demos/stage-3.md)).
 2. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
+
+**Provisional decisions:** [docs/revisit-later.md](revisit-later.md) lists them with their triggers; working through them is tracked in [#33](https://github.com/kl-a/vigil_care/issues/33).
 
 **After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.

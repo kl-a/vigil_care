@@ -59,6 +59,13 @@ ensure_env_file() {
     sed -i.bak 's/^VIGIL_DEV_LOGIN_ENABLED=false/VIGIL_DEV_LOGIN_ENABLED=true/' "$ROOT/.env" && rm -f "$ROOT/.env.bak"
     ok "Turned the dev login on in .env (dev only)"
   fi
+  # The PBS Refresh needs the PBS API key (README, Getting started); without it the Sample Schedule loads.
+  if grep -qE '^VIGIL_PBS_API_KEY=.+' "$ROOT/.env"; then
+    ok "PBS API key set"
+  else
+    warn "VIGIL_PBS_API_KEY isn't set in .env: the PBS Lookup will show the out-of-date Sample Schedule."
+    warn "  Get the Subscription-Key from the PBS API Catalogue (https://data-api-portal.health.gov.au/apis) and add it to .env."
+  fi
 }
 
 port_in_use() { lsof -nP -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1; }

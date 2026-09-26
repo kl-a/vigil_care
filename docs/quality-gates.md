@@ -45,3 +45,5 @@ v1 processes synthetic data only, but every guardrail runs exactly as it will in
 - [ ] Items in [revisit-later.md](revisit-later.md) marked as needing resolution before real patients are closed (Presidio maturity, eviQ terms of use).
 - [ ] Retention periods and the handling of deletion requests are decided ([revisit-later.md](revisit-later.md) #15).
 - [ ] Dr De Souza has signed off the treatment matching walkthrough ([revisit-later.md](revisit-later.md) #10).
+- [ ] The runbook is written and followed for the prod environment: secrets and their rotation, upgrades, Refreshes, backups and restore tests, Users, incidents ([#32](https://github.com/kl-a/vigil_care/issues/32), [revisit-later.md](revisit-later.md) #25).
+- [ ] Where prod's data and secrets live is decided and recorded in an ADR: each Practice's data kept apart, one shared store for Shared Reference Data, secrets in a secret manager, never in the repo ([revisit-later.md](revisit-later.md) #26).

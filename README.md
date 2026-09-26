@@ -53,6 +53,8 @@ scripts/run-local.sh --dev    # Postgres in Docker; backend + frontend on your m
 scripts/run-local.sh --stop   # stop everything (the database volume is kept)
 ```
 
+**The PBS API key.** The PBS Drug Lookup loads the PBS Schedule from the Department of Health's public PBS API, which needs a Subscription-Key. It's free and needs no login: get it from the [PBS API Catalogue](https://data-api-portal.health.gov.au/apis) and set it in `.env` as `VIGIL_PBS_API_KEY=…`. Never commit it (`.env` is git-ignored). Without it the Lookup shows the bundled Sample Schedule of 1 Sep 2026, which is out of date and for demos only; `run-local.sh` warns you. The public API allows one request every 20 seconds, shared by everyone using it, so a PBS Refresh takes a few minutes, sometimes much longer.
+
 The script checks prerequisites, creates `.env` from `.env.example`, starts Docker Desktop if needed, and picks the next free port if 3000, 8000 or 5432 is taken by another app. It also waits until everything answers. To run Compose yourself: `cp .env.example .env && docker compose up --build`.
 
 - App: http://localhost:3000. In dev, the **dev login** lists the synthetic demo Users (one per Job Title); choose one to sign in as them. Password + 2FA login arrives in Stage 13. The stage demo scripts are in [docs/demos/](docs/demos/).

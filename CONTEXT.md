@@ -195,8 +195,12 @@ The named kind of a Job (e.g. ingest a Document, refresh PBS), contributed by th
 _Avoid_: Job type, task type
 
 **Refresh**:
-A Job that updates Vigil's copy of external reference data (PBS Schedule, eviQ Treatment Protocols, trial registries), started on a schedule or by a developer admin.
+A Job that updates Vigil's Shared Reference Data (PBS Schedule, eviQ Treatment Protocols, trial registries), started on a schedule or by a developer admin.
 _Avoid_: Sync, import
+
+**Shared Reference Data**:
+Public, non-Patient data that every Practice reads from one shared copy: the PBS Schedule, clinical trials and Treatment Protocols. Kept current by Refreshes. A Practice never has its own copy.
+_Avoid_: Master data, global data
 
 **Sample Schedule**:
 A full copy of one past PBS Schedule, bundled with Vigil, that a PBS Refresh loads when the PBS Schedule API can't be reached and no real schedule has ever loaded, so demos work offline. It is out of date by design: always shown as sample data with its Schedule date, for demos only and never for clinical use; the next successful Refresh replaces it.
