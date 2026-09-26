@@ -1,6 +1,6 @@
 # Build Order
 
-> **As of 2026-09-25.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
+> **As of 2026-09-26.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
 
 **Showing screens:** a screen appears for everyone once it's marked `built` in `frontend/lib/screens.ts` (or its Patient tab) and its stage has shipped. Raise `SHIPPED_STAGE` in `frontend/lib/stages.ts` when a stage's demo is ready, and mark it here.
 
@@ -66,6 +66,7 @@ This stage can run alongside Stage 2.
 | 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | 🔨 Built (`stage-3`) |
 | 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | 🔨 Built (`stage-3`) |
 | 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | 🔨 Built (`stage-3`) |
+| 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | ⏭️ Ready |
 
 ### Stages 4–13 (outlines)
 
@@ -75,7 +76,7 @@ This stage can run alongside Stage 2.
 | 5 · Patient Summary | Patient Summary v1 and Open Items, from the hand-entered record | 4 | 📋 Outline |
 | 6 · Document filing | Upload a Patient's Documents (Original encrypted), view them, set Type and date by hand, Hold, move; nothing leaves the Practice | 5 | 📋 Outline |
 | 7 · Redaction Jobs | De-identification trust gate: OCR, masking, Redaction QA, leak check | 6 | 📋 Outline |
-| 8 · Document pipeline | Processes filed Documents: OCR, VLM worker, classification, cloud ledger, Held Documents | 7 | 📋 Outline |
+| 8 · Document pipeline | Processes filed Documents: OCR, VLM worker, classification, cloud ledger, Held Documents | 7, [#31](https://github.com/kl-a/vigil_care/issues/31) (long Jobs keep their claim) | 📋 Outline |
 | 9 · Extraction Review | Extracted Facts reviewed into the same Clinical Record | 8 | 📋 Outline |
 | 10 · Trials | 10a Trial Browser (public data; can start any time after Stage 3), 10b Match Board | 9 | 📋 Outline |
 | 11 · Treatment Options | eviQ + PBS Coverage. **Blocked on eviQ terms of use** ([revisit-later.md](revisit-later.md) #9) | 3, 4 | 📋 Outline |
@@ -105,12 +106,14 @@ flowchart LR
     T9 --> S2
     T24 --> T18[#18 job queue 🔨] --> T19[#19 PBS Refresh 🔨] --> T20[#20 PBS Lookup 🔨] --> T30[#30 whole PBS Schedule 🔨]
     T18 --> T10[#10 Support Views 🔨]
+    T19 --> T31[#31 long Jobs keep their claim ⏭️]
     T20 --> S3((Stage 3 demo))
     T10 --> S3
 ```
 
 **Next up:**
 1. Merge Stage 3 (#18, #19, #10, #20, #30): it's built and shipped, ready for its demo ([docs/demos/stage-3.md](demos/stage-3.md)).
-2. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
+2. #31: long-running Jobs keep their claim, and the PBS Refresh logs each API request (after the merge; before Stage 8 at the latest).
+3. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
 
 **After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.
