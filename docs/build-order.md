@@ -1,6 +1,6 @@
 # Build Order
 
-> **As of 2026-09-26.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
+> **As of 2026-09-27.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
 
 **Showing screens:** a screen appears for everyone once it's marked `built` in `frontend/lib/screens.ts` (or its Patient tab) and its stage has shipped. Raise `SHIPPED_STAGE` in `frontend/lib/stages.ts` when a stage's demo is ready, and mark it here.
 
@@ -61,19 +61,47 @@ This stage can run alongside Stage 2.
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | 🔨 Built (`stage-3`) |
-| 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | 🔨 Built (`stage-3`) |
-| 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | 🔨 Built (`stage-3`) |
-| 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | 🔨 Built (`stage-3`) |
-| 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | 🔨 Built (`stage-3`) |
-| 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | 🔨 Built (`stage-3`) |
+| 1 | [#18](https://github.com/kl-a/vigil_care/issues/18) | Job queue and Refresh Jobs | #6, #24 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
+| 2 | [#19](https://github.com/kl-a/vigil_care/issues/19) | PBS Refresh | #18 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
+| 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
+| 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
+| 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
+| 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 
-### Stages 4–13 (outlines)
+### Stage 4 · Clinical Record by hand
+
+**Demo** (in three parts, each shipped as it's built): build Jane Citizen's record by hand. 4a: breast cancer with Stage, HER2 3+ and ER+ history, a Recurrence. 4b: adjuvant then palliative first-line courses (Line of Therapy derived) and current Medications with PBS links. 4c: the latest bloods, a CT with its Response Assessment, the Management Plan and a Next Step. Show that a secretary can't record a Stage, and that with Oncology switched off the cancer details stay visible read-only. Plan: design doc §15 Stage 4.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#35](https://github.com/kl-a/vigil_care/issues/35) | Entering the Clinical Record by hand (provenance, Verification, reason once per save), and Conditions | none | ⏭️ Ready |
+| 1 | [#36](https://github.com/kl-a/vigil_care/issues/36) | Drug reference built from the PBS Schedule (4b) | none | ⏭️ Ready |
+| 2 | [#37](https://github.com/kl-a/vigil_care/issues/37) | Cancer Types (MeSH) and Cancer Diagnosis (4a) | #35 | ⏳ Blocked |
+| 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | ⏳ Blocked |
+| 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | ⏳ Blocked |
+| 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | ⏳ Blocked |
+| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | ⏳ Blocked |
+| 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | ⏳ Blocked |
+| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments (4c) | #37, #40 | ⏳ Blocked |
+| 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c) | #37 | ⏳ Blocked |
+| 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes, and **ship 4c** (4c) | #35 | ⏳ Blocked |
+
+### Stage 5 · Patient Summary
+
+**Demo:** open the fully recorded demo Patient's Summary as it would look in a consultation, follow a value back to who entered it, then work the Open Items on the Dashboard. Plan: design doc §15 Stage 5.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient | #38, #39, #41, #42, #43, #44, #45 | ⏳ Blocked |
+| 2 | [#47](https://github.com/kl-a/vigil_care/issues/47) | Patient Summary v1 | #46 | ⏳ Blocked |
+| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | ⏳ Blocked |
+
+After each stage ships, Dr De Souza tries it hands-on in dev ([revisit-later.md](revisit-later.md), "For Dr De Souza").
+
+### Stages 6–13 (outlines)
 
 | Stage | Shows stakeholders | Depends on | Status |
 |---|---|---|---|
-| 4 · Clinical Record by hand | 4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan | 2, 3 | 📋 Outline |
-| 5 · Patient Summary | Patient Summary v1 and Open Items, from the hand-entered record | 4 | 📋 Outline |
 | 6 · Document filing | Upload a Patient's Documents (Original encrypted), view them, set Type and date by hand, Hold, move; nothing leaves the Practice | 5 | 📋 Outline |
 | 7 · Redaction Jobs | De-identification trust gate: OCR, masking, Redaction QA, leak check | 6 | 📋 Outline |
 | 8 · Document pipeline | Processes filed Documents: OCR, VLM worker, classification, cloud ledger, Held Documents | 7, [#31](https://github.com/kl-a/vigil_care/issues/31) (long Jobs keep their claim) | 📋 Outline |
@@ -104,17 +132,34 @@ flowchart LR
     T7 --> T9
     T17 --> S2((Stage 2 demo))
     T9 --> S2
-    T24 --> T18[#18 job queue 🔨] --> T19[#19 PBS Refresh 🔨] --> T20[#20 PBS Lookup 🔨] --> T30[#30 whole PBS Schedule 🔨]
-    T18 --> T10[#10 Support Views 🔨]
-    T19 --> T31[#31 long Jobs keep their claim 🔨]
+    T24 --> T18[#18 job queue ✅] --> T19[#19 PBS Refresh ✅] --> T20[#20 PBS Lookup ✅] --> T30[#30 whole PBS Schedule ✅]
+    T18 --> T10[#10 Support Views ✅]
+    T19 --> T31[#31 long Jobs keep their claim ✅]
     T20 --> S3((Stage 3 demo))
+    S3 --> T35[#35 Clinical Record entry + Conditions] --> T37[#37 Cancer Diagnosis]
+    T19 --> T36[#36 drug reference]
+    T37 --> T38[#38 Biomarkers] & T39[#39 Recurrences] & T40[#40 Treatment Courses] & T44[#44 ECOG/CNS]
+    T39 --> S4a((4a demo))
+    T38 --> S4a
+    T40 --> T41[#41 Medication Manager] --> S4b((4b demo))
+    T36 --> T41
+    T35 --> T42[#42 labs] & T45[#45 plan and notes]
+    T40 --> T43[#43 imaging + Response]
+    T45 --> S4c((4c demo))
+    T42 --> S4c
+    T43 --> S4c
+    T44 --> S4c
+    S4a & S4b & S4c --> T46[#46 demo Patient] --> T47[#47 Patient Summary]
+    T43 --> T48[#48 Open Items + Dashboard]
+    T47 --> S5((Stage 5 demo))
+    T48 --> S5
     T10 --> S3
 ```
 
 **Next up:**
-1. Merge Stage 3 (#18, #19, #10, #20, #30, #31): it's built and shipped, ready for its demo ([docs/demos/stage-3.md](demos/stage-3.md)).
-2. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
+1. Stage 4: start #35 (the entry pattern every Stage 4 ticket copies) and, in parallel, #36 (drug reference). Then 4a (#37 → #38, #39), 4b (#40 → #41) and 4c (#42, #43, #44, #45) as their blockers clear.
+2. Stage 5 once Stage 4's parts are in: #46 → #47, and #48.
 
 **Provisional decisions:** [docs/revisit-later.md](revisit-later.md) lists them with their triggers; working through them is tracked in [#33](https://github.com/kl-a/vigil_care/issues/33).
 
-**After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.
+**After Stage 5:** Stages 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.

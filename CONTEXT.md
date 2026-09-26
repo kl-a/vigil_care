@@ -181,7 +181,7 @@ _Avoid_: PASS/FAIL, Uncertain criterion
 ### Work
 
 **Open Item**:
-Anything about a Patient that needs a User's attention: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step, a Stale Match Run, conflicting Biomarker results. Shown per Patient and practice-wide.
+Anything about a Patient that needs a User to act: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step coming due, a Stale Match Run, Differing Biomarker Results, a Suspected Recurrence. Shown per Patient and practice-wide. It clears only when someone acts on what's behind it, never by dismissing it.
 _Avoid_: Task, alert, to-do
 
 ### Operations
@@ -247,12 +247,16 @@ Where a Cancer Diagnosis stands now: localised, locally advanced or metastatic. 
 _Avoid_: Current stage, status
 
 **Recurrence**:
-A return of an existing Cancer Diagnosis's cancer at a recorded site (local, regional or distant), attributed to that Cancer Diagnosis by a clinician, usually on the strength of a biopsy report. Until attributed it is a Suspected Recurrence; if the biopsy shows a different cancer, it is a new Cancer Diagnosis instead.
+A return of an existing Cancer Diagnosis's cancer at a recorded site (local, regional or distant), attributed to that Cancer Diagnosis by a clinician, usually on the strength of a biopsy report. Until a clinician resolves it, it is a Suspected Recurrence: confirmed, ruled out, or, if the biopsy shows a different cancer, a new Cancer Diagnosis instead.
 _Avoid_: Relapse (as a separate record)
 
 **Biomarker**:
-A molecular, genomic or IHC result for a Cancer Diagnosis, tied to its specimen and date (e.g. EGFR exon 19 deletion, HER2 3+, PD-L1 TPS 60%). Every result is kept; the most recent is current, and disagreements between results are surfaced, never silently resolved. Subtypes are derived from Biomarkers.
+A molecular, genomic or IHC result for a Cancer Diagnosis, tied to its specimen and date (e.g. EGFR exon 19 deletion, HER2 3+, PD-L1 TPS 60%). Every result is kept; the most recent is current, and Differing Biomarker Results are surfaced, never silently resolved. Subtypes are derived from Biomarkers.
 _Avoid_: Molecular result, marker, mutation (as the general term)
+
+**Differing Biomarker Results**:
+Results for the same Biomarker (and variant) of one Cancer Diagnosis whose recorded result categories aren't all the same (e.g. HER2 3+ on the primary, negative on a liver biopsy). Shown side by side with specimen and dates, never interpreted: Vigil doesn't say why they differ or what to do.
+_Avoid_: Discordance, conflicting results, biomarker mismatch
 
 **Line of Therapy**:
 The ordinal given only to systemic Treatment Courses in the advanced or metastatic setting. Adjuvant and neoadjuvant courses, surgery and radiation get no line number.
