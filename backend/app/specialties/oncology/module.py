@@ -2,6 +2,7 @@
 fact kinds, Document Types, trial vocabulary and the eviQ source arrive with Stages 4, 9, 10 and 11."""
 
 from app.modules.registry.contract import PatientTab, SpecialtyModule, UiSection
+from app.specialties.oncology.read_only import plain_facts
 from app.specialties.oncology.verification_rights import ONCOLOGY_FACT_RIGHTS
 
 MODULE = SpecialtyModule(
@@ -19,4 +20,5 @@ MODULE = SpecialtyModule(
         UiSection("cns", "clinical-data-tabs", "CNS", 40),
     ),
     patient_tabs=(PatientTab("treatment-options", "Treatment Options"),),
+    read_only_view=plain_facts,
 )

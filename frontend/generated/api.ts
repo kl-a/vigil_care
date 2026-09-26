@@ -72,6 +72,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/clinical/entry-rights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Entry Rights
+         * @description Which kinds of Clinical Record value the signed-in User may enter by hand.
+         */
+        get: operations["entry_rights_clinical_entry_rights_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/drugs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Drugs
+         * @description Drugs in the current PBS Schedule by generic or brand name, for picking a Medication.
+         */
+        get: operations["search_drugs_drugs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -248,6 +288,42 @@ export interface paths {
         patch: operations["change_member_patients__patient_id__care_team__member_id__patch"];
         trace?: never;
     };
+    "/patients/{patient_id}/conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Conditions */
+        get: operations["list_conditions_patients__patient_id__conditions_get"];
+        put?: never;
+        /** Add Condition */
+        post: operations["add_condition_patients__patient_id__conditions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/conditions/{condition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Condition */
+        delete: operations["remove_condition_patients__patient_id__conditions__condition_id__delete"];
+        options?: never;
+        head?: never;
+        /** Change Condition */
+        patch: operations["change_condition_patients__patient_id__conditions__condition_id__patch"];
+        trace?: never;
+    };
     "/patients/{patient_id}/identity": {
         parameters: {
             query?: never;
@@ -263,6 +339,23 @@ export interface paths {
         head?: never;
         /** Change Identity */
         patch: operations["change_identity_patients__patient_id__identity_patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/inactive-module-facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inactive Module Facts */
+        get: operations["inactive_module_facts_patients__patient_id__inactive_module_facts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/pbs/drugs": {
@@ -655,6 +748,44 @@ export interface components {
             start_date: string | null;
         };
         /**
+         * ConditionChange
+         * @description Only the fields that change, and why (once for the whole save).
+         */
+        ConditionChange: {
+            /** Name */
+            name?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Onset Date */
+            onset_date?: string | null;
+            /** Reason */
+            reason: string;
+            /** Status */
+            status?: ("active" | "resolved") | null;
+        };
+        /** ConditionRow */
+        ConditionRow: {
+            entered: components["schemas"]["Entered"] | null;
+            /** Extended By Module */
+            extended_by_module: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Notes */
+            notes: string | null;
+            /** Onset Date */
+            onset_date: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "resolved";
+        };
+        /**
          * CurrentUser
          * @description The signed-in User, acting in one Practice: `job_title` is the one they hold there.
          */
@@ -716,6 +847,45 @@ export interface components {
              * Format: uuid
              */
             user_id: string;
+        };
+        /**
+         * DrugOption
+         * @description A drug the Medication Manager can pick, from the drug reference.
+         */
+        DrugOption: {
+            /** Atc Code */
+            atc_code: string | null;
+            /** Brand Names */
+            brand_names: string[];
+            /** Generic Name */
+            generic_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Cancer Drug */
+            is_cancer_drug: boolean;
+            /** Pbs Item Codes */
+            pbs_item_codes: string[];
+        };
+        /**
+         * Entered
+         * @description Who entered a value by hand, their Job Title then, and when (its first Verification).
+         */
+        Entered: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** By */
+            by: string;
+            /**
+             * Job Title
+             * @enum {string}
+             */
+            job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -926,6 +1096,18 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /**
+         * ModuleFacts
+         * @description A Specialty Module inactive at this Practice, and its recorded facts for the Patient in plain words.
+         */
+        ModuleFacts: {
+            /** Display Name */
+            display_name: string;
+            /** Facts */
+            facts: string[];
+            /** Module */
+            module: string;
+        };
         /** ModuleStatus */
         ModuleStatus: {
             /** Display Name */
@@ -960,6 +1142,21 @@ export interface components {
             role: "treating_oncologist" | "referring_gp" | "referring_specialist" | "surgeon" | "radiation_oncologist" | "trial_site_contact";
             /** Start Date */
             start_date?: string | null;
+        };
+        /** NewCondition */
+        NewCondition: {
+            /** Name */
+            name: string;
+            /** Notes */
+            notes?: string | null;
+            /** Onset Date */
+            onset_date?: string | null;
+            /**
+             * Status
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "resolved";
         };
         /**
          * NewPatient
@@ -1684,6 +1881,59 @@ export interface operations {
             };
         };
     };
+    entry_rights_clinical_entry_rights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+        };
+    };
+    search_drugs_drugs_get: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrugOption"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_health_get: {
         parameters: {
             query?: never;
@@ -2071,6 +2321,142 @@ export interface operations {
             };
         };
     };
+    list_conditions_patients__patient_id__conditions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_condition_patients__patient_id__conditions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewCondition"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_condition_patients__patient_id__conditions__condition_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                condition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Removal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_condition_patients__patient_id__conditions__condition_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                condition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConditionChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     change_identity_patients__patient_id__identity_patch: {
         parameters: {
             query?: never;
@@ -2093,6 +2479,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inactive_module_facts_patients__patient_id__inactive_module_facts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModuleFacts"][];
                 };
             };
             /** @description Validation Error */

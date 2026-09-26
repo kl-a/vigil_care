@@ -1,6 +1,7 @@
 "use client";
 
 import { notFound } from "next/navigation";
+import { ClinicalData } from "@/components/clinical/ClinicalData";
 import { PatientOverview } from "@/components/patients/PatientOverview";
 import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
 import { SectionSlot } from "@/components/SectionSlot";
@@ -14,6 +15,7 @@ export default function PatientTabPage({ params }: { params: { tab: string } }) 
   if (!tab && !modulesReady) return <p role="status" className="p-5 text-sm text-muted-foreground">Loading…</p>;
   if (!tab) notFound();
   if (tab.segment === "overview") return <PatientOverview />;
+  if (tab.segment === "clinical-data") return <ClinicalData />;
   return (
     <ScreenPlaceholder path={`/patients/[id]/${tab.segment}`}>
       {tab.slot && <SectionSlot slot={tab.slot} />}

@@ -74,17 +74,17 @@ This stage can run alongside Stage 2.
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#35](https://github.com/kl-a/vigil_care/issues/35) | Entering the Clinical Record by hand (provenance, Verification, reason once per save), and Conditions | none | ⏭️ Ready |
-| 1 | [#36](https://github.com/kl-a/vigil_care/issues/36) | Drug reference built from the PBS Schedule (4b) | none | ⏭️ Ready |
-| 2 | [#37](https://github.com/kl-a/vigil_care/issues/37) | Cancer Types (MeSH) and Cancer Diagnosis (4a) | #35 | ⏳ Blocked |
+| 1 | [#35](https://github.com/kl-a/vigil_care/issues/35) | Entering the Clinical Record by hand (provenance, Verification, reason once per save), and Conditions | none | 🔨 Built (`stage-4`) |
+| 1 | [#36](https://github.com/kl-a/vigil_care/issues/36) | Drug reference built from the PBS Schedule (4b) | none | 🔨 Built (`stage-4`) |
+| 2 | [#37](https://github.com/kl-a/vigil_care/issues/37) | Cancer Types (MeSH) and Cancer Diagnosis (4a) | #35 | ⏭️ Ready |
 | 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | ⏳ Blocked |
 | 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | ⏳ Blocked |
 | 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | ⏳ Blocked |
 | 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | ⏳ Blocked |
-| 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | ⏳ Blocked |
+| 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | ⏭️ Ready |
 | 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments (4c) | #37, #40 | ⏳ Blocked |
 | 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c) | #37 | ⏳ Blocked |
-| 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes, and **ship 4c** (4c) | #35 | ⏳ Blocked |
+| 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes, and **ship 4c** (4c) | #35 | ⏭️ Ready |
 
 ### Stage 5 · Patient Summary
 
@@ -136,8 +136,8 @@ flowchart LR
     T18 --> T10[#10 Support Views ✅]
     T19 --> T31[#31 long Jobs keep their claim ✅]
     T20 --> S3((Stage 3 demo))
-    S3 --> T35[#35 Clinical Record entry + Conditions] --> T37[#37 Cancer Diagnosis]
-    T19 --> T36[#36 drug reference]
+    S3 --> T35[#35 Clinical Record entry + Conditions 🔨] --> T37[#37 Cancer Diagnosis]
+    T19 --> T36[#36 drug reference 🔨]
     T37 --> T38[#38 Biomarkers] & T39[#39 Recurrences] & T40[#40 Treatment Courses] & T44[#44 ECOG/CNS]
     T39 --> S4a((4a demo))
     T38 --> S4a

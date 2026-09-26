@@ -23,14 +23,5 @@ export const changeCareTeamMember = (patientId: string, memberId: string, change
   request<CareTeamRow>(`/patients/${patientId}/care-team/${memberId}`, { method: "PATCH", body: JSON.stringify(change) });
 export const fetchProviderPatients = (providerId: string) => request<ProviderPatientRow[]>(`/providers/${providerId}/patients`);
 
-/** "01/03/2024", or "—". */
-export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const [year, month, day] = iso.split("-");
-  return `${day}/${month}/${year}`;
-}
-
-/** Today in the browser's calendar, as the API's ISO date. */
-export function todayIso(now: Date = new Date()): string {
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-}
+// Dates moved to lib/dates; re-exported for the Care Team screens that import them from here.
+export { formatDate, todayIso } from "./dates";

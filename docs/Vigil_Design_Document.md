@@ -381,7 +381,7 @@ erDiagram
     MEDICATION }o--o| TREATMENT_COURSE : part_of
     MEDICATION }o--o| DRUG_REFERENCE : resolved_to
     MEDICATION ||--o{ MEDICATION_CHANGE_LOG : tracks
-    DRUG_REFERENCE }o--o| PBS_ITEM : listed_on
+    DRUG_REFERENCE }o..o{ PBS_ITEM : "built from (item codes)"
     PATIENT ||--o{ MANAGEMENT_PLAN : has
     PATIENT ||--o{ NEXT_STEP : has
     PATIENT ||--o{ CLINICAL_NOTE : has
@@ -639,7 +639,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 |-------|---------|-------------|
 | `treatment_course` | Any course of treatment for a Condition (**Core**): systemic, procedure/surgery, radiation or other | `condition_id`, `modality` (systemic/surgery/radiation; modules may add values), `intent`, `regimen_name` (systemic only), `regimen_planned` (JSONB: planned drugs and doses), `start_date`, `end_date` (null = ongoing; set only when a User records that the course ended), `reason_stopped`, `details` (JSONB: surgery = procedure, margins; radiation = site, dose, fractions), + provenance |
 | `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable: **a clinician's override** with a reason; when null the line is derived, numbering the Cancer Diagnosis's palliative systemic courses by start date; see the Line of Therapy rule), `treatment_protocol_id` (nullable). **Best response is derived**, not stored: the best direction among the Response Assessments dated during the course (responding > stable > progressing), linked to its source (the `best_response` column is dropped in Stage 4). |
-| `drug_reference` | Canonical drug lookup (Shared Reference Data) | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_id`, `common_doses`, `common_routes`. **Built from the current PBS Schedule** and rebuilt after each PBS Refresh (Stage 4): one row per PBS drug, `is_cancer_drug` from ATC L01/L02, linked to its PBS Items (the single `pbs_item_id` becomes a link to all of them). A Medication not in it is entered as free text. A fuller source (AMT) may come later ([revisit-later.md](revisit-later.md) #34). |
+| `drug_reference` | Canonical drug lookup (Shared Reference Data) | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_codes` (JSONB: its PBS Items' codes; replaced the single `pbs_item_id` in #36, as PBS Items are replaced each Refresh), `in_current_schedule`, `common_doses`, `common_routes`. **Built from the current PBS Schedule** by the PBS Refresh's `drug_reference` step (#36): one row per PBS drug (unique `generic_name`), its brands, most common ATC code, `is_cancer_drug` from ATC L01/L02. A drug that leaves the Schedule stays, as Medications may point at it, with `in_current_schedule = false`, and is no longer offered. A Medication not in it is entered as free text. A fuller source (AMT) may come later ([revisit-later.md](revisit-later.md) #34). |
 | `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set when the drug belongs to a Treatment Course); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
 | `medication_change_log` | Audit trail of Medication changes. Never changes once written. | As v1.1 (`medication_id`, `change_type`, `previous_value`, `new_value`, `changed_at`, `reason`), with `changed_by_user_id` (replaces `changed_by` → provider) |
 
@@ -842,9 +842,9 @@ Write to medication (source = 'document_extracted') + verification row
 
 **Conditions** follow the same shape, with string/synonym matching ("T2DM" ↔ "type 2 diabetes") in place of `drug_reference`. Whether to match against a standard terminology (SNOMED CT-AU / ICD-10-AM) is open ([revisit-later.md](revisit-later.md) #6).
 
-### 7.3 Drug Reference Table Seeding
+### 7.3 The Drug Reference
 
-Unchanged from v1.1. `drug_reference` is pre-seeded from PBS data (oncology-listed drugs), eviQ protocol drugs, and a curated list of ~500 common non-cancer medications (`data/seed/common_medications.json`, shipped with the repo). Seed script: `backend/scripts/seed_drug_reference.py`.
+`drug_reference` is **built from the PBS Schedule** (#36): every PBS Refresh ends with the Medications module's `drug_reference` step, composed in `app/jobs.py`, which rebuilds it from the schedule Vigil shows (the whole Schedule, or the Sample Schedule offline), one row per PBS drug. It isn't seeded by hand. A Medication not on the PBS is entered as free text; a fuller source (AMT) may come later ([revisit-later.md](revisit-later.md) #34). A database whose schedule loaded before #36 gets its drug reference at the next PBS Refresh (a developer admin can start one).
 
 ### 7.4 Numeric Cross-check
 
@@ -975,7 +975,7 @@ The adapter:
 The adapter pulls the whole PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug` (Stage 11). Built in #19 as the Refresh Job Kind `refresh_pbs`, and widened to every PBS Item in #30 (`backend/app/modules/pbs/`):
 
 - **Source:** the public PBS Schedule API v3 (`data-api.health.gov.au/pbs/api/v3`), with the Subscription-Key set as `VIGIL_PBS_API_KEY` in `.env`, never committed (one request every 20 seconds, **shared by every user of the public API**, so a Refresh takes a few minutes, and 20+ when others are busy; without a key it fails with `pbs_api_key_missing`). Newcomers get the key from the PBS API Catalogue (README, Getting started). In prod, secrets and the shared store for Shared Reference Data follow [revisit-later.md](revisit-later.md) #26; the faster embargo API is an option there. Every PBS Item is kept (about 7,000), with its ATC codes, its program's title (from `/programs`) and its pack size. ATC files a drug by its main use, so the Lookup's therapeutic groups are for browsing, not a statement of what a drug may be used for; "Cancer drugs" is ATC L01 (antineoplastic agents) and L02 (endocrine therapy). Each PBS restriction on an item becomes one indication: its text gives the indication and the prescribing conditions, and its authority method the level (Restricted, Authority Required, or Authority Required (streamlined)).
-- **Steps:** `fetch` asks the API which schedule is current; `store` fetches its items and upserts them, with the Refresh's `pbs_refresh_log` row, in one transaction.
+- **Steps:** `fetch` asks the API which schedule is current; `store` fetches its items and upserts them, with the Refresh's `pbs_refresh_log` row, in one transaction; `drug_reference` rebuilds the Medication Manager's drug reference from the schedule now shown (#36).
 - **Request log:** the worker logs each API request: path, page, HTTP status (or `unreachable`), how long it took and how long it waited its turn; never the key or the rest of the query (#31). A timed Refresh is about 3 minutes; a much slower one shows whether the API was throttling (429) or slow.
 - **Failure:** every attempt writes a `pbs_refresh_log` row. A failed Refresh keeps the previous schedule visible (the lookup warns). If the API can't be reached (or there's no key) and Vigil has no schedule from it yet, the **Sample Schedule** (`sample_schedule.json.gz`: the whole PBS Schedule of 1 September 2026) loads instead, logged `partial` with `source = 'sample'` and shown as out of date, for demos only, not for clinical use, so demos work offline.
 - **Snapshots:** `backend/scripts/pbs_snapshot.py` takes the Sample Schedule and the tests' recorded fixture from the live API in one run.
@@ -1147,8 +1147,12 @@ POST   /redaction-jobs/{id}/files/{fid}/burn-in
 GET    /redaction-jobs/{id}/files/{fid}/download   Signed-off De-identified Export
 
 # Clinical Record
-GET    /patients/{id}/conditions            Conditions (Core); ?view=comorbidities&focus={condition_id}
-POST   /patients/{id}/conditions            Direct entry
+GET    /clinical/entry-rights               Which Clinical Record kinds the signed-in User may enter (Verification Rights)
+GET    /patients/{id}/conditions            Conditions (Core), active first; ?view=comorbidities&focus={condition_id} later
+POST   /patients/{id}/conditions            Direct entry (a Verification)
+PATCH  /patients/{id}/conditions/{cid}      Correct: only the changed fields + `reason` (one per save)
+DELETE /patients/{id}/conditions/{cid}      Remove: soft delete with `reason`
+GET    /patients/{id}/inactive-module-facts Facts of modules inactive at this Practice, read-only in plain words
 GET    /conditions/{id}/cancer-diagnosis    (Oncology) Stage, Disease Extent, Biomarkers, Recurrences
 PUT    /conditions/{id}/cancer-diagnosis    (Oncology) Create/update: clinician, reauth
 POST   /recurrences/{id}/attribute          Confirm / reclassify as new primary (clinician, reauth)
@@ -1171,6 +1175,7 @@ GET    /patients/{id}/timeline
 DELETE /{record-type}/{id}                  Soft delete with reason (verification row); never hard
 
 # Medications (as v1.1, with User-based verification)
+GET    /drugs?q=                            The drug reference (built from the PBS Schedule), by generic or brand name
 GET    /patients/{id}/medications
 POST   /patients/{id}/medications
 PATCH  /medications/{id}
@@ -1385,7 +1390,7 @@ vigil/
 │   │
 │   ├── alembic/
 │   ├── scripts/
-│   │   ├── seed_drug_reference.py
+│   │   ├── pbs_snapshot.py          # Sample Schedule + recorded PBS API fixture, from the live API
 │   │   └── backup_restore.py        # Encrypted local backup + restore test
 │   ├── tests/
 │   │   ├── modules/
