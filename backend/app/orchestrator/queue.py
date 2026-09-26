@@ -9,7 +9,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from datetime import timedelta
 from typing import Any
 
-from sqlalchemy import ColumnElement, func, or_, select
+from sqlalchemy import ColumnElement, func, or_, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.seams.queue import (
@@ -95,6 +95,15 @@ class DbJobQueue:
                     attempt=job.attempts,
                     completed_steps={step.name: dict(step.output) for step in done},
                 )
+
+    def renew(self, job_id: uuid.UUID, worker_id: str) -> bool:
+        with self._sessions.begin() as db:
+            renewed = db.execute(
+                update(Job)
+                .where(Job.id == job_id, Job.status == "running", Job.locked_by == worker_id)
+                .values(locked_at=func.now())
+            )
+            return bool(renewed.rowcount == 1)  # type: ignore[attr-defined]
 
     def step_done(self, job_id: uuid.UUID, name: str, output: Mapping[str, Any]) -> None:
         check_code(name)

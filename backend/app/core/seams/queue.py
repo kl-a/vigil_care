@@ -1,9 +1,10 @@
 """Job queue interface (ADR 0003): durable background work. The database queue now; a managed queue later.
 
-Jobs run as named steps. A retry resumes after the last completed step, so each step must be safe to run
-again if a worker dies between doing it and recording it (at-least-once). Payloads, step outputs and errors
-hold **IDs only** (design doc §6.4): UUIDs, counts, flags, dates and short codes, never names, identifiers,
-text or file contents. The queue refuses anything else. Contract tests: tests/seams/test_queue.py.
+Jobs run as named steps. A worker renews its claim while it runs a Job; a Job whose claim goes unrenewed for
+the lease belonged to a worker that died, and is claimed again. A retry resumes after the last completed step,
+so each step must be safe to run again if a worker dies between doing it and recording it (at-least-once).
+Payloads, step outputs and errors hold **IDs only** (design doc §6.4): UUIDs, counts, flags, dates and short
+codes, never names, identifiers, text or file contents. The queue refuses anything else. Contract tests: tests/seams/test_queue.py.
 """
 
 import re
@@ -96,6 +97,11 @@ class JobQueue(Protocol):
         """The next due Job of one of `kinds`, locked for this worker, or None. A Job still running after
         `lease` belonged to a worker that died, and is claimed again. A Job whose module was switched off for
         its Practice is cancelled, not run."""
+        ...
+
+    def renew(self, job_id: uuid.UUID, worker_id: str) -> bool:
+        """Renews `worker_id`'s claim on a running Job, so it isn't claimed again after the lease while its worker
+        is still working. False, changing nothing, if the Job isn't running or another worker holds it now."""
         ...
 
     def step_done(self, job_id: uuid.UUID, name: str, output: Mapping[str, Any]) -> None: ...

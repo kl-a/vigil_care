@@ -3,6 +3,7 @@ scheduled Jobs (e.g. the monthly PBS Refresh) when they fall due.
 """
 
 import logging
+import time
 import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
@@ -107,6 +108,52 @@ def test_an_unexpected_error_is_recorded_by_type_never_by_message(
     assert (status.status, status.last_error) == ("failed", "unexpected_error:valueerror")
     assert "Jane Citizen" not in caplog.text
     assert str(job_id) in caplog.text
+
+
+def test_a_job_keeps_its_claim_while_a_long_step_runs(
+    queue: DbJobQueue, kind: str, database: DatabaseSettings, seeded: Seed
+) -> None:
+    """The worker renews its claim while a step runs (e.g. a PBS Refresh waiting on the API), so another worker
+    doesn't take the Job over after the lease (#31)."""
+
+    def slow(ctx: JobContext) -> dict[str, Any]:
+        # As if the step had been running for an hour: only a renewal brings the claim up to date.
+        seeded.conn.execute("UPDATE job SET locked_at = now() - interval '1 hour' WHERE id = %s", [ctx.job.id])
+        time.sleep(0.5)
+        [age] = seeded.conn.execute("SELECT now() - locked_at FROM job WHERE id = %s", [ctx.job.id]).fetchone()  # type: ignore[misc]
+        return {"renewed": age < timedelta(minutes=1)}
+
+    registry = JobRegistry()
+    registry.register(JobHandler(kind, steps=(("slow", slow),)))
+    job_id = queue.enqueue(NewJob(kind=kind))
+    settings = make_settings(database_url=database.role_url(APP_ROLE))
+    Worker(queue, registry, settings, worker_id="test-worker", renew_every=0.05).run_once()
+    status = queue.status(job_id)
+    assert status.status == "succeeded"
+    assert status.steps[0].output == {"renewed": True}
+
+
+@pytest.mark.parametrize("outcome", ["succeeds", "fails"])
+def test_a_worker_that_lost_its_claim_writes_nothing_more(
+    queue: DbJobQueue, kind: str, database: DatabaseSettings, seeded: Seed, outcome: str
+) -> None:
+    """If another worker took the Job over (this one's claim lapsed), this worker's step result is dropped: it
+    never records a step, succeeds or fails the Job the other worker now runs (#31)."""
+
+    def taken_over(ctx: JobContext) -> dict[str, Any]:
+        seeded.conn.execute("UPDATE job SET locked_by = 'other-worker' WHERE id = %s", [ctx.job.id])
+        if outcome == "fails":
+            raise JobFailed("source_unreachable")
+        return {"item_count": 3}
+
+    registry = JobRegistry()
+    registry.register(JobHandler(kind, steps=(("fetch", taken_over), ("store", taken_over))))
+    job_id = queue.enqueue(NewJob(kind=kind))
+    worker(queue, registry, database).run_once()
+    status = queue.status(job_id)
+    assert (status.status, status.attempts, status.last_error, status.steps) == ("running", 1, None, [])
+    [locked_by] = seeded.conn.execute("SELECT locked_by FROM job WHERE id = %s", [job_id]).fetchone()  # type: ignore[misc]
+    assert locked_by == "other-worker"
 
 
 def test_a_scheduled_job_is_enqueued_once_when_due(queue: DbJobQueue, kind: str, database: DatabaseSettings) -> None:

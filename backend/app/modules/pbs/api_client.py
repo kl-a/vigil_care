@@ -8,6 +8,7 @@ Tests give the client a recorded fixture (tests/fixtures/pbs_api.json) through `
 """
 
 import json
+import logging
 import math
 import re
 import socket
@@ -22,6 +23,8 @@ from html import unescape
 from typing import Any
 
 from app.modules.pbs.schedule import Copayments, Listing, Schedule, ScheduleItem, ScheduleRef, SourceUnreachable
+
+log = logging.getLogger("vigil.pbs")
 
 # A GET of `path` with query `params`, returning the decoded JSON body. Raises SourceUnreachable.
 Transport = Callable[[str, Mapping[str, str | int]], Mapping[str, Any]]
@@ -49,7 +52,9 @@ AUTHORITY_METHODS = {
 
 
 class HttpTransport:
-    """GETs from the live API with the subscription key, at most one request per `min_interval` seconds."""
+    """GETs from the live API with the subscription key, at most one request per `min_interval` seconds. Logs each
+    request (#31): its path, page, HTTP status, how long it took and how long it waited its turn; never the key
+    or the rest of the query."""
 
     RATE_LIMIT_RETRIES = 3
 
@@ -60,12 +65,14 @@ class HttpTransport:
         min_interval: float = 20.0,
         timeout: float = 120.0,
         sleep: Callable[[float], None] = time.sleep,
+        urlopen: Callable[..., Any] = urllib.request.urlopen,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._key = subscription_key
         self._min_interval = min_interval
         self._timeout = timeout
         self._sleep = sleep
+        self._urlopen = urlopen
         self._last: float | None = None
 
     def __call__(self, path: str, params: Mapping[str, str | int]) -> Mapping[str, Any]:
@@ -73,27 +80,43 @@ class HttpTransport:
             raise SourceUnreachable("pbs_api_key_missing")
         url = f"{self._base_url}{path}?{urllib.parse.urlencode(params)}"
         request = urllib.request.Request(url, headers={"Subscription-Key": self._key, "Accept": "application/json"})
+        page = params.get("page", "-")
         for _ in range(self.RATE_LIMIT_RETRIES):
-            self._wait_turn()
+            waited = self._wait_turn()
+            started = time.monotonic()
+            status: int | str = "unreachable"
             try:
-                with urllib.request.urlopen(request, timeout=self._timeout) as response:
+                with self._urlopen(request, timeout=self._timeout) as response:
+                    status = 200
                     body: Mapping[str, Any] = json.load(response)
-                    return body
+                return body
             except urllib.error.HTTPError as error:
+                status = error.code
                 if error.code == 429:
                     continue
                 raise SourceUnreachable("pbs_api_refused" if error.code in (401, 403) else "pbs_api_unreachable") from None
             except (urllib.error.URLError, socket.timeout, ConnectionError):
                 raise SourceUnreachable("pbs_api_unreachable") from None
             except ValueError:
+                status = "bad_response"
                 raise SourceUnreachable("pbs_api_bad_response") from None
+            finally:
+                retrying = " (rate limited: retrying)" if status == 429 else ""
+                log.info(
+                    "pbs api %s page=%s: %s in %.1fs, waited %.1fs%s",
+                    path, page, status, time.monotonic() - started, waited, retrying,
+                )
         raise SourceUnreachable("pbs_api_rate_limited")
 
-    def _wait_turn(self) -> None:
+    def _wait_turn(self) -> float:
+        """Sleeps until this request's turn; returns how long."""
         now = time.monotonic()
+        waited = 0.0
         if self._last is not None and now - self._last < self._min_interval:
-            self._sleep(self._min_interval - (now - self._last))
+            waited = self._min_interval - (now - self._last)
+            self._sleep(waited)
         self._last = time.monotonic()
+        return waited
 
 
 class PbsApiClient:

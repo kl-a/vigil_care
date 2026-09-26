@@ -66,7 +66,7 @@ This stage can run alongside Stage 2.
 | 2 | [#10](https://github.com/kl-a/vigil_care/issues/10) | Support Views without Patient data (+ no-Patient-data gate) | #18 | 🔨 Built (`stage-3`) |
 | 3 | [#20](https://github.com/kl-a/vigil_care/issues/20) | PBS Drug Lookup screen | #19 | 🔨 Built (`stage-3`) |
 | 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | 🔨 Built (`stage-3`) |
-| 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | ⏭️ Ready |
+| 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | 🔨 Built (`stage-3`) |
 
 ### Stages 4–13 (outlines)
 
@@ -106,14 +106,13 @@ flowchart LR
     T9 --> S2
     T24 --> T18[#18 job queue 🔨] --> T19[#19 PBS Refresh 🔨] --> T20[#20 PBS Lookup 🔨] --> T30[#30 whole PBS Schedule 🔨]
     T18 --> T10[#10 Support Views 🔨]
-    T19 --> T31[#31 long Jobs keep their claim ⏭️]
+    T19 --> T31[#31 long Jobs keep their claim 🔨]
     T20 --> S3((Stage 3 demo))
     T10 --> S3
 ```
 
 **Next up:**
-1. Merge Stage 3 (#18, #19, #10, #20, #30): it's built and shipped, ready for its demo ([docs/demos/stage-3.md](demos/stage-3.md)).
-2. #31: long-running Jobs keep their claim, and the PBS Refresh logs each API request (after the merge; before Stage 8 at the latest).
-3. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
+1. Merge Stage 3 (#18, #19, #10, #20, #30, #31): it's built and shipped, ready for its demo ([docs/demos/stage-3.md](demos/stage-3.md)).
+2. Stage 4 · Clinical Record by hand: write its tickets (4a Conditions and cancer, 4b Treatment and Medications, 4c Results and plan).
 
 **After Stage 3:** Stages 4 → 5 → 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.

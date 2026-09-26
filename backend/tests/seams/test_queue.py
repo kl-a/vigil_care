@@ -15,6 +15,7 @@ import pytest
 
 from app.core.database import session_factory
 from app.core.seams.queue import (
+    DEFAULT_LEASE,
     JobQueue,
     NewJob,
     NotIdsOnly,
@@ -213,3 +214,50 @@ def test_the_queues_depth(queue: JobQueue, kind: str, seeded: Seed) -> None:
     assert queue.depth(ours, kinds=[kind]) == QueueDepth(queued=2, running=1, failed_last_day=0)
     queue.fail(running, "source_unreachable")
     assert queue.depth(ours, kinds=[kind]) == QueueDepth(queued=2, running=0, failed_last_day=1)
+
+
+# --- Lease renewal (#31): a worker still running a Job keeps its claim; one that stopped loses it ---
+
+
+LEASE = DEFAULT_LEASE
+
+
+def _claimed_long_ago(seeded: Seed, job_id: uuid.UUID) -> None:
+    seeded.conn.execute("UPDATE job SET locked_at = now() - interval '1 hour' WHERE id = %s", [job_id])
+
+
+def test_a_worker_that_renews_its_job_keeps_it_past_the_lease(queue: JobQueue, kind: str, seeded: Seed) -> None:
+    job_id = queue.enqueue(NewJob(kind=kind))
+    queue.claim("worker-a", kinds=[kind], lease=LEASE)
+    _claimed_long_ago(seeded, job_id)
+    assert queue.renew(job_id, "worker-a") is True
+    assert queue.claim("worker-b", kinds=[kind], lease=LEASE) is None
+    assert queue.status(job_id).attempts == 1
+
+
+def test_a_job_whose_worker_stopped_renewing_is_claimed_again(queue: JobQueue, kind: str, seeded: Seed) -> None:
+    job_id = queue.enqueue(NewJob(kind=kind))
+    queue.claim("worker-a", kinds=[kind], lease=LEASE)
+    _claimed_long_ago(seeded, job_id)
+    reclaimed = queue.claim("worker-b", kinds=[kind], lease=LEASE)
+    assert reclaimed is not None and reclaimed.id == job_id and reclaimed.attempt == 2
+
+
+def test_renewing_a_job_another_worker_has_claimed_does_nothing(queue: JobQueue, kind: str, seeded: Seed) -> None:
+    job_id = queue.enqueue(NewJob(kind=kind))
+    queue.claim("worker-a", kinds=[kind], lease=LEASE)
+    _claimed_long_ago(seeded, job_id)
+    queue.claim("worker-b", kinds=[kind], lease=LEASE)  # worker-a stopped renewing; worker-b took over
+    _claimed_long_ago(seeded, job_id)
+    assert queue.renew(job_id, "worker-a") is False
+    # worker-a's renewal didn't keep worker-b's stale claim alive.
+    reclaimed = queue.claim("worker-c", kinds=[kind], lease=LEASE)
+    assert reclaimed is not None and reclaimed.attempt == 3
+
+
+def test_a_finished_job_is_not_renewed(queue: JobQueue, kind: str) -> None:
+    job_id = queue.enqueue(NewJob(kind=kind))
+    queue.claim("worker-a", kinds=[kind])
+    queue.succeed(job_id)
+    assert queue.renew(job_id, "worker-a") is False
+    assert queue.status(job_id).status == "succeeded"

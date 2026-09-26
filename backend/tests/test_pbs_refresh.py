@@ -3,6 +3,7 @@ fixture here, never the live service) into `pbs_item`, every PBS Item,, logs eac
 Refresh fails, and falls back to the Sample Schedule when there's nothing else. Runs monthly on the 1st.
 """
 
+import logging
 import uuid
 from collections.abc import Iterator
 from datetime import UTC, date, datetime
@@ -96,6 +97,23 @@ def test_a_refresh_stores_every_pbs_item_of_the_current_schedule(
     assert letrozole["restriction_level"] == "restricted" and len(letrozole["brand_names"]) > 1
     carboplatin = next(row for row in stored.values() if row["drug_name"] == "Carboplatin")
     assert (carboplatin["restriction_level"], carboplatin["indications"]) == ("unrestricted", [])
+
+
+def test_a_refresh_logs_each_api_request_with_codes_and_numbers_only(
+    database: DatabaseSettings, db: psycopg.Connection[dict[str, Any]], kind: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    """So a slow Refresh shows why (#31): each request's path, page, status and timings, never the key or query."""
+    with caplog.at_level(logging.INFO, logger="vigil.pbs"):
+        refresher(database, kind).run()
+    lines = [record.getMessage() for record in caplog.records if record.name == "vigil.pbs"]
+    assert [line.split(":")[0] for line in lines] == [
+        "pbs api /schedules page=-", "pbs api /copayments page=-", "pbs api /programs page=1",
+        "pbs api /item-atc-relationships page=1", "pbs api /items page=1", "pbs api /items page=2",
+        "pbs api /item-restriction-relationships page=1", "pbs api /item-restriction-relationships page=2",
+        "pbs api /item-restriction-relationships page=3", "pbs api /restrictions page=1",
+    ]
+    assert all(": 200 in " in line for line in lines)
+    assert not any("recorded-api-key" in line or "schedule_code" in line for line in lines)
 
 
 def test_a_refresh_is_safe_to_run_again(database: DatabaseSettings, db: psycopg.Connection[dict[str, Any]], kind: str) -> None:
