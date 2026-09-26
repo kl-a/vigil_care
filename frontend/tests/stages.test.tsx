@@ -27,10 +27,10 @@ const showUpcoming = () => fireEvent.click(screen.getByLabelText("Show upcoming 
 describe("build stages (design doc §15)", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("is at Stage 2: Stages 1 and 2 have shipped", () => {
-    expect(SHIPPED_STAGE).toBe(2);
-    expect(isShipped(2)).toBe(true);
-    expect(isShipped(3)).toBe(false);
+  it("is at Stage 3: Stages 1 to 3 have shipped", () => {
+    expect(SHIPPED_STAGE).toBe(3);
+    expect(isShipped(3)).toBe(true);
+    expect(isShipped(4)).toBe(false);
   });
 
   it("gives every screen and Patient tab a stage", () => {
@@ -44,26 +44,26 @@ describe("build stages (design doc §15)", () => {
 
   it("shows only built screens of shipped stages in the navigation", async () => {
     await renderAt("/system");
-    for (const released of ["Patients", "Providers", "Users", "Settings", "System status"]) {
+    for (const released of ["Patients", "PBS lookup", "Providers", "Users", "Settings", "System status"]) {
       expect(mainNav().getByRole("link", { name: released })).toBeInTheDocument();
     }
-    for (const upcoming of ["Dashboard", "PBS lookup", "Trials", "Review queue"]) {
+    for (const upcoming of ["Dashboard", "Trials", "Review queue", "Documents"]) {
       expect(mainNav().queryByRole("link", { name: upcoming })).not.toBeInTheDocument();
     }
   });
 
-  it.each(["/pbs", "/dashboard"])("shows a friendly page, not a placeholder, at %s", async (path) => {
+  it.each(["/review", "/dashboard"])("shows a friendly page, not a placeholder, at %s", async (path) => {
     await renderAt(path);
     expect(screen.getByRole("heading", { name: "Not available yet" })).toBeInTheDocument();
     expect(screen.queryByText("placeholder content")).not.toBeInTheDocument();
   });
 
   it("reveals upcoming screens as labelled placeholders when the dev toggle is on", async () => {
-    await renderAt("/pbs");
+    await renderAt("/review");
     showUpcoming();
     expect(screen.getByText("placeholder content")).toBeInTheDocument();
-    expect(screen.getByRole("note")).toHaveTextContent("coming in Stage 3");
-    expect(mainNav().getByRole("link", { name: /PBS lookup/ })).toHaveTextContent("S3");
+    expect(screen.getByRole("note")).toHaveTextContent("coming in Stage 9");
+    expect(mainNav().getByRole("link", { name: /Review queue/ })).toHaveTextContent("S9");
     expect(window.localStorage.getItem("vigil.showUpcoming")).toBe("true");
   });
 

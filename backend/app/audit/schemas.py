@@ -24,3 +24,18 @@ class Removal(BaseModel):
     """Soft-deleting anything needs a reason (design doc §6.2)."""
 
     reason: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+
+
+class PipelineRunView(BaseModel):
+    """A pipeline run, as Support Views show it: IDs, kinds, states and timings only (§6.4)."""
+
+    id: uuid.UUID
+    kind: str
+    status: str
+    system_wide: bool
+    inputs: dict[str, Any]
+    versions: dict[str, Any]
+    created_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+    error_detail: str | None

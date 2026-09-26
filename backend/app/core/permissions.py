@@ -31,7 +31,12 @@ Permission = Literal[
     "view_patient_data",
     "support_views",
     "start_refresh",
+    "pbs_lookup",
 ]
+
+# The API tag of every Support View route (design doc §6.4 "Support views"): open to developer admins, so IDs
+# only. The no-Patient-data quality gate reads every route with this tag.
+SUPPORT_TAG = "support"
 
 _STAFF: frozenset[JobTitle] = frozenset({"clinician", "trial_coordinator", "secretary"})
 
@@ -55,6 +60,8 @@ PERMISSIONS: Mapping[Permission, frozenset[JobTitle]] = {
     "view_patient_data": _STAFF,
     "support_views": frozenset({"clinician", "trial_coordinator", "secretary", "developer_admin"}),
     "start_refresh": frozenset({"developer_admin"}),
+    # Public reference data, but a clinical tool: the developer admin's navigation has no PBS lookup.
+    "pbs_lookup": _STAFF,
 }
 
 

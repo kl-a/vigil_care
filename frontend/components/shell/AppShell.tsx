@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { homePath } from "@/lib/jobTitles";
-import { canAccess } from "@/lib/navigation";
+import { canAccess, standInFor } from "@/lib/navigation";
 import { screenForPathname } from "@/lib/screens";
 import { isReleased, isVisible } from "@/lib/stages";
 import { Forbidden } from "./Forbidden";
@@ -32,6 +32,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (session.status === "signed_out") router.replace("/login");
   }, [session.status, router]);
 
+  // E.g. a developer admin's Dashboard is System status.
+  const standIn = session.status === "signed_in" ? standInFor(pathname, session.user.job_title) : undefined;
+  useEffect(() => {
+    if (standIn) router.replace(standIn);
+  }, [standIn, router]);
+
   // Another User (a developer admin) may have switched a module: pick it up on every navigation.
   const signedIn = session.status === "signed_in";
   useEffect(() => {
@@ -54,7 +60,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   // An upcoming screen shown only because of the dev toggle gets a note saying so.
   const previewing = allowed && screen !== undefined && available && !isReleased(screen);
   let content: ReactNode = children;
-  if (!allowed) content = <Forbidden jobTitle={jobTitle} />;
+  if (standIn) content = null;
+  else if (!allowed) content = <Forbidden jobTitle={jobTitle} />;
   else if (!available) content = <NotYetAvailable title={screen?.title ?? "This screen"} home={homePath(jobTitle)} />;
 
   return (

@@ -59,6 +59,13 @@ ensure_env_file() {
     sed -i.bak 's/^VIGIL_DEV_LOGIN_ENABLED=false/VIGIL_DEV_LOGIN_ENABLED=true/' "$ROOT/.env" && rm -f "$ROOT/.env.bak"
     ok "Turned the dev login on in .env (dev only)"
   fi
+  # The PBS Refresh needs the PBS API key (README, Getting started); without it the Sample Schedule loads.
+  if grep -qE '^VIGIL_PBS_API_KEY=.+' "$ROOT/.env"; then
+    ok "PBS API key set"
+  else
+    warn "VIGIL_PBS_API_KEY isn't set in .env: the PBS Lookup will show the out-of-date Sample Schedule."
+    warn "  Get the Subscription-Key from the PBS API Catalogue (https://data-api-portal.health.gov.au/apis) and add it to .env."
+  fi
 }
 
 port_in_use() { lsof -nP -iTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1; }
@@ -143,18 +150,23 @@ start_dev() {
   (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
     .venv/bin/python -m app.db.demo_data)
 
-  bold "Starting backend and frontend with hot reload"
+  bold "Starting backend, worker and frontend with hot reload"
   trap 'on_dev_failure' EXIT
   (cd "$ROOT/backend" && VIGIL_ENV=dev VIGIL_DEV_LOGIN_ENABLED=true \
     VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
     nohup .venv/bin/uvicorn app.main:create_app --factory --reload --port "$BACKEND_PORT" >"$RUN_DIR/backend.log" 2>&1 &
     echo $! >"$RUN_DIR/backend.pid")
+  # The job queue's worker (#18): runs Refreshes and, later, document processing.
+  (cd "$ROOT/backend" && VIGIL_ENV=dev \
+    VIGIL_DATABASE_URL="postgresql://vigil_app:vigil_app_dev@127.0.0.1:$DB_PORT/vigil" \
+    nohup .venv/bin/python -m app.orchestrator.worker >"$RUN_DIR/worker.log" 2>&1 &
+    echo $! >"$RUN_DIR/worker.pid")
   (cd "$ROOT/frontend" && VIGIL_API_URL="$BACKEND_URL" nohup npm run dev -- -p "$FRONTEND_PORT" >"$RUN_DIR/frontend.log" 2>&1 & echo $! >"$RUN_DIR/frontend.pid")
   wait_for "$BACKEND_URL/health" "Backend" 60
   wait_for "$FRONTEND_URL/login" "Frontend" 120
   trap - EXIT
   report_health
-  ok "Logs: $RUN_DIR/backend.log and $RUN_DIR/frontend.log"
+  ok "Logs: $RUN_DIR/backend.log, $RUN_DIR/worker.log and $RUN_DIR/frontend.log"
 }
 
 # If --dev fails part-way, don't leave host processes running.
@@ -166,7 +178,7 @@ on_dev_failure() {
 }
 
 stop_host_processes() {
-  for name in backend frontend; do
+  for name in backend worker frontend; do
     local pidfile="$RUN_DIR/$name.pid"
     if [[ -f "$pidfile" ]]; then
       local pid; pid="$(cat "$pidfile")"

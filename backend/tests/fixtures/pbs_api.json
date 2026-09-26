@@ -1,0 +1,2107 @@
+{
+ "about": "Recorded from the PBS Schedule API v3 on 2026-09-26, the schedule of 2026-09-01, by scripts/pbs_snapshot.py. Each table is trimmed to Carboplatin, Dexamfetamine, Duloxetine, Letrozole, Pembrolizumab, Rifaximin. Tests replay it; they never call the live service.",
+ "copyright": [
+  "Copyright (c) 2024 Department of Health, Commonwealth of Australia",
+  "Permission is granted to use and redistribute this content, as long as all copyright statements are retained. Permission is not granted to modify this content.",
+  "For further copyright information of this content, please refer to: https://www.health.gov.au/using-our-websites/copyright"
+ ],
+ "responses": [
+  {
+   "path": "/schedules",
+   "params": {
+    "get_latest_schedule_only": "true"
+   },
+   "body": {
+    "_meta": {
+     "total_records": 1
+    },
+    "data": [
+     {
+      "revision_number": 1,
+      "start_tsp": "2026-09-01T00:00:00.000+10:00",
+      "effective_date": "2026-09-01",
+      "effective_month": "SEPTEMBER",
+      "effective_year": 2026,
+      "publication_status": "PUBLISHED",
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/copayments",
+   "params": {
+    "schedule_code": 4333
+   },
+   "body": {
+    "_meta": {
+     "total_records": 1
+    },
+    "data": [
+     {
+      "general": 25,
+      "concessional": 7.7,
+      "safety_net_general": 1748.2,
+      "safety_net_concessional": 277.2,
+      "safety_net_card_issue": 12.78,
+      "increased_discount_limit": 51.1,
+      "safety_net_ctg_contribution": 42.5,
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/programs",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 1
+   },
+   "body": {
+    "_meta": {
+     "total_records": 17
+    },
+    "data": [
+     {
+      "program_code": "CA",
+      "program_title": "Section 100 (Highly Specialised Drugs) - Community Access",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "CT",
+      "program_title": "Section 100 (Efficient Funding of Chemotherapy) - Related Benefits",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "DB",
+      "program_title": "Prescriber Bag (Dr Bag)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "EP",
+      "program_title": "Extemporaneous Preparations",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "GE",
+      "program_title": "General Schedule",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "GH",
+      "program_title": "Section 100 (Growth Hormone)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "HB",
+      "program_title": "Section 100 (Highly Specialised Drugs) - Public Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "HS",
+      "program_title": "Section 100 (Highly Specialised Drugs) - Private Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "IF",
+      "program_title": "Section 100 (IVF Treatment)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "IN",
+      "program_title": "Section 100 (Efficient Funding of Chemotherapy) - Private Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "IP",
+      "program_title": "Section 100 (Efficient Funding of Chemotherapy) - Public Hospitals",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "MF",
+      "program_title": "Section 100 (Botulinum Toxin Program)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "PL",
+      "program_title": "Palliative Care",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "PQ",
+      "program_title": "Section 100 (Paraplegic and Quadriplegic Program)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "R1",
+      "program_title": "Repatriation Pharmaceutical Benefits (RPBS)",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "TY",
+      "program_title": "Section 100 (Special Authority Items) - Private Hospital",
+      "schedule_code": 4333
+     },
+     {
+      "program_code": "TZ",
+      "program_title": "Section 100 (Special Authority Items) - Public Hospital",
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/item-atc-relationships",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 1
+   },
+   "body": {
+    "_meta": {
+     "total_records": 6844
+    },
+    "data": [
+     {
+      "atc_code": "A07AA11",
+      "pbs_code": "10001J",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06BA02",
+      "pbs_code": "1165H",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "12120X",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "12125E",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "12127G",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "12130K",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "13739D",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "13752T",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L02BG04",
+      "pbs_code": "13939P",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06AX21",
+      "pbs_code": "14712H",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15208K",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15210M",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15299F",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15314B",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15329T",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15335D",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15519T",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01FF02",
+      "pbs_code": "15523B",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01XA02",
+      "pbs_code": "4309T",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L01XA02",
+      "pbs_code": "7222D",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "L02BG04",
+      "pbs_code": "8245Y",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06AX21",
+      "pbs_code": "9155W",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     },
+     {
+      "atc_code": "N06AX21",
+      "pbs_code": "9156X",
+      "atc_priority_pct": 100,
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/items",
+   "params": {
+    "schedule_code": 4333,
+    "fields": "pbs_code,drug_name,schedule_form,brand_name,program_code,benefit_type_code,maximum_prescribable_pack,maximum_quantity_units,pack_size,number_of_repeats,maximum_amount,unit_of_measure,infusible_indicator",
+    "limit": 10000,
+    "page": 1
+   },
+   "body": {
+    "_meta": {
+     "total_records": 14964
+    },
+    "data": [
+     {
+      "pbs_code": "10001J",
+      "drug_name": "Rifaximin",
+      "schedule_form": "rifaximin 550 mg tablet, 56",
+      "brand_name": "Xifaxan",
+      "program_code": "GE",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 56,
+      "pack_size": 56,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "1165H",
+      "drug_name": "Dexamfetamine",
+      "schedule_form": "dexamfetamine sulfate 5 mg tablet, 100",
+      "brand_name": "Aspen Pharmacare Australia Pty Ltd",
+      "program_code": "GE",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 100,
+      "pack_size": 100,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "12120X",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 200,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "12125E",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 3,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "12127G",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 3,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "12130K",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "A",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 200,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "13739D",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "13752T",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "ARX-LETROZOLE",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Femara 2.5 mg",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Femolet",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Gynotril",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Letrozole GH",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Letrozole Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "LETROZOLE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "13939P",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Pharmacor Letrozole 2.5",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 60,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "APO-Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Blooms The Chemist Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxecor",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DULOXETINE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DYTREX 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "14712H",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Tixol 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 2,
+      "maximum_quantity_units": 56,
+      "pack_size": 28,
+      "number_of_repeats": 2,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "15208K",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15210M",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15299F",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15314B",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15329T",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15335D",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15519T",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IP",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "15523B",
+      "drug_name": "Pembrolizumab",
+      "schedule_form": "pembrolizumab 100 mg/4 mL injection, 4 mL vial",
+      "brand_name": "Keytruda",
+      "program_code": "IN",
+      "benefit_type_code": "S",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 7,
+      "maximum_amount": 400,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     }
+    ]
+   }
+  },
+  {
+   "path": "/items",
+   "params": {
+    "schedule_code": 4333,
+    "fields": "pbs_code,drug_name,schedule_form,brand_name,program_code,benefit_type_code,maximum_prescribable_pack,maximum_quantity_units,pack_size,number_of_repeats,maximum_amount,unit_of_measure,infusible_indicator",
+    "limit": 10000,
+    "page": 2
+   },
+   "body": {
+    "_meta": {
+     "total_records": 14964
+    },
+    "data": [
+     {
+      "pbs_code": "4309T",
+      "drug_name": "Carboplatin",
+      "schedule_form": "carboplatin 450 mg/45 mL injection, 45 mL vial",
+      "brand_name": "Carboplatin Accord",
+      "program_code": "IP",
+      "benefit_type_code": "U",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 5,
+      "maximum_amount": 900,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "7222D",
+      "drug_name": "Carboplatin",
+      "schedule_form": "carboplatin 450 mg/45 mL injection, 45 mL vial",
+      "brand_name": "Carboplatin Accord",
+      "program_code": "IN",
+      "benefit_type_code": "U",
+      "maximum_prescribable_pack": null,
+      "maximum_quantity_units": null,
+      "pack_size": 1,
+      "number_of_repeats": 5,
+      "maximum_amount": 900,
+      "unit_of_measure": "mg",
+      "infusible_indicator": "Y"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "ARX-LETROZOLE",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Femara 2.5 mg",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Femolet",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Gynotril",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Letrozole GH",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Letrozole Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "LETROZOLE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "8245Y",
+      "drug_name": "Letrozole",
+      "schedule_form": "letrozole 2.5 mg tablet, 30",
+      "brand_name": "Pharmacor Letrozole 2.5",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 30,
+      "pack_size": 30,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "APO-Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Blooms The Chemist Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Duloxecor",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz 30",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "DULOXETINE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "DYTREX 30",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9155W",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 30 mg enteric capsule, 28",
+      "brand_name": "Tixol 30",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 0,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "APO-Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Blooms The Chemist Duloxetine",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxecor",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Duloxetine Sandoz 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DULOXETINE-WGR",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "DYTREX 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     },
+     {
+      "pbs_code": "9156X",
+      "drug_name": "Duloxetine",
+      "schedule_form": "duloxetine 60 mg enteric capsule, 28",
+      "brand_name": "Tixol 60",
+      "program_code": "GE",
+      "benefit_type_code": "R",
+      "maximum_prescribable_pack": 1,
+      "maximum_quantity_units": 28,
+      "pack_size": 28,
+      "number_of_repeats": 5,
+      "maximum_amount": null,
+      "unit_of_measure": null,
+      "infusible_indicator": "N"
+     }
+    ]
+   }
+  },
+  {
+   "path": "/item-restriction-relationships",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 1
+   },
+   "body": {
+    "_meta": {
+     "total_records": 23550
+    },
+    "data": [
+     {
+      "res_code": "7606_N",
+      "pbs_code": "10001J",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "10001J",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "17266_4306_R",
+      "pbs_code": "10001J",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "13099_N",
+      "pbs_code": "1165H",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16627_16596_R",
+      "pbs_code": "1165H",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16628_16629_R",
+      "pbs_code": "1165H",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25071_N",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25796_N",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7606_N",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14771_14770_R",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14772_14786_R",
+      "pbs_code": "12120X",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25071_N",
+      "pbs_code": "12125E",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7606_N",
+      "pbs_code": "12125E",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "12125E",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "12125E",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "10700_10688_R",
+      "pbs_code": "12125E",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "10676_10676_R",
+      "pbs_code": "12125E",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25071_N",
+      "pbs_code": "12127G",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7606_N",
+      "pbs_code": "12127G",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "12127G",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "12127G",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "10700_10688_R",
+      "pbs_code": "12127G",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "10676_10676_R",
+      "pbs_code": "12127G",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25071_N",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25796_N",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7606_N",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14771_14770_R",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14772_14786_R",
+      "pbs_code": "12130K",
+      "benefit_type_code": "A",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/item-restriction-relationships",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 2
+   },
+   "body": {
+    "_meta": {
+     "total_records": 23550
+    },
+    "data": [
+     {
+      "res_code": "21501_N",
+      "pbs_code": "13739D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "13739D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "13739D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14727_14727_R",
+      "pbs_code": "13739D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "13752T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "13752T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "13752T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14727_14727_R",
+      "pbs_code": "13752T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "12335_N",
+      "pbs_code": "13939P",
+      "benefit_type_code": "R",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "12369_N",
+      "pbs_code": "13939P",
+      "benefit_type_code": "R",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "14940_14895_R",
+      "pbs_code": "13939P",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16542_15553_R",
+      "pbs_code": "14712H",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15208K",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15208K",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15208K",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "17992_17992_R",
+      "pbs_code": "15208K",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15210M",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15210M",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15210M",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "17992_17992_R",
+      "pbs_code": "15210M",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15299F",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25071_N",
+      "pbs_code": "15299F",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15299F",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15299F",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "18371_18371_R",
+      "pbs_code": "15299F",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "18450_18450_R",
+      "pbs_code": "15299F",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15314B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "25071_N",
+      "pbs_code": "15314B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15314B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15314B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "18371_18371_R",
+      "pbs_code": "15314B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "18450_18450_R",
+      "pbs_code": "15314B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 2,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15329T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15329T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15329T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "18413_18413_R",
+      "pbs_code": "15329T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15335D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15335D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15335D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "18413_18413_R",
+      "pbs_code": "15335D",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15519T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15519T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15519T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "19204_19192_R",
+      "pbs_code": "15519T",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "21501_N",
+      "pbs_code": "15523B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7607_N",
+      "pbs_code": "15523B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "7608_N",
+      "pbs_code": "15523B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "19204_19192_R",
+      "pbs_code": "15523B",
+      "benefit_type_code": "S",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/item-restriction-relationships",
+   "params": {
+    "schedule_code": 4333,
+    "limit": 10000,
+    "page": 3
+   },
+   "body": {
+    "_meta": {
+     "total_records": 23550
+    },
+    "data": [
+     {
+      "res_code": "12335_N",
+      "pbs_code": "8245Y",
+      "benefit_type_code": "R",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "12369_N",
+      "pbs_code": "8245Y",
+      "benefit_type_code": "R",
+      "restriction_indicator": "N",
+      "res_position": null,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "15992_5522_R",
+      "pbs_code": "8245Y",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16543_5650_R",
+      "pbs_code": "9155W",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     },
+     {
+      "res_code": "16543_5650_R",
+      "pbs_code": "9156X",
+      "benefit_type_code": "R",
+      "restriction_indicator": "Y",
+      "res_position": 1,
+      "schedule_code": 4333
+     }
+    ]
+   }
+  },
+  {
+   "path": "/restrictions",
+   "params": {
+    "schedule_code": 4333,
+    "fields": "res_code,treatment_phase,authority_method,li_html_text",
+    "limit": 10000,
+    "page": 1
+   },
+   "body": {
+    "_meta": {
+     "total_records": 3581
+    },
+    "data": [
+     {
+      "res_code": "10676_10676_R",
+      "treatment_phase": "Continuing treatment - 6 weekly treatment regimen",
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma</p><br/><p>Continuing treatment - 6 weekly treatment regimen</p><br/><p>Patient must have previously been issued with an authority prescription for this drug for adjuvant treatment following complete surgical resection; AND</p> <p>Patient must not have experienced disease recurrence; AND</p> <p>The treatment must be the sole PBS-subsidised therapy for this condition; AND</p> <p>Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy.</p>"
+     },
+     {
+      "res_code": "10700_10688_R",
+      "treatment_phase": "Initial treatment - 6 weekly treatment regimen",
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma</p><br/><p>Initial treatment - 6 weekly treatment regimen</p><br/><p>The treatment must be adjuvant to complete surgical resection; AND</p> <p>Patient must have a WHO performance status of 1 or less; AND</p> <p>The treatment must be the sole PBS-subsidised therapy for this condition; AND</p> <p>Patient must not have received prior PBS-subsidised treatment for this condition; AND</p> <p>The treatment must commence within 12 weeks of complete resection; AND</p> <p>Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy.</p>"
+     },
+     {
+      "res_code": "12335_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "12369_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "13099_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "14727_14727_R",
+      "treatment_phase": null,
+      "authority_method": "STREAMLINED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Stage II or Stage III triple negative breast cancer</p><br/><p>The treatment must be initiated in combination with neoadjuvant chemotherapy; AND</p> <p>The condition must not have progressed/recurred whilst on treatment with this drug; AND</p> <p>Patient must not be undergoing treatment with this drug beyond 52 cumulative weeks under this restriction; AND</p> <p>Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or</p> <p>Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 4 repeat prescriptions.</p>"
+     },
+     {
+      "res_code": "14771_14770_R",
+      "treatment_phase": "Initial treatment - 3 weekly treatment regimen",
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Stage IIIB, Stage IIIC or Stage IIID malignant melanoma</p><br/><p>Initial treatment - 3 weekly treatment regimen</p><br/><p>The treatment must be in addition to complete surgical resection; AND</p> <p>Patient must have a WHO performance status of 1 or less; AND</p> <p>The treatment must be the sole PBS-subsidised therapy for this condition; AND</p> <p>Patient must not have received prior PBS-subsidised treatment for this condition; AND</p> <p>The treatment must commence within 12 weeks of complete resection; AND</p> <p>Patient must not have received more than 12 months of therapy (irrespective of whether therapy has been partly PBS-subsidised/non-PBS-subsidised).</p>"
+     },
+     {
+      "res_code": "14772_14786_R",
+      "treatment_phase": "Continuing treatment - 3 weekly treatment regimen",
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Resected Stage IIIB, Stage IIIC or Stage IIID malignant melanoma</p><br/><p>Continuing treatment - 3 weekly treatment regimen</p><br/><p>Patient must be undergoing continuing PBS-subsidised treatment commenced through an 'Initial treatment' listing; AND</p> <p>Patient must not have experienced disease recurrence; AND</p> <p>The treatment must be the sole PBS-subsidised therapy for this condition; AND</p> <p>Patient must not have received more than 12 months of therapy (irrespective of whether therapy has been partly PBS-subsidised/non-PBS-subsidised).</p>"
+     },
+     {
+      "res_code": "14940_14895_R",
+      "treatment_phase": null,
+      "authority_method": "RESTRICTED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Breast cancer</p><br/><p>The condition must be stable for the prescriber to consider the listed maximum quantity of this medicine suitable for this patient; AND</p> <p>The condition must be hormone receptor positive.</p>"
+     },
+     {
+      "res_code": "15992_5522_R",
+      "treatment_phase": null,
+      "authority_method": "RESTRICTED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Breast cancer</p><br/><p>The condition must be hormone receptor positive.</p>"
+     },
+     {
+      "res_code": "16542_15553_R",
+      "treatment_phase": null,
+      "authority_method": "RESTRICTED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Major depressive disorders</p><br/><p>The condition must be stable for the prescriber to consider the listed maximum quantity of this medicine suitable for this patient.</p>"
+     },
+     {
+      "res_code": "16543_5650_R",
+      "treatment_phase": null,
+      "authority_method": "RESTRICTED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Major depressive disorders</p>"
+     },
+     {
+      "res_code": "16627_16596_R",
+      "treatment_phase": null,
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Attention deficit hyperactivity disorder</p><br/><p>Must be treated by a health practitioner who is any of: (i) a medical practitioner, (ii) a nurse practitioner who is continuing treatment with this medicine (of any strength) that was initiated by a medical practitioner as a PBS benefit.</p> <p align=\"justify\">Treatment must be in accordance with the law of the relevant State or Territory.</p>"
+     },
+     {
+      "res_code": "16628_16629_R",
+      "treatment_phase": null,
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Narcolepsy</p><br/><p>Must be treated by a health practitioner who is any of: (i) a medical practitioner, (ii) a nurse practitioner who is continuing treatment with this medicine (of any strength) that was initiated by a medical practitioner as a PBS benefit.</p>"
+     },
+     {
+      "res_code": "17266_4306_R",
+      "treatment_phase": null,
+      "authority_method": "AUTHORITY_REQUIRED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Prevention of hepatic encephalopathy</p><br/><p>Must be treated by a gastroenterologist or hepatologist or in consultation with a gastroenterologist or hepatologist; AND</p> <p>The treatment must be in combination with lactulose, if lactulose is tolerated; AND</p> <p>Patient must have had prior episodes of hepatic encephalopathy.</p>"
+     },
+     {
+      "res_code": "17992_17992_R",
+      "treatment_phase": null,
+      "authority_method": "STREAMLINED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Intermediate or high risk of recurrence clear cell variant renal cell carcinoma (RCC)</p><br/><p>Patient must have: (i) pT2 with Grade 4 or sarcomatoid features; or (ii) pT3, with any grade without nodal involvement (N0) or distant metastases (M0); or (iii) pT4, any grade N0 and M0; or (iv) any pT, any grade with nodal involvement and M0; or (v) metastatic disease and has undergone complete resection of primary and metastatic lesions; AND</p> <p>The treatment must be in addition to complete surgical resection; AND</p> <p>The treatment must commence within 12 weeks of complete resection; AND</p> <p>Patient must have a WHO performance status of 1 or less; AND</p> <p>Patient must not have previously been treated with systemic therapy for this condition, prior to commencing treatment with this drug for this condition; AND</p> <p>The treatment must be the sole PBS-subsidised anti-cancer therapy for this condition; AND</p> <p>Patient must not receive more than 12 months of combined PBS-subsidised and non-PBS-subsidised adjuvant therapy; AND</p> <p>Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or</p> <p>Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions.</p>"
+     },
+     {
+      "res_code": "18371_18371_R",
+      "treatment_phase": "Initial treatment",
+      "authority_method": "STREAMLINED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>High risk locally advanced carcinoma of the cervix</p><br/><p>Initial treatment</p><br/><p>Patient must have high-risk, locally advanced cervical cancer of one of the following types: (i) squamous cell carcinoma, (ii) adenosquamous carcinoma, (iii) adenocarcinoma; AND</p> <p>The treatment must be/have been commenced in combination with concurrent chemoradiotherapy; AND</p> <p>Patient must have a WHO performance status of 1 or less; AND</p> <p>Patient must not have received prior PBS-subsidised treatment with a programmed cell death-1 (PD-1) inhibitor or a programmed cell death ligand-1 (PD-L1) inhibitor for carcinoma of the cervix; AND</p> <p>The treatment must not exceed a total of (i) 24 months, (ii) 35 doses (based on a 3-weekly dose regimen), (iii) 17 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless if it was PBS/non-PBS subsidised; AND</p> <p>Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or</p> <p>Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions.</p>"
+     },
+     {
+      "res_code": "18413_18413_R",
+      "treatment_phase": null,
+      "authority_method": "STREAMLINED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Resectable locally advanced squamous cell carcinoma of the oral cavity, pharynx or larynx</p><br/><p>Patient must have stage III-IVB squamous cell carcinoma of the oral cavity, pharynx or larynx; AND</p> <p>Patient must have tumour(s) that are resectable as assessed by the treating clinician; or</p> <p>Patient must have undergone surgical resection; AND</p> <p>Patient must have a WHO performance status of 1 or less; AND</p> <p>Patient must not have experienced disease recurrence or progression while being treated with this drug for this condition; AND</p> <p>The treatment must be commenced as neoadjuvant therapy and continued in combination with radiation therapy with or without chemotherapy after surgical resection; or</p> <p>The treatment must be the sole PBS-subsidised systemic anti-cancer therapy for this condition; AND</p> <p>The treatment must not exceed a total of 12 cumulative months, either as: (i) 17 doses (based on a 3-weekly dose regimen), (ii) 8 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless of if it was PBS/non-PBS subsidised; AND</p> <p>Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or</p> <p>Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions.</p>"
+     },
+     {
+      "res_code": "18450_18450_R",
+      "treatment_phase": "Continuing treatment",
+      "authority_method": "STREAMLINED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>High risk locally advanced carcinoma of the cervix</p><br/><p>Continuing treatment</p><br/><p>Patient must have previously received PBS-subsidised treatment with this drug for this indication; AND</p> <p>Patient must not have experienced disease recurrence while being treated with this drug for this indication; AND</p> <p>The treatment must be the sole PBS-subsidised anti-cancer therapy for this condition; AND</p> <p>The treatment must not exceed a total of (i) 24 months, (ii) 35 doses (based on a 3-weekly dose regimen), (iii) 17 doses (based on a 6-weekly dose regimen) whichever comes first from the first dose of this drug regardless if it was PBS/non-PBS subsidised; AND</p> <p>Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or</p> <p>Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions.</p>"
+     },
+     {
+      "res_code": "19204_19192_R",
+      "treatment_phase": null,
+      "authority_method": "STREAMLINED",
+      "li_html_text": "<h1>Listing of Pharmaceutical Benefits (NHL) - Schedule 4 part 1</h1><p>Immunotherapy sensitive advanced or metastatic cancer</p><br/><p>Patient must not have developed disease progression while receiving PBS-subsidised treatment with this drug for the condition which treatment was commenced for; AND</p> <p>Patient must be undergoing treatment with this drug administered once every 3 weeks - prescribe up to 7 repeat prescriptions; or</p> <p>Patient must be undergoing treatment with this drug administered once every 6 weeks - prescribe up to 3 repeat prescriptions.</p>"
+     },
+     {
+      "res_code": "21501_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "25071_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "25796_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "7606_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "7607_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     },
+     {
+      "res_code": "7608_N",
+      "treatment_phase": null,
+      "authority_method": null,
+      "li_html_text": null
+     }
+    ]
+   }
+  }
+ ]
+}

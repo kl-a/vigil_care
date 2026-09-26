@@ -57,6 +57,23 @@ services:
     depends_on:
       migrate: { condition: service_completed_successfully }
 
+  # The job queue's worker (#18): claims Jobs (Refreshes now; document processing later). Same image and
+  # settings as the backend, a different command.
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.orchestrator.worker"]
+    environment:
+      VIGIL_ENV: ${VIGIL_ENV:-dev}
+      VIGIL_DATABASE_URL: postgresql://vigil_app:${VIGIL_DB_APP_PASSWORD:-vigil_app_dev}@db:5432/vigil
+      VIGIL_VLM_WORKER_URL: ${VIGIL_VLM_WORKER_URL:-}
+      VIGIL_SESSION_SECRET: ${VIGIL_SESSION_SECRET:-}
+      VIGIL_ENCRYPTION_KEY: ${VIGIL_ENCRYPTION_KEY:-}
+      VIGIL_PREVIOUS_ENCRYPTION_KEYS: ${VIGIL_PREVIOUS_ENCRYPTION_KEYS:-}
+      VIGIL_PBS_API_URL: ${VIGIL_PBS_API_URL:-}
+      VIGIL_PBS_API_KEY: ${VIGIL_PBS_API_KEY:-}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
   frontend:
     build:
       context: ./frontend

@@ -24,6 +24,10 @@ def make_settings(**overrides: object) -> Settings:
         "session_secret": "test-session-secret-" + "x" * 32,
         # A fixed, test-only key (32 bytes of 0x07): never used outside tests.
         "encryption_key": TEST_ENCRYPTION_KEY,
+        # Tests replay a recorded PBS API (tests/fixtures/pbs.py); anything reaching for the live one fails fast.
+        "pbs_api_url": "http://pbs-api.invalid",
+        # Never the real key from .env.
+        "pbs_api_key": "",
     }
     values.update(overrides)
     return Settings(**values)  # type: ignore[arg-type]

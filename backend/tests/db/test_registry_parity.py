@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from app.jobs import registry
 from app.modules.registry.registry import installed_modules
 
 
@@ -16,3 +17,17 @@ def test_each_modules_verification_rows_cover_its_registered_fact_kinds(owner_db
     for module in installed_modules().values():
         rows = owner_db.execute("SELECT key FROM fact_kind WHERE module_key = %s", [module.key]).fetchall()
         assert {r["key"] for r in rows} <= set(module.verification_rights)
+
+
+def test_a_registered_handler_needs_its_job_kind_registered_by_a_migration(owner_db: Any) -> None:
+    registered = {r["key"] for r in owner_db.execute("SELECT key FROM job_kind").fetchall()}
+    assert set(registry().kinds) <= registered
+    assert "refresh_pbs" in registered
+
+
+def test_every_core_job_kind_has_a_handler(owner_db: Any) -> None:
+    # Other tests register throwaway Job Kinds, all named test_...
+    rows = owner_db.execute("SELECT key FROM job_kind WHERE module_key IS NULL AND key NOT LIKE 'test\\_%'").fetchall()
+    core = {r["key"] for r in rows}
+    assert "refresh_pbs" in core
+    assert core <= set(registry().kinds)

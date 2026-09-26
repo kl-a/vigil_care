@@ -6,9 +6,13 @@ their gates in GATES.
 """
 
 import os
+import subprocess
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
+
+BACKEND = Path(__file__).resolve().parents[1] / "backend"
 
 
 @dataclass(frozen=True)
@@ -23,7 +27,28 @@ class Gate:
     run: Callable[[], GateResult]
 
 
-GATES: list[Gate] = []
+def backend_test(path: str) -> Callable[[], GateResult]:
+    """A gate that is a backend test file, run by pytest against a freshly migrated test database (its
+    `database` fixture; the test Postgres must be up: `make test-db`)."""
+
+    def run() -> GateResult:
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", path],
+            cwd=BACKEND,
+            capture_output=True,
+            text=True,
+        )
+        lines = [line for line in result.stdout.splitlines() if line.strip()]
+        failures = [line for line in lines if line.startswith("E ")]
+        return GateResult(passed=result.returncode == 0, detail=" | ".join([*failures[:3], lines[-1] if lines else result.stderr.strip()]))
+
+    return run
+
+
+GATES: list[Gate] = [
+    # Design doc §6.4: support data (support endpoints, application logs) never holds Patient data.
+    Gate("No Patient data in support data", backend_test("tests/api/test_no_patient_data_in_support.py")),
+]
 
 
 def run_gates(gates: Sequence[Gate], environment: str) -> int:

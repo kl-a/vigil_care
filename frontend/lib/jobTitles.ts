@@ -27,6 +27,11 @@ export function canChangeSettings(jobTitle: JobTitle): boolean {
   return jobTitle === "clinician" || jobTitle === "developer_admin";
 }
 
+/** Start a Refresh from the Support Views: developer admins only (design doc §6.4). */
+export function canStartRefresh(jobTitle: JobTitle): boolean {
+  return jobTitle === "developer_admin";
+}
+
 /** Activate / deactivate Specialty Modules: developer admins only. */
 export function canSwitchModules(jobTitle: JobTitle): boolean {
   return jobTitle === "developer_admin";

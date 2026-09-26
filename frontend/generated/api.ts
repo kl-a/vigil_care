@@ -89,6 +89,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Jobs
+         * @description The most recent Jobs, newest first; `kind` narrows them to one Job Kind.
+         */
+        get: operations["list_jobs_jobs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Job Status */
+        get: operations["job_status_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/modules": {
         parameters: {
             query?: never;
@@ -228,6 +265,111 @@ export interface paths {
         patch: operations["change_identity_patients__patient_id__identity_patch"];
         trace?: never;
     };
+    "/pbs/drugs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Drugs
+         * @description Every drug in the current PBS Schedule, A–Z, narrowed by the filters (none: all of them).
+         */
+        get: operations["drugs_pbs_drugs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pbs/drugs/{item_code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Drug */
+        get: operations["drug_pbs_drugs__item_code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pbs/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Filters */
+        get: operations["filters_pbs_filters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pbs/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Schedule Status */
+        get: operations["schedule_status_pbs_schedule_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pipeline-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Pipeline Runs */
+        get: operations["list_pipeline_runs_pipeline_runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pipeline-runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pipeline Run */
+        get: operations["pipeline_run_pipeline_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/practice": {
         parameters: {
             query?: never;
@@ -292,6 +434,58 @@ export interface paths {
         };
         /** Provider Patients */
         get: operations["provider_patients_providers__provider_id__patients_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Queue Depth */
+        get: operations["queue_depth_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/refreshes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Refreshes */
+        get: operations["list_refreshes_refreshes_get"];
+        put?: never;
+        /** Start Refresh */
+        post: operations["start_refresh_refreshes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/refreshes/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Refresh History */
+        get: operations["refresh_history_refreshes_history_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -674,6 +868,57 @@ export interface components {
             /** Reason */
             reason: string | null;
         };
+        /** JobStepView */
+        JobStepView: {
+            /** Finished At */
+            finished_at: string | null;
+            /** Name */
+            name: string;
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            };
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+        };
+        /**
+         * JobView
+         * @description A Job's progress, as Support Views show it: IDs, kinds, states, counts and timings only (§6.4).
+         */
+        JobView: {
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Last Error */
+            last_error: string | null;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Steps */
+            steps: components["schemas"]["JobStepView"][];
+            /** System Wide */
+            system_wide: boolean;
+        };
         /** ModuleChange */
         ModuleChange: {
             /** Is Active */
@@ -850,6 +1095,201 @@ export interface components {
              */
             updated_at: string;
         };
+        /** PbsDrug */
+        PbsDrug: {
+            /** Brand Names */
+            brand_names: string[];
+            /** Drug Name */
+            drug_name: string;
+            /** Groups */
+            groups: components["schemas"]["PbsOption"][];
+            /** Items */
+            items: components["schemas"]["PbsItemView"][];
+            /**
+             * Schedule Date
+             * Format: date
+             */
+            schedule_date: string;
+        };
+        /**
+         * PbsDrugPage
+         * @description A page of the drugs matching the filters, A–Z.
+         */
+        PbsDrugPage: {
+            /** Drugs */
+            drugs: components["schemas"]["PbsDrugRow"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * PbsDrugRow
+         * @description One drug in the list, summarising all its PBS Items in the current schedule.
+         */
+        PbsDrugRow: {
+            /** Brand Names */
+            brand_names: string[];
+            /** Drug Name */
+            drug_name: string;
+            /** Forms */
+            forms: string[];
+            /** Groups */
+            groups: components["schemas"]["PbsOption"][];
+            /** Item Code */
+            item_code: string;
+            /** Item Count */
+            item_count: number;
+            /** Levels */
+            levels: string[];
+        };
+        /**
+         * PbsFilters
+         * @description What the list can be filtered by, as found in the current schedule. `groups` starts with the Cancer
+         *     drugs shortcut when there are any.
+         */
+        PbsFilters: {
+            /** Groups */
+            groups: components["schemas"]["PbsOption"][];
+            /** Programs */
+            programs: components["schemas"]["PbsOption"][];
+        };
+        /** PbsItemView */
+        PbsItemView: {
+            /** Amount Unit */
+            amount_unit: string | null;
+            /** Atc Codes */
+            atc_codes: string[];
+            /** Brand Names */
+            brand_names: string[];
+            /** Copay Concessional */
+            copay_concessional: number | null;
+            /** Copay General */
+            copay_general: number | null;
+            /** Form */
+            form: string | null;
+            /** Item Code */
+            item_code: string;
+            /** Listings */
+            listings: components["schemas"]["PbsListingView"][];
+            /** Max Amount */
+            max_amount: number | null;
+            /** Max Packs */
+            max_packs: number | null;
+            /** Max Quantity */
+            max_quantity: number | null;
+            /** Pack Size */
+            pack_size: number | null;
+            /** Program Code */
+            program_code: string | null;
+            /** Program Title */
+            program_title: string | null;
+            /** Repeats */
+            repeats: number | null;
+            /** Restriction Level */
+            restriction_level: string;
+            /**
+             * Schedule Date
+             * Format: date
+             */
+            schedule_date: string;
+        };
+        /**
+         * PbsListingView
+         * @description An item's PBS Listing for one indication, with its prescribing conditions.
+         */
+        PbsListingView: {
+            /** Conditions */
+            conditions: string[];
+            /** Indication */
+            indication: string;
+            /** Level */
+            level: string;
+            /** Restriction Code */
+            restriction_code: string;
+            /** Treatment Phase */
+            treatment_phase: string | null;
+        };
+        /**
+         * PbsOption
+         * @description A code and what to call it, e.g. a therapeutic group ("N", "Nervous system") or a PBS program.
+         */
+        PbsOption: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+        };
+        /** PbsRefreshView */
+        PbsRefreshView: {
+            /**
+             * Refreshed At
+             * Format: date-time
+             */
+            refreshed_at: string;
+            /** Schedule Date */
+            schedule_date: string | null;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+        };
+        /**
+         * PbsScheduleStatus
+         * @description What the lookup shows: which schedule, where it came from, and whether the last Refresh failed.
+         */
+        PbsScheduleStatus: {
+            current: components["schemas"]["PbsRefreshView"] | null;
+            /** Is Sample */
+            is_sample: boolean;
+            /** Item Count */
+            item_count: number;
+            last_refresh: components["schemas"]["PbsRefreshView"] | null;
+            /** Safety Net Concessional */
+            safety_net_concessional: number | null;
+            /** Safety Net General */
+            safety_net_general: number | null;
+            /** Schedule Date */
+            schedule_date: string | null;
+        };
+        /**
+         * PipelineRunView
+         * @description A pipeline run, as Support Views show it: IDs, kinds, states and timings only (§6.4).
+         */
+        PipelineRunView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error Detail */
+            error_detail: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Inputs */
+            inputs: {
+                [key: string]: unknown;
+            };
+            /** Kind */
+            kind: string;
+            /** Started At */
+            started_at: string | null;
+            /** Status */
+            status: string;
+            /** System Wide */
+            system_wide: boolean;
+            /** Versions */
+            versions: {
+                [key: string]: unknown;
+            };
+        };
         /**
          * PracticeChange
          * @description Only the fields sent are changed. Empty text clears an optional field.
@@ -989,6 +1429,29 @@ export interface components {
             title: string | null;
         };
         /**
+         * QueueDepthView
+         * @description Jobs queued and running now, and failed for good in the last day: system-wide and this Practice's.
+         */
+        QueueDepthView: {
+            /** Failed Last Day */
+            failed_last_day: number;
+            /** Queued */
+            queued: number;
+            /** Running */
+            running: number;
+        };
+        /**
+         * RefreshView
+         * @description A Refresh Job Kind and its most recent run.
+         */
+        RefreshView: {
+            /** Description */
+            description: string;
+            /** Kind */
+            kind: string;
+            last_job: components["schemas"]["JobView"] | null;
+        };
+        /**
          * Removal
          * @description Soft-deleting anything needs a reason (design doc §6.2).
          */
@@ -1032,6 +1495,11 @@ export interface components {
             lng: number | null;
             /** Name */
             name: string;
+        };
+        /** StartRefresh */
+        StartRefresh: {
+            /** Kind */
+            kind: string;
         };
         /**
          * UserChange
@@ -1232,6 +1700,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    list_jobs_jobs_get: {
+        parameters: {
+            query?: {
+                kind?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    job_status_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1576,6 +2106,164 @@ export interface operations {
             };
         };
     };
+    drugs_pbs_drugs_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                group?: string | null;
+                program?: string | null;
+                level?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsDrugPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    drug_pbs_drugs__item_code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsDrug"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    filters_pbs_filters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsFilters"];
+                };
+            };
+        };
+    };
+    schedule_status_pbs_schedule_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PbsScheduleStatus"];
+                };
+            };
+        };
+    };
+    list_pipeline_runs_pipeline_runs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineRunView"][];
+                };
+            };
+        };
+    };
+    pipeline_run_pipeline_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineRunView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     practice_details_practice_get: {
         parameters: {
             query?: never;
@@ -1821,6 +2509,99 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_depth_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueDepthView"];
+                };
+            };
+        };
+    };
+    list_refreshes_refreshes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshView"][];
+                };
+            };
+        };
+    };
+    start_refresh_refreshes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartRefresh"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_history_refreshes_history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobView"][];
                 };
             };
         };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccess, navigationFor } from "@/lib/navigation";
+import { canAccess, navigationFor, standInFor } from "@/lib/navigation";
 import { homePath, seesPatientData } from "@/lib/jobTitles";
 
 const labels = (items: { label: string }[]) => items.map((i) => i.label);
@@ -33,6 +33,12 @@ describe("route access", () => {
     }
     expect(canAccess("/system", "developer_admin")).toBe(true);
     expect(canAccess("/users", "developer_admin")).toBe(true);
+  });
+
+  it("gives developer admins System status in place of the Dashboard, and nothing else", () => {
+    expect(standInFor("/dashboard", "developer_admin")).toBe("/system");
+    expect(standInFor("/dashboard", "clinician")).toBeUndefined();
+    expect(standInFor("/patients", "developer_admin")).toBeUndefined();
   });
 
   it("blocks trial coordinators from Users and Settings", () => {

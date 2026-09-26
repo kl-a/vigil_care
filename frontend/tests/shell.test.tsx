@@ -56,6 +56,13 @@ describe("app shell", () => {
     expect(mainNav().getByRole("link", { name: "System status" })).toBeInTheDocument();
   });
 
+  it("sends a developer admin's Dashboard to System status instead of Open Items", async () => {
+    await renderShell("/dashboard", signedInAs("developer_admin"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/system"));
+    expect(screen.queryByRole("heading", { name: "Not available for your Job Title" })).not.toBeInTheDocument();
+    expect(screen.queryByText("screen content")).not.toBeInTheDocument();
+  });
+
   it("gives a trial coordinator a 403 on User Management", async () => {
     await renderShell("/users", signedInAs("trial_coordinator"));
     expect(screen.getByText("This page isn't available to a Trial coordinator.")).toBeInTheDocument();

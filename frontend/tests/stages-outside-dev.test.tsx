@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/pbs", useRouter: () => ({ replace: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/review", useRouter: () => ({ replace: vi.fn() }) }));
 vi.mock("@/lib/environment", () => ({ ENVIRONMENT: "test" }));
 
 import { AppShell } from "@/components/shell/AppShell";

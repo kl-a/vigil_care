@@ -147,8 +147,12 @@ A dated item a User adds alongside the Management Plan (e.g. re-scan date, MDT d
 _Avoid_: Task, action item
 
 **PBS Listing**:
-A drug's PBS status for a specific indication: Unrestricted, Restricted, Authority Required or Not Listed.
+A drug's PBS status for a specific indication: Unrestricted, Restricted, Authority Required (which may be Streamlined, where the prescriber writes a code instead of phoning for approval) or Not Listed.
 _Avoid_: PBS-listed (without an indication), PBS status
+
+**PBS Item**:
+One entry in the PBS Schedule, known by its item code: a drug in a specific form, strength and pack, on one PBS program, with its own PBS Listings. A drug usually has several PBS Items.
+_Avoid_: PBS code, listing (for the item itself)
 
 ### Imaging
 
@@ -191,8 +195,16 @@ The named kind of a Job (e.g. ingest a Document, refresh PBS), contributed by th
 _Avoid_: Job type, task type
 
 **Refresh**:
-A Job that updates Vigil's copy of external reference data (PBS Schedule, eviQ Treatment Protocols, trial registries), started on a schedule or by a developer admin.
+A Job that updates Vigil's Shared Reference Data (PBS Schedule, eviQ Treatment Protocols, trial registries), started on a schedule or by a developer admin.
 _Avoid_: Sync, import
+
+**Shared Reference Data**:
+Public, non-Patient data that every Practice reads from one shared copy: the PBS Schedule, clinical trials and Treatment Protocols. Kept current by Refreshes. A Practice never has its own copy.
+_Avoid_: Master data, global data
+
+**Sample Schedule**:
+A full copy of one past PBS Schedule, bundled with Vigil, that a PBS Refresh loads when the PBS Schedule API can't be reached and no real schedule has ever loaded, so demos work offline. It is out of date by design: always shown as sample data with its Schedule date, for demos only and never for clinical use; the next successful Refresh replaces it.
+_Avoid_: Mock data, fallback data
 
 **Support View**:
 A screen or endpoint for configuring and troubleshooting Vigil (health, Jobs, pipeline runs, Refresh history, cloud request metadata). Contains IDs only, never Patient data, so developer admins may use it.
