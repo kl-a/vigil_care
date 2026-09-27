@@ -32,6 +32,10 @@ _Avoid_: Pseudonymous profile, subject, case
 The details that identify a Patient (name, DOB, Medicare number, MRN, address, contact details). Never leaves the Practice Boundary; shown freely inside it.
 _Avoid_: PII record, demographics
 
+**Sex at birth**:
+The sex recorded for a Patient at birth, part of Patient Identity: male, female, another term, or not stated (the ABS Standard for Sex and Gender). Gender is a separate concept, not recorded yet.
+_Avoid_: Gender (for this), sex (unqualified)
+
 **Pseudonym**:
 The stable reference for a Patient printed on de-identified exports (e.g. "VG-0042"), so a receiving centre can quote it back. Not used inside Vigil, where the real name is shown.
 _Avoid_: Display name, alias, token

@@ -98,6 +98,28 @@ This stage can run alongside Stage 2.
 
 After each stage ships, Dr De Souza tries it hands-on in dev ([revisit-later.md](revisit-later.md), "For Dr De Souza").
 
+### Stage 5b · Visual refresh
+
+The design language of the Claude Design MVP (`temp/Vigil Care UI design/`), adopted where it reads better, not copied screen for screen: a Patient header band, an at-a-glance Summary, quiet provenance (a ✓ Verified icon with the latest Verification on hover), dense tables and segmented sub-tabs, and a clinical Overview with a Treatment Course timeline. Planned in the visual-refresh grilling of 2026-09-27, comparing screenshots of both apps (Playwright, 1440×900).
+
+**Branches:** each ticket is its own branch cut from `stage-5` and merged back into `stage-5`; `stage-5` goes to `main` as one PR once 5b is done.
+
+**Demo:** open Robin Sample's Overview, Summary and the Dashboard, side by side with the MVP's; show that the Summary's key facts sit above the fold and that each value's ✓ shows who verified it.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#50](https://github.com/kl-a/vigil_care/issues/50) | Visual bug fixes: sidebar height, breadcrumb, dates, ranges and units, sub-tab links | none | ⏭️ Ready |
+| 2 | [#51](https://github.com/kl-a/vigil_care/issues/51) | Design primitives: formats, section card, table toolbar, sub-tabs, Verified icon, value states | #50 | ⏳ Blocked |
+| 3 | [#52](https://github.com/kl-a/vigil_care/issues/52) | Patient header band | #51 | ⏳ Blocked |
+| 3 | [#54](https://github.com/kl-a/vigil_care/issues/54) | Open Items as a table with popover actions; Dashboard rail and count badge | #51 | ⏳ Blocked |
+| 3 | [#57](https://github.com/kl-a/vigil_care/issues/57) | Tables, sub-tabs and row actions (Patients, Clinical Data, Medications); Labs trend view | #51 | ⏳ Blocked |
+| 4 | [#53](https://github.com/kl-a/vigil_care/issues/53) | Patient Summary redesign: glance strip, Open Items cards, flagged-first results | #51, #52, #54 | ⏳ Blocked |
+| 4 | [#55](https://github.com/kl-a/vigil_care/issues/55) | Patient Overview redesign: Diagnoses, Key labs, Care Team and Open Items cards | #52, #54 | ⏳ Blocked |
+| 4 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth on Patient Identity and the header band | #52 | ⏳ Blocked |
+| 5 | [#56](https://github.com/kl-a/vigil_care/issues/56) | Treatment Course timeline on the Overview | #55 | ⏳ Blocked |
+
+Later, not in 5b: [#59](https://github.com/kl-a/vigil_care/issues/59) Dashboard Recent activity feed (once Documents and extraction give it enough to show).
+
 ### Stages 6–13 (outlines)
 
 | Stage | Shows stakeholders | Depends on | Status |
@@ -157,7 +179,7 @@ flowchart LR
 ```
 
 **Next up:**
-1. Stage 4 is merged (PR #49). Stage 5 is built on `stage-5`: run its demo, then merge.
+1. Stage 4 is merged (PR #49). Stage 5 is built on `stage-5`; Stage 5b (visual refresh, #50–#58) lands on it too, starting with #50. Then run both demos and merge `stage-5`.
 2. Then Stage 6.
 
 **Provisional decisions:** [docs/revisit-later.md](revisit-later.md) lists them with their triggers; working through them is tracked in [#33](https://github.com/kl-a/vigil_care/issues/33).
