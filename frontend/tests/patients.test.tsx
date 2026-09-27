@@ -8,7 +8,8 @@ const patients = vi.hoisted(() => ({ listPatients: vi.fn(), fetchPatient: vi.fn(
 vi.mock("@/lib/patients", async (importOriginal) => ({ ...(await importOriginal<object>()), ...patients }));
 
 import PatientsPage from "@/app/(app)/patients/page";
-import { PatientHeader, PatientProvider } from "@/components/patients/PatientContext";
+import { PatientProvider } from "@/components/patients/PatientContext";
+import { PatientHeader } from "@/components/patients/PatientHeader";
 import { PatientOverview } from "@/components/patients/PatientOverview";
 import { ViewerProvider } from "@/components/shell/ViewerProvider";
 import { formatDob, type PatientDetail, type PatientIdentity } from "@/lib/patients";

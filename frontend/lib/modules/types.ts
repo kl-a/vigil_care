@@ -97,4 +97,6 @@ export interface ModuleManifest {
   conditionExtension?: ConditionExtension;
   treatmentCourseExtensions?: readonly TreatmentCourseExtension[];
   imagingStudyExtension?: ImagingStudyExtension;
+  /** Its chip in the Patient header band, e.g. Oncology's "Colorectal cancer · Stage IIIB (dx)". */
+  patientHeaderChip?: ComponentType<{ patientId: string }>;
 }
