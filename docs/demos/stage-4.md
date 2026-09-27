@@ -4,12 +4,13 @@
 
 **Before the demo**
 1. `scripts/run-local.sh` (it migrates the database, loads the demo data and starts everything). Or, with the stack already up: `make demo-data`.
-2. 4a has shipped (`SHIPPED_STAGE = 4`, `SHIPPED_PARTS = ["4a"]`): the Clinical Data tab shows 4a's sub-tabs to everyone. 4b and 4c ship with #41 and #43; until then, turn on **Show upcoming screens** (dev) to demo what's built of them.
-3. As **Casey Dev (synthetic), Developer admin**, make sure **Oncology** is on in Settings → Specialty Modules.
+2. All of Stage 4 has shipped (`SHIPPED_STAGE = 4`, `SHIPPED_PARTS = ["4a", "4b", "4c"]`): the Clinical Data sub-tabs and the Medications tab show to everyone.
+3. If the dev database has never had a **PBS Refresh**, start one as the developer admin (System status → Refreshes): the Medication Manager picks drugs from the drug reference it builds.
+4. As **Casey Dev (synthetic), Developer admin**, make sure **Oncology** is on in Settings → Specialty Modules.
 
 **The story:** before any Document is read automatically, the clinician can build a Patient's record by hand. Every value says who entered it; every correction says why; and who may enter what follows their Job Title.
 
-Built so far: all of 4a (#35, #37, #38, #39), Treatment Courses and the drug reference in 4b (#36, #40), and labs, plan & notes and ECOG/CNS in 4c (#42, #44, #45). Still to come: Medications (#41) and imaging with Response Assessments (#43).
+All built: 4a (#35, #37, #38, #39), 4b (#36, #40, #41) and 4c (#42, #43, #44, #45).
 
 ## 4a · Conditions and cancer
 
@@ -31,9 +32,12 @@ Built so far: all of 4a (#35, #37, #38, #39), Treatment Courses and the drug ref
 | 1 | **Treatment Courses** → **Add course**: breast cancer, systemic, adjuvant, "AC-T" (doxorubicin 60 mg/m2, cyclophosphamide 600 mg/m2), Apr–Sep 2024. Then a surgery (left mastectomy) and radiation (chest wall, 50 Gy). | Each course belongs to one Condition; only systemic courses carry a Regimen. The adjuvant course has no Line of Therapy. | #40 |
 | 2 | Add a palliative systemic course (paclitaxel, Mar 2025), then another (capecitabine, Nov 2025). | They show **1st line** and **2nd line**, each saying why ("2nd line: 2nd palliative systemic course of Breast cancer"). | #40 |
 | 3 | As the clinician, **Change line** on a maintenance course between them: 1, "Maintenance of 1st line". | The override says it was set by a clinician and why; the next course counts on from it. A trial coordinator can't override. | #40 |
-| 4 | **End course** on the ongoing one. | Ending is a correction: the date, why it stopped, and a reason. | #40 |
-
-To come with #41: current Medications from the drug reference with their PBS links (#36 builds that reference after each PBS Refresh).
+| 4 | **End course** on paclitaxel: 1 Nov 2025, progression. | Ending is a correction: the date, why it stopped, and a reason. | #40 |
+| 5 | Sign in as the trial coordinator. **Medications** tab → **Add medication**: search "capecitabine", pick it; 1500 mg, oral, twice daily, category Cancer treatment, part of the capecitabine course, prescribed by Dr Rivera. | It's picked from the drug reference (built from the PBS Schedule); **PBS Drug Lookup** opens the drug's PBS page. A cancer drug links to its Treatment Course. | #36, #41 |
+| 6 | **Add medication** again: tick **It's not in the drug reference**, "Turmeric capsules", Supplement. | It says "Not in the drug reference" instead of a PBS link. | #41 |
+| 7 | **Change** capecitabine's dose to 1000 mg; then **Stop** it: today, "Hand-foot syndrome". | A reason is asked once per save. Stopping moves it to **Discontinued**; on Clinical Data, the capecitabine course is still ongoing. | #41 |
+| 8 | Open **Change log**, then **Print**. | Every change: what changed, who, when and why. The printout drops the buttons and navigation. | #41 |
+| 9 | Sign in as the secretary and open Medications. | Readable, with a lock instead of Add, Change and Stop. | #41 |
 
 ## 4c · Results and plan
 
@@ -45,5 +49,9 @@ To come with #41: current Medications from the drug reference with their PBS lin
 | 4 | **Add Next Step**: MDT, "Discuss at breast MDT", due next week. Sign in as the secretary and **Mark done**. | A secretary manages Next Steps (booking the MDT is often their job), but can't write a note or a plan. | #45 |
 | 5 | **Add note**: a letter to the referring GP. | Author and recipient come from the Provider directory. | #45 |
 | 6 | **Performance Status**: ECOG 1 in June, ECOG 2 today. **CNS**: present, 2 lesions (left frontal, cerebellum), treated with SRS. | The latest ECOG shows as a badge on the Overview with its date, and the CNS line beside it. | #44 |
+| 7 | As the trial coordinator, **Imaging & Findings** → **Add scan**: CT, chest, abdomen and pelvis, 14 Aug 2025, compared with May 2025; paste the impression; two Findings (liver segment VII metastasis, 18 mm, measurable; new 4 mm right lung nodule). | The impression is quoted exactly as pasted. A Finding is attributed to a Condition only when the report says so. | #43 |
+| 8 | **Response Assessments** → **Record assessment**: Breast cancer, responding, from that CT (radiology report). | The scan now carries a **Responding** badge; on Treatment Courses, paclitaxel (running then) shows **Best Response: Responding**, derived and saying which scan it came from. | #43 |
+| 9 | Record another: Cancer Diagnosis **Not sure which**, progressing, today. Sign in as the clinician. | It shows "Not sure which Cancer Diagnosis"; only the clinician can **Attribute to** one (or **Override** a report, with why). The trial coordinator can't. | #43 |
+| 10 | Switch Oncology off again (as the developer admin); reopen Jane as the clinician. | The Response Assessments and best responses stay visible, read-only in plain words; the scan and its Findings (Core) are unchanged. | #43 |
 
-**If something goes wrong:** a sub-tab is missing → it isn't built yet (turn on Show upcoming screens to see what's coming). "Oncology isn't active at this Practice" → switch it on as the developer admin.
+**If something goes wrong:** no drugs found when adding a Medication → start a PBS Refresh as the developer admin (the drug reference is built at its end). "Oncology isn't active at this Practice" → switch it on as the developer admin.

@@ -29,7 +29,6 @@ RECURRENCE_STATUSES = ("suspected", "confirmed", "reclassified_as_new_primary", 
 RECURRENCE_EXTENTS = ("local", "regional", "distant")
 BIOMARKER_METHODS = ("NGS", "FISH", "IHC", "PCR", "ctDNA")
 SPECIMEN_KINDS = ("primary", "metastasis", "liquid_biopsy")
-BEST_RESPONSES = ("CR", "PR", "SD", "PD", "NE")
 RESPONSE_DIRECTIONS = ("responding", "stable", "progressing")
 RESPONSE_SOURCES = ("radiology_report", "clinician")
 PERFORMANCE_SCALES = ("ECOG", "KPS")
@@ -143,7 +142,8 @@ class OncologyCourseDetail(PracticeEntity, Provenance):
     """Oncology's 1:1 extension of a Treatment Course.
 
     Line of Therapy rule: `line_of_therapy` may be set only when the Treatment Course is systemic with
-    palliative intent. It spans two tables, so a constraint trigger in the migration enforces it.
+    palliative intent. It spans two tables, so a constraint trigger in the migration enforces it. A course's
+    best response is derived from its Response Assessments, never stored.
     """
 
     __tablename__ = "oncology_course_detail"
@@ -159,7 +159,6 @@ class OncologyCourseDetail(PracticeEntity, Provenance):
     treatment_protocol_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("treatment_protocol.id", ondelete="SET NULL"), index=True
     )
-    best_response: Mapped[str | None] = mapped_column(info=allowed(*BEST_RESPONSES))
 
 
 class ResponseAssessment(PracticeEntity, Provenance):

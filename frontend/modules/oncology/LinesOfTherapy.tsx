@@ -49,4 +49,4 @@ function LineEditor({ patientId, courseId, annotation, onSaved, onCancel }: {
 }
 
 /** Line of Therapy (#40): derived from the palliative systemic courses by start date; clinicians may override. */
-export const lineOfTherapyExtension: TreatmentCourseExtension = { load, factKind: "line_of_therapy_override", editLabel: "Change line", Editor: LineEditor };
+export const lineOfTherapyExtension: TreatmentCourseExtension = { load, edit: { factKind: "line_of_therapy_override", label: "Change line", Editor: LineEditor } };

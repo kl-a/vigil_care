@@ -158,7 +158,8 @@ export function Conditions({ patientId }: { patientId: string }) {
   );
 }
 
-function EnteredBy({ entered }: { entered: Entered | null }) {
+/** Who entered a value, their Job Title then, and when. */
+export function EnteredBy({ entered }: { entered: Entered | null }) {
   if (!entered) return <>—</>;
   const jobTitle = isKnownJobTitle(entered.job_title) ? JOB_TITLE_LABEL[entered.job_title] : entered.job_title;
   return <>{entered.by} ({jobTitle}), {formatWhen(entered.at)}</>;

@@ -274,3 +274,66 @@ class TreatmentCourseRow(TreatmentCourseFields):
     modality: Modality
     ongoing: bool
     entered: Entered | None
+
+
+# --- Imaging Studies and Findings (#43) -------------------------------------------------------------------
+
+Laterality = Literal["left", "right", "bilateral"]
+Size = Annotated[Decimal, Field(gt=0, max_digits=7, decimal_places=1)]
+Suv = Annotated[Decimal, Field(ge=0, max_digits=6, decimal_places=2)]
+
+
+class FindingFields(BaseModel):
+    site: Short | None = None
+    laterality: Laterality | None = None
+    size_mm: Size | None = None
+    suv_max: Suv | None = None
+    is_new: bool | None = None
+    is_measurable: bool | None = None
+    # Only when the report attributes it to one of the Patient's Conditions.
+    condition_id: uuid.UUID | None = None
+
+
+class NewFinding(FindingFields):
+    description: Name
+
+
+class FindingChange(FindingFields):
+    description: Name | None = None
+    reason: Reason
+
+
+class FindingRow(NewFinding):
+    id: uuid.UUID
+    condition_name: str | None
+    entered: Entered | None
+
+
+class ImagingStudyFields(BaseModel):
+    modality: Short
+    body_region: Short | None = None
+    study_date: dt.date
+    # The report's impression, verbatim.
+    impression: Verbatim | None = None
+    comparison_date: dt.date | None = None
+
+
+class NewImagingStudy(ImagingStudyFields):
+    """A study and its Findings, in one save."""
+
+    findings: list[NewFinding] = Field(default=[], max_length=40)
+
+
+class ImagingStudyChange(BaseModel):
+    modality: Short | None = None
+    body_region: Short | None = None
+    study_date: dt.date | None = None
+    impression: Verbatim | None = None
+    comparison_date: dt.date | None = None
+    reason: Reason
+
+
+class ImagingStudyRow(ImagingStudyFields):
+    id: uuid.UUID
+    findings: list[FindingRow]
+    entered: Entered | None

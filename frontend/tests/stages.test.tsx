@@ -87,6 +87,6 @@ describe("build stages (design doc §15)", () => {
       </ViewerProvider>,
     );
     const tabs = within(await screen.findByRole("navigation", { name: "Patient" }));
-    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview", "Clinical Data"]);
+    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview", "Clinical Data", "Medications"]);
   });
 });

@@ -6,6 +6,7 @@ import { useViewer } from "@/components/shell/ViewerProvider";
 import { clinicalDataTabsFor } from "@/lib/modules/registry";
 import { isPartShipped } from "@/lib/stages";
 import { Conditions } from "./Conditions";
+import { Imaging } from "./Imaging";
 import { InactiveModuleFacts } from "./InactiveModuleFacts";
 import { Labs } from "./Labs";
 import { PlanAndNotes } from "./PlanAndNotes";
@@ -16,7 +17,7 @@ import { TreatmentCourses } from "./TreatmentCourses";
 const CORE_SUBTABS = [
   { key: "conditions", label: "Conditions", built: true, part: "4a" },
   { key: "labs", label: "Labs", built: true, part: "4c" },
-  { key: "imaging", label: "Imaging & Findings", built: false, part: "4c" },
+  { key: "imaging", label: "Imaging & Findings", built: true, part: "4c" },
   { key: "treatment", label: "Treatment Courses", built: true, part: "4b" },
   { key: "plan", label: "Plan & notes", built: true, part: "4c" },
 ] as const;
@@ -46,6 +47,7 @@ export function ClinicalData() {
       </nav>
       {current === "conditions" && <Conditions patientId={patientId} />}
       {current === "labs" && <Labs patientId={patientId} />}
+      {current === "imaging" && <Imaging patientId={patientId} />}
       {current === "plan" && <PlanAndNotes patientId={patientId} />}
       {current === "treatment" && <TreatmentCourses patientId={patientId} />}
       {moduleTabs.filter((tab) => tab.id === current).map((tab) => (

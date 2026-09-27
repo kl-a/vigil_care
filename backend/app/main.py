@@ -62,6 +62,7 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(care_team_router.router)
     app.include_router(clinical_router.router)
     app.include_router(medications_router.router)
+    app.include_router(medications_router.patients)
     app.include_router(pbs.router)
     app.include_router(jobs.router)
     app.include_router(specialty_modules.router)

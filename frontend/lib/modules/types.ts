@@ -56,25 +56,34 @@ export interface ConditionExtension {
   Form: ComponentType<{ patientId: string; onSaved: () => void; onCancel: () => void }>;
 }
 
-/** What a module adds to a Treatment Course, e.g. Oncology's Line of Therapy: a label and why. */
+/** What a module adds to a Treatment Course, e.g. Oncology's Line of Therapy or best response: a label and why. */
 export interface CourseAnnotation {
   label: string;
   detail: string;
   overridden: boolean;
+  /** Drawn as a status (colour, icon and label) rather than a plain chip, e.g. a best response. */
+  badge?: ReactNode;
   /** The number behind the label (e.g. a Line of Therapy's line), for its editor. */
   value?: number;
 }
 
 /**
- * A module's view of the Core's Treatment Courses: `load` gives each course's annotation (by course id); Users
- * who may enter `factKind` can change one with the `Editor`.
+ * A module's view of the Core's Treatment Courses: `load` gives each course's annotation (by course id). With an
+ * `edit`, Users who may enter its `factKind` can change one (a derived one like best response has none).
  */
 export interface TreatmentCourseExtension {
   load: (patientId: string) => Promise<Record<string, CourseAnnotation>>;
-  factKind: string;
-  /** The button that opens the editor, e.g. "Change line". */
-  editLabel: string;
-  Editor: ComponentType<{ patientId: string; courseId: string; annotation: CourseAnnotation | undefined; onSaved: () => void; onCancel: () => void }>;
+  edit?: {
+    factKind: string;
+    /** The button that opens the editor, e.g. "Change line". */
+    label: string;
+    Editor: ComponentType<{ patientId: string; courseId: string; annotation: CourseAnnotation | undefined; onSaved: () => void; onCancel: () => void }>;
+  };
+}
+
+/** A module's badge on the Core's Imaging Studies (by study id), e.g. Oncology's Response Assessment. */
+export interface ImagingStudyExtension {
+  load: (patientId: string) => Promise<Record<string, ReactNode>>;
 }
 
 /** A module's frontend: renderers for the sections and screens its backend declares. */
@@ -86,5 +95,6 @@ export interface ModuleManifest {
    * that ships them (e.g. "4a"); the rest stay hidden. */
   builtSections?: Readonly<Record<string, string>>;
   conditionExtension?: ConditionExtension;
-  treatmentCourseExtension?: TreatmentCourseExtension;
+  treatmentCourseExtensions?: readonly TreatmentCourseExtension[];
+  imagingStudyExtension?: ImagingStudyExtension;
 }

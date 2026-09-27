@@ -6,10 +6,11 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
-from app.modules.clinical import conditions, entry, labs, plan_and_notes, treatment_courses
+from app.modules.clinical import conditions, entry, imaging, labs, plan_and_notes, treatment_courses
 from app.modules.clinical.schemas import (
-    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, LabPanelRow, LabResultChange, LabResultRow,
-    ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewLabPanel, NewManagementPlan,
+    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, FindingChange, FindingRow, ImagingStudyChange,
+    ImagingStudyRow, LabPanelRow, LabResultChange, LabResultRow,
+    ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewFinding, NewImagingStudy, NewLabPanel, NewManagementPlan,
     NewNextStep, NewTreatmentCourse, NextStepChange, NextStepRow, TreatmentCourseChange, TreatmentCourseRow,
 )
 
@@ -276,6 +277,78 @@ def change_treatment_course(
 def remove_treatment_course(patient_id: uuid.UUID, course_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
     try:
         treatment_courses.remove_course(db, actor, patient_id, course_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Imaging Studies and Findings (#43) -------------------------------------------------------------------
+
+STUDY_PATH = "/patients/{patient_id}/imaging-studies/{study_id}"
+
+
+@router.get("/patients/{patient_id}/imaging-studies")
+def list_imaging_studies(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ImagingStudyRow]:
+    """Most recent first, each with its Findings."""
+    try:
+        return imaging.imaging_studies(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/imaging-studies", status_code=status.HTTP_201_CREATED)
+def add_imaging_study(patient_id: uuid.UUID, new: NewImagingStudy, actor: SignedIn, db: Db) -> ImagingStudyRow:
+    try:
+        return imaging.add_study(db, actor, patient_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except imaging.NoSuchCondition as error:
+        raise _invalid(error) from None
+
+
+@router.patch(STUDY_PATH)
+def change_imaging_study(patient_id: uuid.UUID, study_id: uuid.UUID, change: ImagingStudyChange, actor: SignedIn, db: Db) -> ImagingStudyRow:
+    try:
+        return imaging.change_study(db, actor, patient_id, study_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.delete(STUDY_PATH, status_code=status.HTTP_204_NO_CONTENT)
+def remove_imaging_study(patient_id: uuid.UUID, study_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        imaging.remove_study(db, actor, patient_id, study_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(STUDY_PATH + "/findings", status_code=status.HTTP_201_CREATED)
+def add_finding(patient_id: uuid.UUID, study_id: uuid.UUID, new: NewFinding, actor: SignedIn, db: Db) -> FindingRow:
+    try:
+        return imaging.add_finding(db, actor, patient_id, study_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except imaging.NoSuchCondition as error:
+        raise _invalid(error) from None
+
+
+@router.patch(STUDY_PATH + "/findings/{finding_id}")
+def change_finding(
+    patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.UUID, change: FindingChange, actor: SignedIn, db: Db
+) -> FindingRow:
+    try:
+        return imaging.change_finding(db, actor, patient_id, study_id, finding_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except imaging.NoSuchCondition as error:
+        raise _invalid(error) from None
+
+
+@router.delete(STUDY_PATH + "/findings/{finding_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_finding(patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        imaging.remove_finding(db, actor, patient_id, study_id, finding_id, removal.reason)
     except tuple(_MISSING) as error:
         raise _missing(error) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)

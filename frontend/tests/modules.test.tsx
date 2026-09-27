@@ -26,7 +26,7 @@ describe("Specialty Module sections and tabs (the API decides what; manifests re
   });
 
   it("offers only a module's built Clinical Data sub-tabs, and its Condition extension", () => {
-    expect(clinicalDataTabsFor(ONCOLOGY_ON).map((s) => s.title)).toEqual(["Cancer Diagnosis", "Biomarkers", "Performance Status", "CNS"]);
+    expect(clinicalDataTabsFor(ONCOLOGY_ON).map((s) => s.title)).toEqual(["Cancer Diagnosis", "Response Assessments", "Biomarkers", "Performance Status", "CNS"]);
     expect(clinicalDataTabsFor(NO_MODULES)).toEqual([]);
     expect(conditionExtensionsFor(ONCOLOGY_ON).map((e) => [e.factKind, e.label])).toEqual([["cancer_diagnosis", "This is a primary cancer"]]);
     expect(conditionExtensionsFor(NO_MODULES)).toEqual([]);

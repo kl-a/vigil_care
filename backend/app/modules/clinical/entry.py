@@ -111,14 +111,14 @@ def correct(
     reason: str,
     required: Collection[str] = (),
     exclude: Collection[str] = (),
-) -> None:
+) -> dict[str, Any]:
     """Applies the fields of `change` that differ from `current` (the row as its Verifications record it) and
     records one Verification for the whole save, with the reason. Nothing changed, nothing recorded. `exclude`
-    names fields of `change` that aren't the row's."""
+    names fields of `change` that aren't the row's. Returns the changed fields' new values."""
     skip = {"reason", *exclude}
     changed = changed_fields(current, change, required=required, mode="json", exclude=skip)
     if not changed:
-        return
+        return changed
     for field, value in blank_to_none(change.model_dump(exclude_unset=True, exclude=skip)).items():
         if field in changed:
             setattr(row, field, value)
@@ -127,6 +127,7 @@ def correct(
         before={field: current[field] for field in changed}, after=changed, reason=reason,
     )
     db.flush()
+    return changed
 
 
 def entered(db: Session, practice_id: uuid.UUID, subject_table: str, ids: Iterable[uuid.UUID]) -> dict[uuid.UUID, Entered]:

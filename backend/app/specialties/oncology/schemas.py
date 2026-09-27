@@ -237,3 +237,52 @@ class LineOverride(BaseModel):
 
     line: Annotated[int, Field(ge=1, le=20)] | None
     reason: Reason
+
+
+# --- Response Assessments and best response (#43) --------------------------------------------------------
+
+Direction = Literal["responding", "stable", "progressing"]
+ResponseSource = Literal["radiology_report", "clinician"]
+
+
+class NewResponseAssessment(BaseModel):
+    """`cancer_diagnosis_id` None: not sure which Cancer Diagnosis (a clinician attributes it later)."""
+
+    cancer_diagnosis_id: uuid.UUID | None = None
+    assessed_on: dt.date
+    direction: Direction
+    source: ResponseSource
+    imaging_study_id: uuid.UUID | None = None
+
+
+class ResponseAssessmentRow(NewResponseAssessment):
+    id: uuid.UUID
+    cancer_diagnosis_name: str | None
+    # The clinician's assessment this one replaced, and the one that replaced this.
+    overrides_id: uuid.UUID | None
+    overridden_by_id: uuid.UUID | None
+    # Why a clinician overrode it (on the override).
+    override_reason: str | None
+    entered: Entered | None
+
+
+class Attribution(BaseModel):
+    cancer_diagnosis_id: uuid.UUID
+
+
+class ResponseOverride(BaseModel):
+    """A clinician's own direction in place of an assessment, and why."""
+
+    direction: Direction
+    reason: Reason
+
+
+class BestResponse(BaseModel):
+    """A course's best response: derived, linked to the assessment it came from."""
+
+    treatment_course_id: uuid.UUID
+    direction: Direction
+    response_assessment_id: uuid.UUID
+    imaging_study_id: uuid.UUID | None
+    # e.g. "Responding: best response during Paclitaxel, on CT of 14 Aug 2026".
+    explanation: str

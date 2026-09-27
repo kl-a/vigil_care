@@ -481,7 +481,6 @@ erDiagram
   - `confidence BETWEEN 0 AND 1`.
 - Oncology:
   - `biomarker.method IN ('NGS', 'FISH', 'IHC', 'PCR', 'ctDNA')` and `biomarker.specimen_kind IN ('primary', 'metastasis', 'liquid_biopsy')`.
-  - `oncology_course_detail.best_response IN ('CR', 'PR', 'SD', 'PD', 'NE')`.
   - `performance_status.scale IN ('ECOG', 'KPS')`, with ECOG 0–5 and KPS 0–100 in multiples of 10.
 - Medications:
   - `medication.status IN ('active', 'discontinued', 'on_hold', 'completed', 'unknown')`.
@@ -640,7 +639,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `treatment_course` | Any course of treatment for a Condition (**Core**): systemic, procedure/surgery, radiation or other | `condition_id`, `modality` (systemic/surgery/radiation; modules may add values), `intent`, `regimen_name` (systemic only), `regimen_planned` (JSONB: planned drugs and doses), `start_date`, `end_date` (null = ongoing; set only when a User records that the course ended), `reason_stopped`, `details` (JSONB: surgery = procedure, margins; radiation = site, dose, fractions), + provenance |
-| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable: **a clinician's override** with a reason; when null the line is derived, numbering the Cancer Diagnosis's palliative systemic courses by start date; see the Line of Therapy rule), `treatment_protocol_id` (nullable). **Best response is derived**, not stored: the best direction among the Response Assessments dated during the course (responding > stable > progressing), linked to its source (the `best_response` column is dropped in Stage 4). |
+| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable: **a clinician's override** with a reason; when null the line is derived, numbering the Cancer Diagnosis's palliative systemic courses by start date; see the Line of Therapy rule), `treatment_protocol_id` (nullable). **Best response is derived**, not stored: the best direction among the Response Assessments dated during the course (responding > stable > progressing), linked to its source (the `best_response` column was dropped in Stage 4c). |
 | `drug_reference` | Canonical drug lookup (Shared Reference Data) | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_codes` (JSONB: its PBS Items' codes; replaced the single `pbs_item_id` in #36, as PBS Items are replaced each Refresh), `in_current_schedule`, `common_doses`, `common_routes`. **Built from the current PBS Schedule** by the PBS Refresh's `drug_reference` step (#36): one row per PBS drug (unique `generic_name`), its brands, most common ATC code, `is_cancer_drug` from ATC L01/L02. A drug that leaves the Schedule stays, as Medications may point at it, with `in_current_schedule = false`, and is no longer offered. A Medication not in it is entered as free text. A fuller source (AMT) may come later ([revisit-later.md](revisit-later.md) #34). |
 | `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set when the drug belongs to a Treatment Course); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
 | `medication_change_log` | Audit trail of Medication changes. Never changes once written. | As v1.1 (`medication_id`, `change_type`, `previous_value`, `new_value`, `changed_at`, `reason`), with `changed_by_user_id` (replaces `changed_by` → provider) |
@@ -1169,9 +1168,14 @@ POST   /patients/{id}/cancer-diagnoses/{cd}/biomarkers/{b}/move   (Oncology) To 
 GET    /patients/{id}/treatment-courses     Most recent first; POST adds, PATCH corrects or ends (reason), DELETE removes
 GET    /patients/{id}/lines-of-therapy      (Oncology) Each palliative systemic course's line, derived unless overridden
 PUT    /patients/{id}/treatment-courses/{tc}/line-of-therapy   (Oncology) Override or derive again (clinician, reason)
-GET    /patients/{id}/imaging               Imaging studies + Findings
-GET    /patients/{id}/response-assessments
-POST   /response-assessments                Clinician override
+GET    /patients/{id}/imaging-studies      Most recent first, each with its Findings; POST adds a study and its Findings in one save
+PATCH  /patients/{id}/imaging-studies/{s}   Correct (reason); DELETE removes it and its Findings (reason)
+POST   /patients/{id}/imaging-studies/{s}/findings   Add a Finding; PATCH /findings/{f} corrects, DELETE removes (reason)
+GET    /patients/{id}/response-assessments  (Oncology) Newest first; an overridden one names the override
+POST   /patients/{id}/response-assessments  (Oncology) Record one; no Cancer Diagnosis = "not sure which" (source clinician: clinician only)
+POST   /patients/{id}/response-assessments/{ra}/attribute | /override   (Oncology) Attribute an unattributed one, or override (clinician, reason)
+DELETE /patients/{id}/response-assessments/{ra}   (Oncology) Remove (reason)
+GET    /patients/{id}/best-responses        (Oncology) Each course's best response, derived, with the assessment it came from
 GET    /patients/{id}/labs                  Newest first
 POST   /patients/{id}/lab-panels            A panel in one save, one Verification (subject `lab_panel`)
 PATCH  /patients/{id}/labs/{lid}            Correct one value (reason); flag recomputed
@@ -1190,11 +1194,12 @@ DELETE /{record-type}/{id}                  Soft delete with reason (verificatio
 
 # Medications (as v1.1, with User-based verification)
 GET    /drugs?q=                            The drug reference (built from the PBS Schedule), by generic or brand name
-GET    /patients/{id}/medications
-POST   /patients/{id}/medications
-PATCH  /medications/{id}
-POST   /medications/{id}/discontinue
-GET    /medications/{id}/changelog
+GET    /patients/{id}/medications          Most recently started first
+POST   /patients/{id}/medications          From the drug reference (`drug_reference_id`) or free text (`drug_name`)
+PATCH  /patients/{id}/medications/{m}      Change (reason); logged as a dose change, status change or correction
+POST   /patients/{id}/medications/{m}/stop | /restart   Discontinue from a date, or restart (reason)
+DELETE /patients/{id}/medications/{m}      Remove one entered by mistake (reason)
+GET    /patients/{id}/medication-changes   The change log: every change, who, when and why
 GET    /patients/{id}/medications/reconcile
 POST   /patients/{id}/medications/reconcile
 GET    /drug-reference

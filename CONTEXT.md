@@ -266,6 +266,10 @@ _Avoid_: Surgical line, radiation line
 The stated direction of a Cancer Diagnosis at a point in time: responding, stable or progressing. Taken from the radiology impression by default; a clinician may record or override it. Not attributed when the source doesn't say which Cancer Diagnosis it concerns.
 _Avoid_: Trend, status
 
+**Best Response**:
+The best direction a Treatment Course achieved: the best Response Assessment of its Cancer Diagnosis dated while it ran (responding, then stable, then progressing). Always derived, never entered.
+_Avoid_: Best overall response, CR/PR/SD/PD
+
 **Treatment Protocol**:
 A standard-of-care protocol published by eviQ, with its intent, line, drugs and Biomarker requirements, and the eviQ version it was taken from.
 _Avoid_: Regimen (for the published protocol), guideline

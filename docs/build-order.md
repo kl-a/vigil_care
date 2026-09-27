@@ -68,9 +68,9 @@ This stage can run alongside Stage 2.
 | 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 | 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 
-### Stage 4 · Clinical Record by hand (4a shipped: `SHIPPED_STAGE = 4`)
+### Stage 4 · Clinical Record by hand (4a, 4b and 4c shipped: `SHIPPED_STAGE = 4`)
 
-**Demo** (in three parts, each shipped as it's built): build Jane Citizen's record by hand. 4a: breast cancer with Stage, HER2 3+ and ER+ history, a Recurrence. 4b: adjuvant then palliative first-line courses (Line of Therapy derived) and current Medications with PBS links. 4c: the latest bloods, a CT with its Response Assessment, the Management Plan and a Next Step. Show that a secretary can't record a Stage, and that with Oncology switched off the cancer details stay visible read-only. Plan: design doc §15 Stage 4. Script so far: [docs/demos/stage-4.md](demos/stage-4.md).
+**Demo** (in three parts, each shipped as it's built): build Jane Citizen's record by hand. 4a: breast cancer with Stage, HER2 3+ and ER+ history, a Recurrence. 4b: adjuvant then palliative first-line courses (Line of Therapy derived) and current Medications with PBS links. 4c: the latest bloods, a CT with its Response Assessment, the Management Plan and a Next Step. Show that a secretary can't record a Stage, and that with Oncology switched off the cancer details stay visible read-only. Plan: design doc §15 Stage 4. Script: [docs/demos/stage-4.md](demos/stage-4.md).
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
@@ -80,9 +80,9 @@ This stage can run alongside Stage 2.
 | 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | 🔨 Built (`stage-4`) |
 | 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | 🔨 Built (`stage-4`) |
 | 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | 🔨 Built (`stage-4`) |
-| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | ⏭️ Ready |
+| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | 🔨 Built (`stage-4`) |
 | 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | 🔨 Built (`stage-4`) |
-| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments (4c); ships 4c if #44 is in | #37, #40 | ⏭️ Ready |
+| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments, and **ship 4c** (4c) | #37, #40 | 🔨 Built (`stage-4`) |
 | 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c); ships 4c if #43 is in | #37 | 🔨 Built (`stage-4`) |
 | 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes (4c). 4c ships with the last of #43 and #44, which its demo needs | #35 | 🔨 Built (`stage-4`) |
 
@@ -92,9 +92,9 @@ This stage can run alongside Stage 2.
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient | #38, #39, #41, #42, #43, #44, #45 | ⏳ Blocked |
+| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient | #38, #39, #41, #42, #43, #44, #45 | ⏭️ Ready |
 | 2 | [#47](https://github.com/kl-a/vigil_care/issues/47) | Patient Summary v1 | #46 | ⏳ Blocked |
-| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | ⏳ Blocked |
+| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | ⏭️ Ready |
 
 After each stage ships, Dr De Souza tries it hands-on in dev ([revisit-later.md](revisit-later.md), "For Dr De Souza").
 
@@ -157,7 +157,7 @@ flowchart LR
 ```
 
 **Next up:**
-1. Stage 4: start #35 (the entry pattern every Stage 4 ticket copies) and, in parallel, #36 (drug reference). Then 4a (#37 → #38, #39), 4b (#40 → #41) and 4c (#42, #43, #44, #45) as their blockers clear.
+1. Stage 4: all of it is built on `stage-4` (4a, 4b, 4c shipped); run the demo, then merge.
 2. Stage 5 once Stage 4's parts are in: #46 → #47, and #48.
 
 **Provisional decisions:** [docs/revisit-later.md](revisit-later.md) lists them with their triggers; working through them is tracked in [#33](https://github.com/kl-a/vigil_care/issues/33).

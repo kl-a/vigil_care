@@ -90,12 +90,17 @@ class CourseSummary:
     intent: str | None
     regimen_name: str | None
     start_date: date | None
+    # None: ongoing.
+    end_date: date | None
 
 
 def course_summaries(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID) -> list[CourseSummary]:
     """For Specialty Modules: the Patient's live courses, earliest start first."""
     return [
-        CourseSummary(id=c.id, condition_id=c.condition_id, modality=c.modality, intent=c.intent, regimen_name=c.regimen_name, start_date=c.start_date)
+        CourseSummary(
+            id=c.id, condition_id=c.condition_id, modality=c.modality, intent=c.intent, regimen_name=c.regimen_name,
+            start_date=c.start_date, end_date=c.end_date,
+        )
         for c in _patient_courses(db, practice_id, patient_id)
     ]
 

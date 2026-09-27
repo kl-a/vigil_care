@@ -123,3 +123,28 @@ export const changeTreatmentCourse = (patientId: string, id: string, change: Sch
   request<TreatmentCourseRow>(`/patients/${patientId}/treatment-courses/${id}`, { method: "PATCH", body: JSON.stringify(change) });
 export const removeTreatmentCourse = (patientId: string, id: string, reason: string) =>
   request<void>(`/patients/${patientId}/treatment-courses/${id}`, { method: "DELETE", body: JSON.stringify({ reason }) });
+
+// --- Imaging Studies and Findings (#43) -------------------------------------------------------------------
+
+export type ImagingStudyRow = Schemas["ImagingStudyRow"];
+export type NewImagingStudy = Schemas["NewImagingStudy"];
+export type FindingRow = Schemas["FindingRow"];
+export type NewFinding = Schemas["NewFinding"];
+
+export const fetchImagingStudies = (patientId: string) => request<ImagingStudyRow[]>(`/patients/${patientId}/imaging-studies`);
+/** A study and its Findings, in one save. */
+export const addImagingStudy = (patientId: string, study: NewImagingStudy) =>
+  request<ImagingStudyRow>(`/patients/${patientId}/imaging-studies`, { method: "POST", body: JSON.stringify(study) });
+/** A correction always says why, once for the whole save. */
+export const changeImagingStudy = (patientId: string, id: string, change: Schemas["ImagingStudyChange"]) =>
+  request<ImagingStudyRow>(`/patients/${patientId}/imaging-studies/${id}`, { method: "PATCH", body: JSON.stringify(change) });
+export const removeImagingStudy = (patientId: string, id: string, reason: string) =>
+  request<void>(`/patients/${patientId}/imaging-studies/${id}`, { method: "DELETE", body: JSON.stringify({ reason }) });
+export const addFinding = (patientId: string, studyId: string, finding: NewFinding) =>
+  request<FindingRow>(`/patients/${patientId}/imaging-studies/${studyId}/findings`, { method: "POST", body: JSON.stringify(finding) });
+export const removeFinding = (patientId: string, studyId: string, id: string, reason: string) =>
+  request<void>(`/patients/${patientId}/imaging-studies/${studyId}/findings/${id}`, { method: "DELETE", body: JSON.stringify({ reason }) });
+
+/** A scan as it's named, e.g. "CT chest, abdomen and pelvis". */
+export const scanName = (study: Pick<ImagingStudyRow, "modality" | "body_region">) =>
+  study.body_region ? `${study.modality} ${study.body_region.charAt(0).toLowerCase()}${study.body_region.slice(1)}` : study.modality;

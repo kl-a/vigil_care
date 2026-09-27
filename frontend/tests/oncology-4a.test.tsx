@@ -92,11 +92,10 @@ describe("CNS status", () => {
 
 
 describe("Stage 4 ships in parts", () => {
-  it("shows 4a now, and 4b and 4c only when upcoming screens are revealed", () => {
+  it("shows a part once it has shipped, and any part when upcoming screens are revealed", () => {
     expect(isPartShipped("4a")).toBe(true);
-    expect(isPartShipped("4b")).toBe(false);
-    expect(isPartShipped("4c")).toBe(false);
-    expect(isPartShipped("4c", true)).toBe(true);
+    expect(isPartShipped("5a")).toBe(false);
+    expect(isPartShipped("5a", true)).toBe(true);
   });
 });
 

@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.modules.clinical.conditions import extended_conditions
-from app.specialties.oncology import biomarkers, lines_of_therapy, observations, recurrences
+from app.specialties.oncology import biomarkers, lines_of_therapy, observations, recurrences, response_assessments
 from app.specialties.oncology.access import MODULE_KEY
 from app.specialties.oncology.models import CancerDiagnosis
 
@@ -33,7 +33,8 @@ def _line(name: str, diagnosis: CancerDiagnosis) -> str:
 
 
 def plain_facts(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID) -> list[str]:
-    """One line per Cancer Diagnosis, then the latest ECOG and CNS status."""
+    """One line per Cancer Diagnosis (with its biomarkers and Recurrences), its lines, then Response Assessments and
+    best responses, then the latest ECOG and CNS status."""
     names = extended_conditions(db, practice_id, patient_id, MODULE_KEY)
     lines: list[str] = []
     if names:
@@ -50,4 +51,5 @@ def plain_facts(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID) -> l
                 lines.append(f"{name}: " + "; ".join(biomarkers.plain(chip) for chip in chips))
             lines += recurrences.plain_lines(db, practice_id, diagnosis.id, name, _when)
         lines += [line.explanation for line in lines_of_therapy.derive(db, practice_id, patient_id)]
+    lines += response_assessments.plain_lines(db, practice_id, patient_id, _when)
     return lines + observations.latest_lines(db, practice_id, patient_id, _when)

@@ -30,11 +30,12 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
   const [adding, setAdding] = useState(false);
   const [ending, setEnding] = useState<TreatmentCourseRow | null>(null);
   const [removing, setRemoving] = useState<TreatmentCourseRow | null>(null);
-  const [editing, setEditing] = useState<{ extension: TreatmentCourseExtension; course: TreatmentCourseRow; annotation?: CourseAnnotation } | null>(null);
+  const [editing, setEditing] = useState<{ edit: NonNullable<TreatmentCourseExtension["edit"]>; course: TreatmentCourseRow; annotation?: CourseAnnotation } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const load = useCallback(() => {
     fetchTreatmentCourses(patientId).then(setCourses).catch((reason: unknown) => setError(messageOf(reason)));
-    Promise.all(extensions.map((extension) => extension.load(patientId))).then(setAnnotations).catch(() => setAnnotations([]));
+    // Each module's view on its own: one that fails to load leaves the others shown.
+    Promise.all(extensions.map((extension) => extension.load(patientId).catch(() => ({})))).then(setAnnotations);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- extensions follow the active modules
   }, [patientId, modules]);
   useEffect(load, [load]);
@@ -50,7 +51,7 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
       </div>
       {adding && <CourseForm patientId={patientId} onCancel={() => setAdding(false)} onSave={async (course) => { await addTreatmentCourse(patientId, course); setAdding(false); load(); }} />}
       {editing && (
-        <editing.extension.Editor patientId={patientId} courseId={editing.course.id} annotation={editing.annotation}
+        <editing.edit.Editor patientId={patientId} courseId={editing.course.id} annotation={editing.annotation}
           onCancel={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />
       )}
       {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
@@ -65,17 +66,17 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
                   <StatusPill tone="neu">{MODALITY_LABEL[course.modality]}{course.intent && ` · ${INTENT_LABEL[course.intent]}`}</StatusPill>
                   {extensions.map((extension, index) => {
                     const annotation = annotations[index]?.[course.id];
-                    return annotation && (
+                    return annotation && (annotation.badge ? <span key={index} title={annotation.detail}>{annotation.badge}</span> : (
                       <span key={index} title={annotation.detail} className="rounded-full border border-border px-2 py-0.5 text-xs font-semibold">
                         {annotation.label}
                       </span>
-                    );
+                    ));
                   })}
                 </span>
                 <span className="inline-flex gap-2">
-                  {!compact && extensions.map((extension, index) => rights[extension.factKind] && annotations[index]?.[course.id] && (
-                    <button key={index} onClick={() => setEditing({ extension, course, annotation: annotations[index]?.[course.id] })} className="text-xs font-medium text-primary">
-                      {extension.editLabel}
+                  {!compact && extensions.map(({ edit }, index) => edit && rights[edit.factKind] && annotations[index]?.[course.id] && (
+                    <button key={index} onClick={() => setEditing({ edit, course, annotation: annotations[index]?.[course.id] })} className="text-xs font-medium text-primary">
+                      {edit.label}
                     </button>
                   ))}
                   {canEnter && course.ongoing && <button onClick={() => setEnding(course)} className="text-xs font-medium text-primary">End course</button>}
