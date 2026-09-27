@@ -9,11 +9,12 @@ import { RowMenu } from "@/components/ui/RowMenu";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { FIELD } from "@/components/ui/styles";
 import { SubTabs } from "@/components/ui/SubTabs";
+import { TableCard } from "@/components/ui/TableCard";
 import { FlagWord, NotRecorded } from "@/components/ui/ValueStates";
 import { VerifiedMark } from "@/components/ui/Verified";
 import { messageOf } from "@/lib/api";
 import {
-  addLabPanel, COMMON_PANELS, fetchEntryRights, fetchLabResults, removeLabResult, trendsOf, type LabFlag, type LabResultRow,
+  addLabPanel, COMMON_PANELS, fetchEntryRights, isFlagged, fetchLabResults, removeLabResult, trendsOf, type LabFlag, type LabResultRow,
   type NewLabResult,
 } from "@/lib/clinical";
 import { formatDate, todayIso } from "@/lib/dates";
@@ -89,10 +90,11 @@ export function Labs({ patientId }: { patientId: string }) {
                 <span className="mr-1 text-xs text-muted-foreground">Analyte</span>
                 {[...trends.entries()].map(([name, series]) => {
                   const flag = series[series.length - 1]?.flag;
-                  const Arrow = flag === "high" ? ArrowUp : flag === "low" ? ArrowDown : null;
+                  const Arrow = flag === "high" ? ArrowUp : flag === "low" ? ArrowDown : flag === "critical" ? TriangleAlert : null;
                   return (
                     <button key={name} onClick={() => setAnalyte(name)} aria-pressed={charted === name}
-                      className={`inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium ${charted === name ? "border-primary/40 bg-accent text-primary" : "border-border bg-card hover:bg-muted"}`}>
+                      title={Arrow ? `${name}: latest ${flag}` : name}
+                      className={`inline-flex h-7 items-center gap-1 rounded-full border px-3 text-xs font-medium ${charted === name ? "border-foreground/40 bg-muted text-foreground font-semibold" : "border-border bg-card hover:bg-muted"}`}>
                       {name}{Arrow && <Arrow aria-label={`latest ${flag}`} className="h-3 w-3 text-neg" />}
                     </button>
                   );
@@ -102,6 +104,11 @@ export function Labs({ patientId }: { patientId: string }) {
                 <span className="text-xs text-muted-foreground">{formatUnit(trends.get(charted)!.at(-1)?.unit)} · reference {formatRange(trends.get(charted)!.at(-1)?.ref_low, trends.get(charted)!.at(-1)?.ref_high)}</span>
               </p>
               <TrendChart analyte={charted} results={trends.get(charted)!} />
+              {trends.get(charted)!.some((r) => isFlagged(r.flag)) && (
+                <p className="m-0 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <TriangleAlert aria-hidden className="h-3 w-3 text-neg" />Larger red points are outside the reference range.
+                </p>
+              )}
               <ResultsTable label={`${charted} results`} rows={[...trends.get(charted)!].reverse()} analyte={false} action={remove} />
             </>
           )}
@@ -122,7 +129,7 @@ export function Labs({ patientId }: { patientId: string }) {
 /** Results as a table: date, (panel and analyte), value in the flag colour, Flag in words, reference range, ✓. */
 function ResultsTable({ label, rows, analyte, action }: { label: string; rows: LabResultRow[]; analyte: boolean; action: (row: LabResultRow) => ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-md border border-border">
+    <TableCard label={label} count={`${rows.length} ${rows.length === 1 ? "result" : "results"}`}>
       <table aria-label={label} className="w-full border-collapse text-[13px]">
         <thead className="bg-muted text-left text-xs text-muted-foreground">
           <tr>
@@ -138,7 +145,7 @@ function ResultsTable({ label, rows, analyte, action }: { label: string; rows: L
         </thead>
         <tbody>
           {rows.map((result) => {
-            const flagged = result.flag === "low" || result.flag === "high" || result.flag === "critical";
+            const flagged = isFlagged(result.flag);
             return (
               <tr key={result.id} className="border-t border-border">
                 <td className="whitespace-nowrap px-3 py-2 tabular-nums">{formatDate(result.collected_at.slice(0, 10))}</td>
@@ -156,7 +163,7 @@ function ResultsTable({ label, rows, analyte, action }: { label: string; rows: L
           })}
         </tbody>
       </table>
-    </div>
+    </TableCard>
   );
 }
 
@@ -250,7 +257,7 @@ const PAD = { left: 44, right: 12, top: 12, bottom: 24 };
  * for a lab). Numbers only. */
 export function TrendChart({ analyte, results }: { analyte: string; results: LabResultRow[] }) {
   const points = results.filter((r) => r.value !== null).map((r) => ({
-    at: Date.parse(r.collected_at), value: Number(r.value), flagged: r.flag === "low" || r.flag === "high" || r.flag === "critical",
+    at: Date.parse(r.collected_at), value: Number(r.value), flagged: isFlagged(r.flag),
   }));
   if (points.length === 0) return <p className="m-0 text-[13px] text-muted-foreground">No numeric results to chart for {analyte}.</p>;
   const latest = results[results.length - 1]!;
@@ -278,7 +285,8 @@ export function TrendChart({ analyte, results }: { analyte: string; results: Lab
         {/* Data, not an action: a neutral line; points outside the range in the negative colour. */}
         <polyline points={points.map((p) => `${x(p.at)},${y(p.value)}`).join(" ")} fill="none" stroke="hsl(var(--foreground))" strokeOpacity={0.55} strokeWidth={2} vectorEffect="non-scaling-stroke" />
         {points.map((p) => (
-          <circle key={p.at} cx={x(p.at)} cy={y(p.value)} r={4} fill={p.flagged ? "hsl(var(--neg))" : "hsl(var(--foreground))"} fillOpacity={p.flagged ? 1 : 0.55}>
+          <circle key={p.at} cx={x(p.at)} cy={y(p.value)} r={p.flagged ? 6 : 4} fill={p.flagged ? "hsl(var(--neg))" : "hsl(var(--foreground))"}
+            fillOpacity={p.flagged ? 1 : 0.55} stroke={p.flagged ? "hsl(var(--card))" : "none"} strokeWidth={2}>
             <title>{`${p.value}${p.flagged ? " (outside range)" : ""}`}</title>
           </circle>
         ))}

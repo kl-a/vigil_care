@@ -1,4 +1,5 @@
 import { request, type Schemas } from "./api";
+import { parseIsoDate } from "./format";
 
 export type OpenItem = Schemas["OpenItem"];
 export type OpenItemAction = Schemas["OpenItemAction"];
@@ -29,7 +30,7 @@ const DAY = 24 * 60 * 60 * 1000;
 /** How long an Open Item has been waiting, or when a Next Step is due: "3 d", "due 3 d", "2 d overdue", "today". */
 export function ageOf(item: Pick<OpenItem, "type" | "dated">, today: Date = new Date()): string {
   if (!item.dated) return "—";
-  const [y, m, d] = item.dated.split("-").map(Number) as [number, number, number];
+  const [y, m, d] = parseIsoDate(item.dated);
   const days = Math.round((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(y, m - 1, d)) / DAY);
   const span = (n: number) => (n >= 60 ? `${Math.round(n / 30)} mo` : `${n} d`);
   if (item.type === "next_step") return days === 0 ? "due today" : days < 0 ? `due ${span(-days)}` : `${span(days)} overdue`;

@@ -15,14 +15,15 @@ function NavLink({ item, current, expanded, badge }: { item: NavItem; current: b
       href={item.href}
       title={item.label}
       aria-current={current ? "page" : undefined}
-      className={`flex h-8 items-center gap-2.5 rounded-md pr-2 text-[13px] font-medium hover:bg-muted ${
+      className={`relative flex h-8 items-center gap-2.5 rounded-md pr-2 text-[13px] font-medium hover:bg-muted ${
         item.sub && expanded ? "pl-[26px]" : "pl-2"
       } ${current ? "bg-accent text-primary" : "text-foreground"}`}
     >
       <Icon aria-hidden className="h-[15px] w-[15px] flex-none" />
       {expanded && <span className="flex-1 whitespace-nowrap">{item.label}</span>}
-      {expanded && badge ? (
-        <span aria-label={`${badge} Open Items you can act on`} className="rounded-full border border-cau-bd bg-cau-bg px-1.5 text-[11px] font-semibold tabular-nums text-cau">{badge}</span>
+      {badge ? (
+        <span aria-label={`${badge} Open Items you can act on`}
+          className={`rounded-full border border-cau-bd bg-cau-bg px-1.5 text-[11px] font-semibold tabular-nums text-cau ${expanded ? "" : "absolute left-6 top-0.5 px-1 text-[10px]"}`}>{badge}</span>
       ) : null}
       {expanded && !isReleased(screenOf(item)) && (
         <span title={`Coming in Stage ${screenOf(item).stage}`} className="rounded bg-dev-bg px-1 font-mono text-[10px] text-dev">S{screenOf(item).stage}</span>

@@ -61,6 +61,7 @@ def test_the_summary_of_a_recorded_patient(sign_in: SignIn, committed: Seed) -> 
     assert (haemoglobin["value"], haemoglobin["flag"]) == ("105", "low")
     assert [p["value"] for p in results["lab_trends"]["Haemoglobin"]] == ["98", "105"]
     assert results["updated"]["job_title"] == "trial_coordinator"  # the newest value's Verification
+    assert results["scans_updated"]["job_title"] == "clinician"  # the scans have their own
     assert [s["modality"] for s in results["scans"]] == ["CT"]
     assert [c["id"] for c in found["treatment"]["courses"]] == [current["id"]]  # the last 6 months only
     assert old["id"] not in {c["id"] for c in found["treatment"]["courses"]}

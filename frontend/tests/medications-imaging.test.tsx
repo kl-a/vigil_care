@@ -66,7 +66,7 @@ describe("Medication Manager", () => {
     const dex = within(table).getByText("Dexamfetamine").closest("tr")!;
     expect([...dex.querySelectorAll("td")].slice(1, 6).map((td) => td.textContent)).toEqual(["5 mg", "Twice daily", "Oral", "Fatigue", "Supportive care"]);
     expect(within(dex).getByRole("button", { name: /^Verified/ })).toBeInTheDocument();
-    expect(within(dex).getByRole("link", { name: "PBS Drug Lookup" })).toHaveAttribute("href", "/pbs/1165H");
+    expect(within(dex).getByRole("link", { name: "Dexamfetamine" })).toHaveAttribute("href", "/pbs/1165H");
     const turmeric = within(table).getByText("Turmeric capsules").closest("tr")!;
     expect(turmeric).toHaveTextContent("Not in the drug reference");
     expect(within(table).queryByText("Dexamethasone")).not.toBeInTheDocument();

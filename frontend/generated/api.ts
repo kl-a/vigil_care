@@ -1678,7 +1678,7 @@ export interface paths {
         };
         /**
          * Value History
-         * @description A value's history: every Verification of it in this Practice, newest first.
+         * @description A value's history: every Verification of it in this Practice, newest first. Clinical Record values only.
          */
         get: operations["value_history_verifications__subject_table___subject_id__get"];
         put?: never;
@@ -4028,7 +4028,8 @@ export interface components {
         };
         /**
          * ResultsSection
-         * @description Most Recent Results: each analyte's latest value (flagged), its trend, and the latest scans.
+         * @description Most Recent Results: each analyte's latest value (flagged), its trend, and the latest scans, each with when
+         *     it was last updated.
          */
         ResultsSection: {
             /** Lab Trends */
@@ -4039,6 +4040,7 @@ export interface components {
             latest_labs: components["schemas"]["LabResultRow"][];
             /** Scans */
             scans: components["schemas"]["ImagingStudyRow"][];
+            scans_updated: components["schemas"]["LastUpdated"] | null;
             updated: components["schemas"]["LastUpdated"] | null;
         };
         /** RuleOut */

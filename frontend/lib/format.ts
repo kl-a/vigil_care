@@ -8,8 +8,8 @@ export function formatUnit(unit: string | null | undefined): string {
   return unit
     .replace(/^x(?=10\^)/, "×")
     .replace(/\^(-?\d+)/g, (_, power: string) => [...power].map((c) => SUPERSCRIPT[c] ?? c).join(""))
-    // Areas and volumes written without a caret, e.g. "mg/m2", "mL/min/1.73m2".
-    .replace(/(?<=[a-zA-Z])([23])\b/g, (_, power: string) => SUPERSCRIPT[power]!);
+    // Square and cubic metres written without a caret: "mg/m2", "mL/min/1.73m2" (never other letters, e.g. "D3").
+    .replace(/(?<=\bm|\dm)([23])\b/g, (_, power: string) => SUPERSCRIPT[power]!);
 }
 
 /** A reference range. One-sided ranges read as the flag does (a value above the high end is High): "≤20", "≥60". */
@@ -21,12 +21,32 @@ export function formatRange(low: string | number | null | undefined, high: strin
   return "—";
 }
 
+/** The API's ISO date ("2026-09-18", or a datetime's date part) as year, month (1–12) and day. */
+export function parseIsoDate(iso: string): [number, number, number] {
+  return iso.slice(0, 10).split("-").map(Number) as [number, number, number];
+}
+
+/** A date of birth and age: "29/01/1958" and "68" (Australian date order, age in whole years). */
+export function dobParts(dob: string, today: Date = new Date()): { date: string; age: number } {
+  const [year, month, day] = parseIsoDate(dob);
+  let age = today.getFullYear() - year;
+  if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) age -= 1;
+  return { date: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`, age };
+}
+
+/** "29/01/1958 (68)", or "—". */
+export function formatDob(dob: string | null | undefined, today: Date = new Date()): string {
+  if (!dob) return "—";
+  const { date, age } = dobParts(dob, today);
+  return `${date} (${age})`;
+}
+
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** A clinical date: "18 Sep 2026", or "—". Takes the API's ISO date (a datetime's date part is used as is). */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
-  const [year, month, day] = iso.slice(0, 10).split("-").map(Number) as [number, number, number];
+  const [year, month, day] = parseIsoDate(iso);
   return `${day} ${MONTHS[month - 1]} ${year}`;
 }
 

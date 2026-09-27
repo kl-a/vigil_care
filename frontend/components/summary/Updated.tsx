@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { VerifiedMark } from "@/components/ui/Verified";
 import { formatDate } from "@/lib/format";
-import { JOB_TITLE_LABEL, isKnownJobTitle } from "@/lib/jobTitles";
+import { JOB_TITLE_LABEL, isKnownJobTitle, type JobTitle } from "@/lib/jobTitles";
 
 type Updated = { by: string; job_title: string; at: string; subject_table?: string; subject_id?: string };
 
@@ -17,9 +17,9 @@ export function Updated({ updated, href }: { updated: Updated | null | undefined
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
       <span>Updated {formatDate(updated.at)}</span>
-      {updated.subject_table && updated.subject_id
+      {updated.subject_table && updated.subject_id && isKnownJobTitle(updated.job_title)
         ? <VerifiedMark subjectTable={updated.subject_table} subjectId={updated.subject_id}
-            entered={{ by: updated.by, job_title: updated.job_title as never, at: updated.at }} />
+            entered={{ by: updated.by, job_title: updated.job_title as JobTitle, at: updated.at }} />
         : <span>by {updated.by} ({jobTitle})</span>}
       {href && <>· <Link href={href} className="text-primary" data-noprint>See it in the record</Link></>}
     </span>

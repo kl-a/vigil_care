@@ -10,8 +10,9 @@ import { PseudonymChip } from "@/components/ui/PseudonymChip";
 import { FIELD } from "@/components/ui/styles";
 import { TableCard } from "@/components/ui/TableCard";
 import { messageOf } from "@/lib/api";
-import { createPatient, formatDob, IDENTITY_FIELDS, listPatients, type IdentityField, type NewPatient, type PatientRow } from "@/lib/patients";
+import { createPatient, IDENTITY_FIELDS, listPatients, type IdentityField, type NewPatient, type PatientRow } from "@/lib/patients";
 import { isVisible } from "@/lib/stages";
+import { dobParts } from "@/lib/format";
 import { patientListColumnsFor } from "@/lib/modules/registry";
 import { fetchOpenItems } from "@/lib/summary";
 import { formatWhen } from "@/lib/users";
@@ -113,8 +114,9 @@ export default function PatientsPage() {
 
 /** "29/01/1958 (68)", the age quieter. */
 function DobAndAge({ dob }: { dob: string | null | undefined }) {
-  const [date, age] = formatDob(dob).split(" (");
-  return <>{date}{age && <span className="text-muted-foreground"> ({age}</span>}</>;
+  if (!dob) return <>—</>;
+  const { date, age } = dobParts(dob);
+  return <>{date}<span className="text-muted-foreground"> ({age})</span></>;
 }
 
 /** A Patient's Open Items: icon and number in the caution tone; a quiet 0 when there are none. */

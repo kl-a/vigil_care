@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { OpenItemTable } from "@/components/openItems/OpenItemList";
 import { useSignedInUser } from "@/components/shell/ViewerProvider";
@@ -90,6 +91,7 @@ function ReferenceData() {
             {/* The kind's name without its schedule note, e.g. "Refresh the PBS Schedule". */}
             <dt title={r.description}>{r.description.split(" (")[0]}</dt>
             <dd className={`m-0 text-right text-xs ${r.last_job?.status === "failed" ? "text-neg" : "text-muted-foreground"}`}>
+              {r.last_job?.status === "failed" && <CircleAlert aria-hidden className="mr-1 inline h-3 w-3" />}
               {r.last_job ? `${r.last_job.status === "failed" ? "Failed" : "Last run"} ${formatWhen(r.last_job.finished_at ?? r.last_job.created_at)}` : "Never run"}
             </dd>
           </div>

@@ -36,8 +36,11 @@ def entry_rights(actor: SignedIn, db: Db) -> dict[str, bool]:
 
 @router.get("/verifications/{subject_table}/{subject_id}")
 def value_history(subject_table: str, subject_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ValueHistoryEntry]:
-    """A value's history: every Verification of it in this Practice, newest first."""
-    return entry.value_history(db, actor, subject_table, subject_id)
+    """A value's history: every Verification of it in this Practice, newest first. Clinical Record values only."""
+    try:
+        return entry.value_history(db, actor, subject_table, subject_id)
+    except entry.NotClinical:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not a value of the Clinical Record.") from None
 
 
 @router.get("/patients/{patient_id}/clinical-counts")

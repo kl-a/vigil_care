@@ -52,4 +52,3 @@ export function usePatient(): PatientContextValue {
   return value;
 }
 
-/** The Patient header (design doc §5 screen 4): who this is, on every Patient screen. */

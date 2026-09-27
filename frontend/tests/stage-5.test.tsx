@@ -82,6 +82,8 @@ describe("Open Items", () => {
     const differing = screen.getByText("BRAF V600E results differ").closest("li")!;
     expect(within(differing).queryByRole("button", { name: "Seen" })).not.toBeInTheDocument();
     expect(differing).toHaveTextContent(/Needs clinician/);
+    // Still one step from the item in the record.
+    expect(within(differing).getByRole("link", { name: "Open" })).toHaveAttribute("href", "/patients/pt-1/clinical-data");
     expect(within(screen.getByText("Discuss lung nodule at MDT").closest("li")!).getByRole("button", { name: "Mark done" })).toBeInTheDocument();
   });
 
@@ -121,7 +123,7 @@ describe("Dashboard", () => {
 });
 
 const EMPTY_SUMMARY: Summary = {
-  results: { latest_labs: [], lab_trends: {}, scans: [], updated: null },
+  results: { latest_labs: [], lab_trends: {}, scans: [], updated: null, scans_updated: null },
   treatment: { courses: [], updated: null },
   notes: { latest_note: null, latest_letter: null, updated: null },
   management: { plan: null, next_steps: [], updated: null },
@@ -156,7 +158,7 @@ describe("Patient Summary", () => {
     // The glance strip keeps its tiles, saying what isn't recorded.
     const glance = screen.getByRole("region", { name: "At a glance" });
     expect(glance).toHaveTextContent("TreatmentNot recorded");
-    expect(glance).toHaveTextContent("Next stepNot recorded");
+    expect(glance).toHaveTextContent("Next StepNot recorded");
     // No module draws a Diagnosis: the section still shows, saying so.
     expect(within(await screen.findByRole("region", { name: "Diagnosis" })).getByText("None recorded")).toBeInTheDocument();
   });
@@ -203,8 +205,8 @@ describe("The Summary's hierarchy (#53)", () => {
     });
     render(<ViewerProvider initialUser={userWith("clinician")} loadModules={async () => ONCOLOGY_ON}><PatientProvider patientId="pt-1"><PatientSummary /></PatientProvider></ViewerProvider>);
     const glance = await screen.findByRole("region", { name: "At a glance" });
-    await vi.waitFor(() => expect(within(glance).getAllByText(/^(Diagnosis|Treatment|Latest response|ECOG|Next step)$/).map((t) => t.textContent))
-      .toEqual(["Diagnosis", "Treatment", "Latest response", "ECOG", "Next step"]));
+    await vi.waitFor(() => expect(within(glance).getAllByText(/^(Diagnosis|Treatment|Latest Response Assessment|ECOG|Next Step)$/).map((t) => t.textContent))
+      .toEqual(["Diagnosis", "Treatment", "Latest Response Assessment", "ECOG", "Next Step"]));
     expect(glance).toHaveTextContent("Colorectal cancerStage IIIB at dx · now metastatic");
     expect(glance).toHaveTextContent("FOLFOX + bevacizumabsince 2 Mar 2026 · ongoing");
     const bloods = screen.getByRole("list", { name: "Latest bloods" });
@@ -225,7 +227,10 @@ describe("The Dashboard's count in the sidebar", () => {
     const { unmount } = render(<Sidebar jobTitle="secretary" pathname="/dashboard" expanded showUpcoming={false} />);
     expect(await screen.findByLabelText("1 Open Items you can act on")).toBeInTheDocument();
     unmount();
-    render(<Sidebar jobTitle="clinician" pathname="/dashboard" expanded showUpcoming={false} />);
+    const { unmount: unmountExpanded } = render(<Sidebar jobTitle="clinician" pathname="/dashboard" expanded showUpcoming={false} />);
+    expect(await screen.findByLabelText("3 Open Items you can act on")).toBeInTheDocument();
+    unmountExpanded();
+    render(<Sidebar jobTitle="clinician" pathname="/dashboard" expanded={false} showUpcoming={false} />);
     expect(await screen.findByLabelText("3 Open Items you can act on")).toBeInTheDocument();
   });
 });

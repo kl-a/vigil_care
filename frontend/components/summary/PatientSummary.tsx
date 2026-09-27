@@ -11,19 +11,17 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { FlagWord, NotRecorded, ValueLegend } from "@/components/ui/ValueStates";
 import { messageOf } from "@/lib/api";
 import {
-  CONDITION_STATUS_LABEL, fetchInactiveModuleFacts, INTENT_LABEL, MODALITY_LABEL, NOTE_TYPE_LABEL, scanName, type ClinicalNoteRow, type LabResultRow,
+  CONDITION_STATUS_LABEL, courseTitle, fetchInactiveModuleFacts, INTENT_LABEL, isFlagged, MODALITY_LABEL, NOTE_TYPE_LABEL, scanName, type ClinicalNoteRow, type LabResultRow,
   type ModuleFacts,
 } from "@/lib/clinical";
 import { formatDate, formatRange, formatUnit } from "@/lib/format";
 import { howTaken } from "@/lib/medications";
 import { imagingStudyExtensionsFor, sectionsFor, summaryGlanceFor, treatmentCourseExtensionsFor } from "@/lib/modules/registry";
 import type { CourseAnnotation, GlanceTile } from "@/lib/modules/types";
-import { formatDob } from "@/lib/patients";
 import { fetchPatientSummary, type PatientSummary as Summary } from "@/lib/summary";
 import { Updated } from "./Updated";
 
 const NONE = <p className="m-0 text-[13px]"><NotRecorded>None recorded</NotRecorded></p>;
-const FLAGGED = new Set(["low", "high", "critical"]);
 
 /** One section of the Summary: always shown, "None recorded" when empty (never hidden). */
 function Section({ id, title, updated, children }: { id: string; title: string; updated?: ReactNode; children: ReactNode }) {
@@ -52,10 +50,10 @@ function Sparkline({ values, low, high }: { values: number[]; low?: number | nul
 /** Most Recent Results (#53): flagged first, big and in the flag colour; the in-range ones collapsed. */
 function LatestLabs({ labs, trends }: { labs: LabResultRow[]; trends: Summary["results"]["lab_trends"] }) {
   const [showAll, setShowAll] = useState(false);
-  const flagged = labs.filter((r) => r.flag && FLAGGED.has(r.flag));
-  const inRange = labs.filter((r) => !(r.flag && FLAGGED.has(r.flag)));
+  const flagged = labs.filter((r) => isFlagged(r.flag));
+  const inRange = labs.filter((r) => !isFlagged(r.flag));
   const row = (r: LabResultRow) => {
-    const out = r.flag && FLAGGED.has(r.flag);
+    const out = isFlagged(r.flag);
     return (
       <li key={r.id} className="flex items-center justify-between gap-3 border-t border-border py-2 first:border-t-0">
         <span className="flex min-w-0 flex-col">
@@ -175,9 +173,9 @@ export function PatientSummary() {
   const next = summary?.management.next_steps.filter((s) => s.due_date).sort((a, b) => a.due_date!.localeCompare(b.due_date!))[0] ?? summary?.management.next_steps[0];
   const tiles: GlanceTile[] = summary ? [
     ...moduleTiles,
-    { key: "treatment", order: 20, label: "Treatment", value: current ? (current.regimen_name ?? current.details?.procedure ?? MODALITY_LABEL[current.modality]) : null,
+    { key: "treatment", order: 20, label: "Treatment", value: current ? courseTitle(current) : null,
       detail: current && (current.ongoing ? `since ${formatDate(current.start_date)} · ongoing` : `${formatDate(current.start_date)} – ${formatDate(current.end_date)}`) },
-    { key: "next-step", order: 50, label: "Next step", value: next?.description ?? null, detail: next?.due_date ? `due ${formatDate(next.due_date)}` : null },
+    { key: "next-step", order: 50, label: "Next Step", value: next?.description ?? null, detail: next?.due_date ? `due ${formatDate(next.due_date)}` : null },
   ] : [];
   return (
     <div data-screen-label="Patient Summary" className="flex w-full max-w-[1400px] flex-col gap-4 px-5 pb-8 pt-3">
@@ -206,11 +204,11 @@ export function PatientSummary() {
                   {summary.treatment.courses.map((c) => (
                     <li key={c.id} className="flex flex-col gap-1">
                       <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">{c.regimen_name ?? c.details?.procedure ?? MODALITY_LABEL[c.modality]}</span>
+                        <span className="font-semibold">{courseTitle(c)}</span>
                         {annotations.map((a, i) => a[c.id] && <span key={i} title={a[c.id]!.detail}>{a[c.id]!.badge ?? <span className="rounded border border-border px-1.5 text-xs font-semibold">{a[c.id]!.label}</span>}</span>)}
                       </span>
                       <dl className="m-0 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-0.5 text-[13px]">
-                        <dt className="text-muted-foreground">Intent</dt><dd className="m-0">{MODALITY_LABEL[c.modality]}{c.intent && ` · ${INTENT_LABEL[c.intent]}`}</dd>
+                        <dt className="text-muted-foreground">Course</dt><dd className="m-0">{MODALITY_LABEL[c.modality]}{c.intent && ` · ${INTENT_LABEL[c.intent]}`}</dd>
                         <dt className="text-muted-foreground">Dates</dt><dd className="m-0">{formatDate(c.start_date)} – {c.ongoing ? "ongoing" : formatDate(c.end_date)}</dd>
                         {c.regimen_drugs.length > 0 && <><dt className="text-muted-foreground">Regimen</dt><dd className="m-0">{c.regimen_drugs.map((d) => d.drug).join(" + ")}</dd></>}
                         {c.reason_stopped && <><dt className="text-muted-foreground">Stopped</dt><dd className="m-0">{c.reason_stopped}</dd></>}
@@ -221,7 +219,7 @@ export function PatientSummary() {
               )}
             </Section>
 
-            <Section id="summary-imaging" title="Imaging" updated={<Updated updated={summary.results.updated} href={record("imaging")} />}>
+            <Section id="summary-imaging" title="Imaging" updated={<Updated updated={summary.results.scans_updated} href={record("imaging")} />}>
               {summary.results.scans.length === 0 ? NONE : summary.results.scans.map((s) => (
                 <div key={s.id} className="flex flex-col gap-0.5 border-t border-border pt-2 text-[13px] first:border-t-0 first:pt-0">
                   <span className="flex flex-wrap items-center gap-2">
@@ -278,8 +276,8 @@ export function PatientSummary() {
               updated={lastIdentityChange && <Updated updated={{ by: lastIdentityChange.by_display_name, job_title: lastIdentityChange.by_job_title, at: lastIdentityChange.at }}
                 href={`/patients/${patient.id}/overview`} />}>
               <dl className="m-0 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-[13px]">
-                {([["Name", patient.display_name], ["Date of birth (age)", formatDob(identity.dob)], ["Medicare number", identity.medicare_number],
-                  ["Address", identity.address], ["Phone", identity.phone], ["Mobile", identity.mobile]] as const).map(([label, value]) => (
+                {/* Compact: the header carries the name, DOB and MRN. */}
+                {([["Medicare number", identity.medicare_number], ["Address", identity.address], ["Phone", identity.phone], ["Mobile", identity.mobile]] as const).map(([label, value]) => (
                   <div key={label} className="contents"><dt className="text-muted-foreground">{label}</dt><dd className="m-0">{value ?? "—"}</dd></div>
                 ))}
               </dl>

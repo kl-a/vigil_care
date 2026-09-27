@@ -35,6 +35,13 @@ export const removeCancerDiagnosis = (patientId: string, id: string, reason: str
 export const DISEASE_EXTENT_LABEL: Record<DiseaseExtent, string> = {
   localised: "Localised", locally_advanced: "Locally advanced", metastatic: "Metastatic", unknown: "Unknown",
 };
+/** The primaries still active (those with no evidence of disease stay in the record, not at a glance), or all
+ * when none are. */
+export function activePrimaries(diagnoses: CancerDiagnosisRow[]): CancerDiagnosisRow[] {
+  const active = diagnoses.filter((d) => d.cancer_status !== "no_evidence_of_disease");
+  return active.length > 0 ? active : diagnoses;
+}
+
 export const CANCER_STATUS_LABEL: Record<CancerStatus, string> = {
   active: "Active", no_evidence_of_disease: "No evidence of disease", unknown: "Unknown",
 };

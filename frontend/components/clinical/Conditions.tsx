@@ -5,6 +5,7 @@ import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { RowMenu } from "@/components/ui/RowMenu";
+import { TableCard } from "@/components/ui/TableCard";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { VerifiedMark } from "@/components/ui/Verified";
 import { FIELD } from "@/components/ui/styles";
@@ -98,7 +99,7 @@ export function Conditions({ patientId }: { patientId: string }) {
       {rows === null && !error && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Conditions…</p>}
       {rows?.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">None recorded.</p>}
       {rows && rows.length > 0 && (
-        <div className="overflow-x-auto rounded-md border border-border">
+        <TableCard label="Conditions" count={`${rows.length} ${rows.length === 1 ? "Condition" : "Conditions"}`}>
           <table aria-label="Conditions" className="w-full border-collapse text-[13px]">
             <thead className="bg-muted text-left text-xs text-muted-foreground">
               <tr>
@@ -136,7 +137,7 @@ export function Conditions({ patientId }: { patientId: string }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableCard>
       )}
       {saving && (
         <ReasonDialog title={`Save changes to ${saving.row.name}`} actor={signOffName(me)} confirmLabel="Save"
