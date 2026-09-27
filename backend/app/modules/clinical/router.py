@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
-from app.modules.clinical import conditions, entry, imaging, labs, plan_and_notes, treatment_courses
+from app.modules.clinical import conditions, counts, entry, imaging, labs, plan_and_notes, treatment_courses
 from app.modules.clinical.schemas import (
     ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, FindingAttribution, FindingChange, FindingRow, ImagingStudyChange,
     ImagingStudyRow, LabPanelRow, LabResultChange, LabResultRow,
@@ -38,6 +38,15 @@ def entry_rights(actor: SignedIn, db: Db) -> dict[str, bool]:
 def value_history(subject_table: str, subject_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ValueHistoryEntry]:
     """A value's history: every Verification of it in this Practice, newest first."""
     return entry.value_history(db, actor, subject_table, subject_id)
+
+
+@router.get("/patients/{patient_id}/clinical-counts")
+def clinical_counts(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> dict[str, int]:
+    """How many of each Clinical Record kind the Patient has, by Clinical Data sub-tab."""
+    try:
+        return counts.clinical_counts(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
 
 
 @router.get("/patients/{patient_id}/inactive-module-facts")

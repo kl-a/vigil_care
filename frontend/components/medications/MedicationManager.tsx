@@ -3,16 +3,20 @@
 import { CircleHelp, CirclePause } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { EnteredBy } from "@/components/clinical/Conditions";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { usePatient } from "@/components/patients/PatientContext";
 import { useSignedInUser } from "@/components/shell/ViewerProvider";
+import { RowMenu } from "@/components/ui/RowMenu";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { SubTabs } from "@/components/ui/SubTabs";
+import { NotRecorded } from "@/components/ui/ValueStates";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import { changesBetween, fetchEntryRights, fetchTreatmentCourses, type TreatmentCourseRow } from "@/lib/clinical";
 import { formatDate, todayIso } from "@/lib/dates";
+import { formatUnit } from "@/lib/format";
 import { signOffName } from "@/lib/jobTitles";
 import {
   addMedication, CATEGORY_LABEL, CHANGE_LABEL, changeMedication, fetchMedicationChanges, fetchMedications, FREQUENCY_LABEL, howTaken,
@@ -30,8 +34,8 @@ export function DrugName({ medication }: { medication: MedicationRow }) {
   const code = medication.pbs_item_codes[0];
   return (
     <span className="flex flex-col">
-      <span className="font-medium">{medication.drug_name}{medication.brand_name && <span className="font-normal text-muted-foreground"> ({medication.brand_name})</span>}</span>
-      <span className="text-xs text-muted-foreground">Entered by <EnteredBy entered={medication.entered} /></span>
+      <span className="font-medium">{medication.drug_name}</span>
+      {medication.brand_name && <span className="text-xs text-muted-foreground">{medication.brand_name}</span>}
       {code ? (
         <Link href={`/pbs/${encodeURIComponent(code)}`} className="w-fit text-xs text-primary underline-offset-2 hover:underline" data-noprint>PBS Drug Lookup</Link>
       ) : (
@@ -71,19 +75,14 @@ export function MedicationManager() {
   const active = rows?.filter((m) => !isStopped(m)) ?? [];
   const stopped = rows?.filter(isStopped) ?? [];
   const done = () => { setSaving(null); setStopping(null); setRestarting(null); setRemoving(null); load(); };
-  const tabs: [View, string][] = [["active", `Active (${active.length})`], ["discontinued", `Discontinued (${stopped.length})`], ["log", "Change log"]];
+  const tabs: { key: View; label: string; count?: number }[] = [
+    { key: "active", label: "Active", count: active.length }, { key: "discontinued", label: "Discontinued", count: stopped.length }, { key: "log", label: "Change log" },
+  ];
 
   return (
     <div data-screen-label="Medication Manager" className="flex w-full max-w-[1200px] flex-col gap-4 px-5 pb-8 pt-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <nav aria-label="Medications" className="flex gap-1 border-b border-border" data-noprint>
-          {tabs.map(([key, label]) => (
-            <button key={key} onClick={() => setView(key)} aria-current={view === key ? "page" : undefined}
-              className={`-mb-px border-b-2 px-3 py-1.5 text-[13px] ${view === key ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-              {label}
-            </button>
-          ))}
-        </nav>
+        <div data-noprint><SubTabs label="Medications" tabs={tabs} current={view} onChange={setView} /></div>
         <span className="inline-flex items-center gap-2" data-noprint>
           <button onClick={() => window.print()} className={BUTTON}>Print</button>
           {canEnter ? !adding && <button onClick={() => { setAdding(true); setEditing(null); }} className={BUTTON}>Add medication</button> : <EntryLock />}
@@ -110,21 +109,26 @@ export function MedicationManager() {
         <MedicationTable label="Active medications" rows={active} empty="No active medications recorded." render={(m) => (
           <>
             <td className="px-3 py-2"><DrugName medication={m} /></td>
-            <td className="px-3 py-2">{howTaken(m)}{m.status !== "active" && <div className="mt-1"><StatusPill tone="cau"><span className="inline-flex items-center gap-1">{m.status === "on_hold" ? <CirclePause aria-hidden className="h-3 w-3" /> : <CircleHelp aria-hidden className="h-3 w-3" />}{STATUS_LABEL[m.status]}</span></StatusPill></div>}</td>
-            <td className="px-3 py-2">{m.indication ?? "—"}{m.category && <div className="text-xs text-muted-foreground">{CATEGORY_LABEL[m.category]}</div>}</td>
-            <td className="whitespace-nowrap px-3 py-2 tabular-nums">{formatDate(m.start_date)}</td>
-            <td className="px-3 py-2 text-xs">{m.prescriber_name ?? "—"}{m.treatment_course_name && <div className="text-muted-foreground">Part of {m.treatment_course_name}</div>}</td>
+            <td className="whitespace-nowrap px-3 py-2">{m.dose_display ? formatUnit(m.dose_display) : <NotRecorded />}{m.status !== "active" && <div className="mt-1"><StatusPill tone="cau"><span className="inline-flex items-center gap-1">{m.status === "on_hold" ? <CirclePause aria-hidden className="h-3 w-3" /> : <CircleHelp aria-hidden className="h-3 w-3" />}{STATUS_LABEL[m.status]}</span></StatusPill></div>}</td>
+            <td className="px-3 py-2">{m.frequency ? (m.frequency === "other" && m.frequency_detail ? m.frequency_detail : FREQUENCY_LABEL[m.frequency]) : "—"}</td>
+            <td className="px-3 py-2">{m.route ? ROUTE_LABEL[m.route] : "—"}</td>
+            <td className="px-3 py-2">{m.indication ?? "—"}</td>
+            <td className="px-3 py-2">{m.category ? <span className="whitespace-nowrap rounded border border-neu-bd bg-neu-bg px-1.5 py-0.5 text-xs text-neu">{CATEGORY_LABEL[m.category]}</span> : "—"}</td>
+            <td className="px-3 py-2"><VerifiedMark subjectTable="medication" subjectId={m.id} entered={m.entered} /></td>
+            <td className="px-3 py-2 text-xs">{m.treatment_course_name ?? "—"}</td>
             <td className="whitespace-nowrap px-3 py-2 text-right" data-noprint>
               {canEnter && (
-                <span className="inline-flex gap-2">
-                  <button onClick={() => { setEditing(m); setAdding(false); }} className="text-xs font-medium text-primary">Change</button>
+                <span className="inline-flex items-center gap-2">
                   <button onClick={() => setStopping(m)} className="text-xs font-medium text-primary">Stop</button>
-                  <button onClick={() => setRemoving(m)} className="text-xs font-medium text-neg">Remove</button>
+                  <RowMenu label={m.drug_name} items={[
+                    { label: "Change", onSelect: () => { setEditing(m); setAdding(false); } },
+                    { label: "Remove", danger: true, onSelect: () => setRemoving(m) },
+                  ]} />
                 </span>
               )}
             </td>
           </>
-        )} headings={["Medication", "How taken", "For", "Started", "Prescribed by"]} />
+        )} headings={["Medication", "Dose", "Frequency", "Route", "Indication", "Category", "Verified", "Linked Treatment Course"]} />
       )}
       {rows && view === "discontinued" && (
         <MedicationTable label="Discontinued medications" rows={stopped} empty="None discontinued." render={(m) => (
@@ -133,11 +137,12 @@ export function MedicationManager() {
             <td className="px-3 py-2">{howTaken(m)}</td>
             <td className="whitespace-nowrap px-3 py-2 tabular-nums">{formatDate(m.start_date)} – {formatDate(m.end_date)}</td>
             <td className="px-3 py-2">{m.reason_discontinued ?? STATUS_LABEL[m.status]}</td>
+            <td className="px-3 py-2"><VerifiedMark subjectTable="medication" subjectId={m.id} entered={m.entered} /></td>
             <td className="whitespace-nowrap px-3 py-2 text-right" data-noprint>
               {canEnter && <button onClick={() => setRestarting(m)} className="text-xs font-medium text-primary">Restart</button>}
             </td>
           </>
-        )} headings={["Medication", "How taken", "Taken", "Why stopped"]} />
+        )} headings={["Medication", "How taken", "Taken", "Why stopped", "Verified"]} />
       )}
       {view === "log" && log && <ChangeLog rows={log} />}
       {saving && (

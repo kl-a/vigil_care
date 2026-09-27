@@ -10,7 +10,7 @@ export function SubTabs<K extends string>({ label, tabs, current, onChange }: {
       {tabs.map((tab) => (
         <button key={tab.key} onClick={() => onChange(tab.key)} aria-current={current === tab.key ? "page" : undefined}
           aria-label={tab.count !== undefined && tab.count !== null ? `${tab.label} ${tab.count}` : undefined}
-          className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-[13px] font-medium ${
+          className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium ${
             current === tab.key ? "border-primary/40 bg-accent text-primary" : "border-border bg-card text-foreground hover:bg-muted"
           }`}>
           {tab.label}

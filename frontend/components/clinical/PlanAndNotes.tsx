@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
@@ -92,9 +94,9 @@ function PlanQuote({ plan }: { plan: ManagementPlanRow }) {
   return (
     <figure className="m-0 flex flex-col gap-1">
       <blockquote className="m-0 whitespace-pre-wrap border-l-2 border-primary pl-3 text-[13px]">{plan.plan_text}</blockquote>
-      <figcaption className="text-xs text-muted-foreground">
+      <figcaption className="inline-flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
         {plan.author_name ?? "Author not recorded"}, {formatDate(plan.plan_date)}
-        {plan.entered && <> · entered by {plan.entered.by}, {formatWhen(plan.entered.at)}</>}
+        {" "}<VerifiedMark subjectTable="management_plan" subjectId={plan.id} entered={plan.entered} />
       </figcaption>
     </figure>
   );
@@ -164,9 +166,9 @@ function NextSteps({ patientId }: { patientId: string }) {
                 </span>
               </span>
               {!step.done && (
-                <span className="inline-flex gap-2">
+                <span className="inline-flex items-center gap-2">
                   <button onClick={() => done(step)} className="text-xs font-medium text-primary">Mark done</button>
-                  <button onClick={() => setRemoving(step)} className="text-xs font-medium text-neg">Remove</button>
+                  <RowMenu label={step.description} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(step) }]} />
                 </span>
               )}
               {step.done && <StatusPill tone="pos">Done</StatusPill>}
@@ -228,8 +230,9 @@ function ClinicalNotes({ patientId, canEnter }: { patientId: string; canEnter: b
           {notes.map((note) => (
             <li key={note.id} className="flex flex-col gap-1 py-2 text-[13px]">
               <span className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-medium">{NOTE_TYPE_LABEL[note.note_type]} · {formatDate(note.note_date)}</span>
-                {canEnter && <button onClick={() => setRemoving(note)} className="text-xs font-medium text-neg">Remove</button>}
+                <span className="inline-flex items-center gap-1.5 font-medium">{NOTE_TYPE_LABEL[note.note_type]} · {formatDate(note.note_date)}
+                  <VerifiedMark subjectTable="clinical_note" subjectId={note.id} entered={note.entered} /></span>
+                {canEnter && <RowMenu label={`${NOTE_TYPE_LABEL[note.note_type]} ${formatDate(note.note_date)}`} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(note) }]} />}
               </span>
               <span className="text-xs text-muted-foreground">
                 {note.author_name ? `From ${note.author_name}` : "Author not recorded"}{note.recipient_name && ` to ${note.recipient_name}`}

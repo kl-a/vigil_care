@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
@@ -207,11 +209,11 @@ export function CancerDiagnosesTab() {
       {rows?.map((d) => (
         <article key={d.id} aria-label={d.name} className="flex flex-col gap-1 rounded-md border border-border p-3 text-[13px]">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="m-0 text-sm font-semibold">{d.name}</h3>
+            <h3 className="m-0 inline-flex items-center gap-1.5 text-sm font-semibold">{d.name}<VerifiedMark subjectTable="cancer_diagnosis" subjectId={d.id} entered={d.entered} /></h3>
             {canEnter && (
-              <span className="inline-flex gap-2">
+              <span className="inline-flex items-center gap-2">
                 <button onClick={() => { setEditing(d); setAdding(false); }} className="text-xs font-medium text-primary">Correct</button>
-                <button onClick={() => setRemoving(d)} className="text-xs font-medium text-neg">Remove</button>
+                <RowMenu label={d.name} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(d) }]} />
               </span>
             )}
           </div>

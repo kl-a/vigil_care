@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
@@ -145,12 +147,15 @@ function BiomarkerHistory({ patientId, diagnosisId, others, onChanged }: {
                   <td className="py-1 pr-3">{b.method ?? "—"}</td>
                   <td className="py-1 pr-3">{[b.specimen_site, b.specimen_kind && SPECIMENS[b.specimen_kind]].filter(Boolean).join(", ") || "—"}</td>
                   <td className="whitespace-nowrap py-1 text-right">
-                    <span className="inline-flex gap-2">
+                    <span className="inline-flex items-center gap-2">
+                      <VerifiedMark subjectTable="biomarker" subjectId={b.id} entered={b.entered} />
                       {canRecordPrimary && b.differs && (
                         <button onClick={() => setNewPrimary(b)} className="text-xs font-medium text-primary">Record a new primary</button>
                       )}
-                      {canMove && <button onClick={() => { setMoving(b); setTarget(others[0]!.id); }} className="text-xs font-medium text-primary">Move to another primary</button>}
-                      {canEnter && <button onClick={() => setRemoving(b)} className="text-xs font-medium text-neg">Remove</button>}
+                      {(canMove || canEnter) && <RowMenu label={markerName(b)} items={[
+                        ...(canMove ? [{ label: "Move to another primary", onSelect: () => { setMoving(b); setTarget(others[0]!.id); } }] : []),
+                        ...(canEnter ? [{ label: "Remove", danger: true, onSelect: () => setRemoving(b) }] : []),
+                      ]} />}
                     </span>
                   </td>
                 </tr>

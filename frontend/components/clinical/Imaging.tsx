@@ -1,7 +1,8 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { EnteredBy } from "@/components/clinical/Conditions";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
@@ -71,14 +72,15 @@ export function Imaging({ patientId }: { patientId: string }) {
               {index === 0 && <span className="text-xs text-muted-foreground">(latest)</span>}
               {badges.map((byStudy, i) => byStudy[study.id] && <span key={i}>{byStudy[study.id]}</span>)}
             </span>
-            <span className="inline-flex gap-2">
+            <span className="inline-flex items-center gap-2">
               {canEnterFindings && addingTo !== study.id && <button onClick={() => setAddingTo(study.id)} className="text-xs font-medium text-primary">Add finding</button>}
               {canEnter && <button onClick={() => { setCorrecting(study); setAdding(false); }} className="text-xs font-medium text-primary">Correct</button>}
-              {canEnter && <button onClick={() => setRemoving({ study })} className="text-xs font-medium text-neg">Remove</button>}
+              {canEnter && <RowMenu label={scanName(study)} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving({ study }) }]} />}
             </span>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {study.comparison_date && `Compared with ${formatDate(study.comparison_date)} · `}Entered by <EnteredBy entered={study.entered} />
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            {study.comparison_date && `Compared with ${formatDate(study.comparison_date)}`}
+            <VerifiedMark subjectTable="imaging_study" subjectId={study.id} entered={study.entered} />
           </span>
           {study.impression && (
             <figure className="m-0 flex flex-col gap-1">
@@ -89,7 +91,7 @@ export function Imaging({ patientId }: { patientId: string }) {
           {study.findings.length > 0 && (
             <table aria-label="Findings" className="w-full border-collapse text-left text-[13px]">
               <thead className="text-xs text-muted-foreground">
-                <tr><th className="py-1 font-medium">Site</th><th className="font-medium">Finding</th><th className="font-medium">Size</th><th className="font-medium">SUVmax</th><th className="font-medium">New?</th><th className="font-medium">Measurable?</th><th className="font-medium">Attributed to</th><th /></tr>
+                <tr><th className="py-1 font-medium">Site</th><th className="font-medium">Finding</th><th className="font-medium">Size</th><th className="font-medium">SUVmax</th><th className="font-medium">New?</th><th className="font-medium">Measurable?</th><th className="font-medium">Attributed to</th><th className="font-medium">Verified</th><th /></tr>
               </thead>
               <tbody>
                 {study.findings.map((f) => (
@@ -101,7 +103,8 @@ export function Imaging({ patientId }: { patientId: string }) {
                     <td>{yesNo(f.is_new)}</td>
                     <td>{yesNo(f.is_measurable)}</td>
                     <td>{f.condition_name ?? "—"}</td>
-                    <td className="text-right">{canEnterFindings && <button onClick={() => setRemoving({ study, finding: f })} className="text-xs font-medium text-neg">Remove</button>}</td>
+                    <td><VerifiedMark subjectTable="finding" subjectId={f.id} entered={f.entered} /></td>
+                    <td className="text-right">{canEnterFindings && <RowMenu label={f.description} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving({ study, finding: f }) }]} />}</td>
                   </tr>
                 ))}
               </tbody>

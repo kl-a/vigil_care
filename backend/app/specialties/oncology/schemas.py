@@ -292,3 +292,10 @@ class Seen(BaseModel):
     """Differing Biomarker Results seen by a clinician, with an optional note."""
 
     note: Annotated[str, Field(max_length=500)] | None = None
+
+
+class PatientListValues(BaseModel):
+    """A Patient's values for the columns a Specialty Module adds to the Patient List, by column key."""
+
+    patient_id: uuid.UUID
+    values: dict[str, list[str]]

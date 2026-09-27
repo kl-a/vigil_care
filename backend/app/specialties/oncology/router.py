@@ -9,11 +9,11 @@ from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
 from app.modules.clinical import entry
 from app.modules.clinical.schemas import LastUpdated
-from app.specialties.oncology import biomarkers, cancer_diagnoses, diagnosis_summary, lines_of_therapy, observations, recurrences, response_assessments
+from app.specialties.oncology import biomarkers, cancer_diagnoses, diagnosis_summary, overview, lines_of_therapy, observations, recurrences, response_assessments
 from app.specialties.oncology.schemas import (
     Attribution, BestResponse, BiomarkerMove, BiomarkerRow, CancerDiagnosisChange, CancerDiagnosisRow, CancerTypeOption, CnsStatusChange, CnsStatusRow,
     LineOfTherapy, LineOverride, NewBiomarker, NewCancerDiagnosis, NewCnsStatus, NewPerformanceStatus, NewRecurrence,
-    NewResponseAssessment, PerformanceStatusRow, RecurrenceRow, ResponseAssessmentRow, ResponseOverride, RuleOut, Seen,
+    NewResponseAssessment, PatientListValues, PerformanceStatusRow, RecurrenceRow, ResponseAssessmentRow, ResponseOverride, RuleOut, Seen,
 )
 
 router = APIRouter(tags=["oncology"])
@@ -346,6 +346,24 @@ def list_best_responses(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[
         return response_assessments.best_responses(db, actor, patient_id)
     except _ASSESSMENT_REFUSED as error:
         raise _assessment_refused(error) from None
+
+
+# --- At a glance on the list screens (#57) ----------------------------------------------------------------
+
+
+@router.get("/patients/{patient_id}/oncology-counts")
+def oncology_counts(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> dict[str, int]:
+    """How many of each Oncology fact the Patient has, by Clinical Data sub-tab."""
+    try:
+        return overview.oncology_counts(db, actor, patient_id)
+    except _MISSING:
+        raise _not_found() from None
+
+
+@router.get("/patient-list/oncology")
+def patient_list_values(actor: SignedIn, db: Db) -> list[PatientListValues]:
+    """Each Patient's Cancer Types and most advanced Disease Extent, for the Patient List."""
+    return overview.patient_list_values(db, actor)
 
 
 # --- The Patient Summary's Diagnosis section (#47) --------------------------------------------------------

@@ -254,6 +254,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patient-list/oncology": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Patient List Values
+         * @description Each Patient's Cancer Types and most advanced Disease Extent, for the Patient List.
+         */
+        get: operations["patient_list_values_patient_list_oncology_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients": {
         parameters: {
             query?: never;
@@ -477,6 +497,26 @@ export interface paths {
         head?: never;
         /** Change Member */
         patch: operations["change_member_patients__patient_id__care_team__member_id__patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/clinical-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clinical Counts
+         * @description How many of each Clinical Record kind the Patient has, by Clinical Data sub-tab.
+         */
+        get: operations["clinical_counts_patients__patient_id__clinical_counts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/patients/{patient_id}/clinical-notes": {
@@ -999,6 +1039,26 @@ export interface paths {
         put?: never;
         /** Mark Next Step Done */
         post: operations["mark_next_step_done_patients__patient_id__next_steps__step_id__done_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/oncology-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Oncology Counts
+         * @description How many of each Oncology fact the Patient has, by Clinical Data sub-tab.
+         */
+        get: operations["oncology_counts_patients__patient_id__oncology_counts_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3417,6 +3477,21 @@ export interface components {
             pseudonym: string;
         };
         /**
+         * PatientListValues
+         * @description A Patient's values for the columns a Specialty Module adds to the Patient List, by column key.
+         */
+        PatientListValues: {
+            /**
+             * Patient Id
+             * Format: uuid
+             */
+            patient_id: string;
+            /** Values */
+            values: {
+                [key: string]: string[];
+            };
+        };
+        /**
          * PatientRow
          * @description A Patient in the Patient List. Cancer Types and counts join in later stages.
          */
@@ -4591,6 +4666,26 @@ export interface operations {
             };
         };
     };
+    patient_list_values_patient_list_oncology_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientListValues"][];
+                };
+            };
+        };
+    };
     list_patients_patients_get: {
         parameters: {
             query?: {
@@ -5186,6 +5281,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CareTeamRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clinical_counts_patients__patient_id__clinical_counts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -6682,6 +6810,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NextStepRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    oncology_counts_patients__patient_id__oncology_counts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
                 };
             };
             /** @description Validation Error */

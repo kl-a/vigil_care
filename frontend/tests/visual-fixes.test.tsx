@@ -23,6 +23,8 @@ describe("Reference ranges and units", () => {
     expect(formatUnit("x10^12/L")).toBe("×10¹²/L");
     expect(formatUnit("g/L")).toBe("g/L");
     expect(formatUnit(null)).toBe("");
+    expect(formatUnit("mg/m2")).toBe("mg/m²");
+    expect(formatUnit("mL/min/1.73m2")).toBe("mL/min/1.73m²");
   });
 });
 

@@ -42,10 +42,12 @@ describe("Labs", () => {
 
   it("lists results with their flags from the report's range", async () => {
     renderAs(<Labs patientId="pt-1" />);
+    fireEvent.click(await screen.findByRole("button", { name: "Full report" }));
     const table = await screen.findByRole("table", { name: "Lab results" });
     const row = within(table).getAllByText("Haemoglobin").map((cell) => cell.closest("tr")!).find((tr) => tr.textContent?.includes("98 g/L"))!;
     expect(row).toHaveTextContent("98 g/L");
     expect(within(row).getByLabelText("low")).toHaveTextContent("L");
+    expect(row).toHaveTextContent("Low");
     expect(row).toHaveTextContent("115–165");
     expect(screen.getByText("Normochromic").closest("tr")).toHaveTextContent("—");
   });
@@ -74,7 +76,9 @@ describe("Labs", () => {
     // The first analyte recorded is charted first.
     expect(await screen.findByRole("img", { name: "Haemoglobin trend" })).toBeInTheDocument();
     expect(screen.getByTestId("reference-band")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Trend"), { target: { value: "Blood film" } });
+    // One chip per analyte; the latest result's flag shows as an arrow.
+    expect(within(screen.getByRole("group", { name: "Analyte" })).getByRole("button", { name: /Haemoglobin/ })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(screen.getByRole("group", { name: "Analyte" })).getByRole("button", { name: "Blood film" }));
     expect(screen.getByText("No numeric results to chart for Blood film.")).toBeInTheDocument();
   });
 
