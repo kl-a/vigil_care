@@ -1,5 +1,6 @@
 "use client";
 
+import { formatTime } from "@/lib/format";
 import { useCallback, useEffect, useState } from "react";
 import { messageOf } from "@/lib/api";
 import { Check } from "@/components/system/Check";
@@ -33,7 +34,7 @@ export default function SystemStatusPage() {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="m-0 text-xl font-semibold">System status</h1>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          {checkedAt && <span>Checked {checkedAt.toLocaleTimeString("en-AU")}</span>}
+          {checkedAt && <span>Checked {formatTime(checkedAt)}</span>}
           <button onClick={() => { check(); changed(); }} className="h-7 rounded-md border border-border px-2 text-xs text-foreground hover:bg-muted">Check again</button>
         </div>
       </div>

@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { LabFlagMark } from "@/components/clinical/Labs";
 import { PatientOpenItems } from "@/components/openItems/PatientOpenItems";
 import { usePatient } from "@/components/patients/PatientContext";
 import { SectionSlot } from "@/components/SectionSlot";
 import { useViewer } from "@/components/shell/ViewerProvider";
+import { SectionCard } from "@/components/ui/SectionCard";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { FlagWord, NotRecorded, ValueLegend } from "@/components/ui/ValueStates";
 import { Updated } from "./Updated";
 import { CircleCheck, CircleDot } from "lucide-react";
 import { messageOf } from "@/lib/api";
@@ -19,19 +20,11 @@ import { formatUnit } from "@/lib/format";
 import { formatDob } from "@/lib/patients";
 import { fetchPatientSummary, type PatientSummary as Summary } from "@/lib/summary";
 
-const NONE = <p className="m-0 text-[13px] text-muted-foreground">None recorded</p>;
+const NONE = <p className="m-0 text-[13px]"><NotRecorded>None recorded</NotRecorded></p>;
 
 /** One section of the Summary: always shown, "None recorded" when empty (never hidden). */
 function Section({ id, title, updated, children }: { id: string; title: string; updated?: ReactNode; children: ReactNode }) {
-  return (
-    <section aria-labelledby={id} className="flex break-inside-avoid flex-col gap-2 rounded-md border border-border bg-card p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={id} className="m-0 text-sm font-semibold">{title}</h2>
-        {updated}
-      </div>
-      {children}
-    </section>
-  );
+  return <SectionCard id={id} title={title} meta={updated}>{children}</SectionCard>;
 }
 
 function Sparkline({ values }: { values: number[] }) {
@@ -115,7 +108,7 @@ export function PatientSummary() {
   return (
     <div data-screen-label="Patient Summary" className="flex w-full max-w-[1400px] flex-col gap-4 px-5 pb-8 pt-3">
       <div className="flex items-center justify-between gap-3" data-noprint>
-        <p className="m-0 text-xs text-muted-foreground">At a glance, for the consultation.</p>
+        <ValueLegend />
         <button onClick={() => window.print()} className="h-7 rounded-md border border-border px-2 text-xs font-medium hover:bg-muted">Print</button>
       </div>
       {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
@@ -146,7 +139,7 @@ export function PatientSummary() {
                     {summary.results.latest_labs.map((r) => (
                       <tr key={r.id} className="border-t border-border first:border-t-0">
                         <td className="py-1 pr-2">{r.analyte}</td>
-                        <td className="py-1 pr-2 tabular-nums">{r.value ?? r.value_text} {formatUnit(r.unit)}<LabFlagMark flag={r.flag} /></td>
+                        <td className="py-1 pr-2 tabular-nums">{r.value ?? r.value_text} {formatUnit(r.unit)} <FlagWord flag={r.flag} /></td>
                         <td className="py-1 pr-2"><Sparkline values={(summary.results.lab_trends[r.analyte] ?? []).map((p) => Number(p.value))} /></td>
                         <td className="py-1 text-right text-xs text-muted-foreground">{formatDate(r.collected_at.slice(0, 10))}</td>
                       </tr>

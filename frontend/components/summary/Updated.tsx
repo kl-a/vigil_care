@@ -1,24 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { VerifiedMark } from "@/components/ui/Verified";
+import { formatDate } from "@/lib/format";
 import { JOB_TITLE_LABEL, isKnownJobTitle } from "@/lib/jobTitles";
-import { formatWhen } from "@/lib/users";
 
-const ACTION: Record<string, string> = {
-  edit: "Entered or corrected", attribute: "Attributed", override: "Overridden", move: "Moved", delete: "Removed", reject: "Ruled out",
-};
+type Updated = { by: string; job_title: string; at: string; subject_table?: string; subject_id?: string };
 
-/** Who last changed a section, and when: the Verification of its newest value, and where to see it in full. */
-export function Updated({ updated, href }: { updated: { by: string; job_title: string; at: string; action?: string } | null | undefined; href?: string }) {
+/**
+ * A section's meta line: when it was last updated, a ✓ that says who verified its newest value (hover) and
+ * shows that value's history (click), and where to see it in the record.
+ */
+export function Updated({ updated, href }: { updated: Updated | null | undefined; href?: string }) {
   if (!updated) return null;
   const jobTitle = isKnownJobTitle(updated.job_title) ? JOB_TITLE_LABEL[updated.job_title] : updated.job_title;
   return (
-    <details className="text-xs text-muted-foreground">
-      <summary className="cursor-pointer">Last updated {formatWhen(updated.at)}</summary>
-      <span className="flex flex-wrap gap-x-2">
-        <span>{ACTION[updated.action ?? "edit"] ?? "Changed"} by {updated.by} ({jobTitle})</span>
-        {href && <Link href={href} className="text-primary" data-noprint>See it in the record</Link>}
-      </span>
-    </details>
+    <span className="inline-flex flex-wrap items-center gap-1.5">
+      <span>Updated {formatDate(updated.at)}</span>
+      {updated.subject_table && updated.subject_id
+        ? <VerifiedMark subjectTable={updated.subject_table} subjectId={updated.subject_id}
+            entered={{ by: updated.by, job_title: updated.job_title as never, at: updated.at }} />
+        : <span>by {updated.by} ({jobTitle})</span>}
+      {href && <>· <Link href={href} className="text-primary" data-noprint>See it in the record</Link></>}
+    </span>
   );
 }

@@ -54,6 +54,16 @@ Define tokens as CSS custom properties (shadcn/ui convention: HSL values, `--bac
 
 Contrast must meet **WCAG 2.2 AA** in both themes.
 
+### 4.1a Formats (built, #51)
+
+One formatting module (`lib/format`) writes every value, so no screen formats by hand:
+
+- **Clinical dates:** "18 Sep 2026" (never "18/09/2026" or "Sept").
+- **Date of birth:** "29/01/1958 (68)", as on Australian forms.
+- **Moments:** "18 Sep 2026, 13:20", 24-hour, in the viewer's time.
+- **Units:** as printed, with powers as superscripts: "×10⁹/L".
+- **Reference ranges:** "115–165"; one-sided as the flag reads them: "≤20", "≥60".
+
 ### 4.2 Typography
 - A UI sans with **tabular numerals** for all clinical values (e.g. Inter with `font-variant-numeric: tabular-nums`, or IBM Plex Sans).
 - Monospace (e.g. JetBrains Mono / IBM Plex Mono) for identifiers: Medicare numbers, MRNs, Pseudonyms, request IDs, item codes.
@@ -138,7 +148,13 @@ Build each as a reusable component in the scaffold, with a **component gallery p
 | Component | Variants / notes |
 |---|---|
 | **StateBadge** | One component driven by a `kind` + `value` map: MatchState, CriterionResult, PbsListing, PbsCoverage, ConfidenceBand (high/medium/low), ReviewStatus (pending/accepted/edited/rejected/withdrawn), Stale, Held (with reason), LeakCheck (pass/fail), ResponseDirection. Always icon + label + colour. |
-| **VerificationMark** | Small tick with tooltip: "Verified by Dr A Smith (Clinician), 24 Sep 2026 10:14". Pending variant is an amber dot. |
+| **VerificationMark** (built: `VerifiedMark`, #51) | A ✓ in place of "Entered by …" text. Hover shows the value's **latest** Verification ("Verified by Dr A Smith (Clinician), 24 Sep 2026, 10:14", or "Corrected by Sam Lee (Trial coordinator), 16 Sep 2026, 09:02: *reason*"); click opens the value's whole history. Pending variant (Stage 9) is the dotted underline of the value states. |
+| **Value states** (built, #51) | Verified (✓), pending review (dotted underline in caution), missing (italic *Not recorded*; an empty section says *None recorded*), outside range (arrow + word, "↑ High", in the negative colour). A **ValueLegend** explains them on pages that mix them (the Patient Summary). |
+| **SectionCard** (built, #51) | The card every section uses: title left, a quiet meta line right ("Updated 14 Sep 2026 ✓ · See it in the record", the source), optional action; body below a hairline. |
+| **TableCard** (built, #51) | A table in a card with its toolbar inside: search and filters left, the row count right ("3 patients"). |
+| **SubTabs** (built, #51) | Second-level tabs (Clinical Data, Medications) as segmented buttons with counts ("Labs 6"), clearly below the underlined Patient tabs. |
+| **PseudonymChip** (built, #51) | The Pseudonym in the privacy tone (`--pri`, violet), mono: what De-identified Exports carry. |
+| **RowMenu** (built, #51) | "⋯" for a row's rare or destructive actions (e.g. Remove); the main action (Edit, Stop) stays visible beside it. |
 | **SourceLink** | "📄 CT chest 02 Sep · p2", opening the page viewer at the exact region. |
 | **BiomarkerChip** | Name + result (e.g. `EGFR ex19del +`, `PD-L1 60%`). A "Results differ" flag (amber ⚠, Differing Biomarker Results) opens the history. |
 | **CancerDiagnosisBlock** *(Oncology section)* | Cancer Type, histology, Stage (at dx), Disease Extent (now), BiomarkerChips, Recurrences (confirmed/suspected). |

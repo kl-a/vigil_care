@@ -24,7 +24,7 @@ from app.core.base_model import Entity, PracticeEntity
 from app.core.changes import blank_to_none, changed_fields
 from app.core.permissions import NotAllowed, VerificationRights, require
 from app.modules.accounts.service import display_names
-from app.modules.clinical.schemas import Entered, LastUpdated, ModuleFacts
+from app.modules.clinical.schemas import Entered, LastUpdated, ModuleFacts, ValueHistoryEntry
 from app.modules.patients.service import patient_names
 from app.modules.registry.registry import installed_modules
 from app.modules.registry.service import active_module_keys, configuration
@@ -173,6 +173,18 @@ def last_updated(db: Session, practice_id: uuid.UUID, subjects: Mapping[str, Ite
         by=names.get(row.user_id, "Unknown User"), job_title=row.job_title_at_time, at=row.created_at, action=row.action,
         subject_table=row.subject_table, subject_id=row.subject_id,
     )
+
+
+def value_history(db: Session, actor: Actor, subject_table: str, subject_id: uuid.UUID) -> list[ValueHistoryEntry]:
+    """A value's Verifications in the actor's Practice, newest first (the ✓ Verified icon's history)."""
+    require_patient_data(actor)
+    entries = audit.history(db, actor.practice_id, subject_table, subject_id)
+    names = display_names(db, {e.user_id for e in entries})
+    return [
+        ValueHistoryEntry(by=names.get(e.user_id, "Unknown User"), job_title=e.job_title_at_time, at=e.at, action=e.action, reason=e.reason,
+                     before=e.before, after=e.after)
+        for e in entries
+    ]
 
 
 def inactive_module_facts(db: Session, actor: Actor, patient_id: uuid.UUID) -> list[ModuleFacts]:

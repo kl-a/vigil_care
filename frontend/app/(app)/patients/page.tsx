@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { IdentityFields } from "@/components/patients/PatientOverview";
 import { useViewer } from "@/components/shell/ViewerProvider";
+import { PseudonymChip } from "@/components/ui/PseudonymChip";
 import { FIELD } from "@/components/ui/styles";
+import { TableCard } from "@/components/ui/TableCard";
 import { messageOf } from "@/lib/api";
 import { createPatient, formatDob, IDENTITY_FIELDS, listPatients, type IdentityField, type NewPatient, type PatientRow } from "@/lib/patients";
 import { isVisible } from "@/lib/stages";
@@ -40,18 +42,15 @@ export default function PatientsPage() {
         <h1 className="m-0 text-xl font-semibold">Patients</h1>
         <button onClick={() => setAdding(true)} className="h-8 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground">New Patient</button>
       </div>
-      <label className="flex flex-col gap-1 text-xs font-medium">
-        Search by name or MRN
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. Citizen" className={`${FIELD} max-w-[340px]`} />
-      </label>
       {adding && (
         <NewPatientForm onCancel={() => setAdding(false)} onCreated={(id) => router.push(`/patients/${id}/overview`)} />
       )}
       {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
       {patients === null && !error && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Patients…</p>}
-      {patients && patients.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">{q ? "No Patients match." : "No Patients yet."}</p>}
+      <TableCard label="Patients" count={patients ? `${patients.length} ${patients.length === 1 ? "patient" : "patients"}` : undefined}
+        toolbar={<input aria-label="Search by name or MRN" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name or MRN" className={`${FIELD} max-w-[340px]`} />}>
+      {patients && patients.length === 0 && <p className="m-0 p-3 text-[13px] text-muted-foreground">{q ? "No Patients match." : "No Patients yet."}</p>}
       {patients && patients.length > 0 && (
-        <div className="overflow-x-auto rounded-md border border-border bg-card">
           <table className="w-full border-collapse text-[13px]">
             <thead className="bg-muted text-left text-xs text-muted-foreground">
               <tr>
@@ -66,18 +65,18 @@ export default function PatientsPage() {
             <tbody>
               {patients.map((patient) => (
                 <tr key={patient.id} className="border-t border-border">
-                  <td className="px-3 py-2"><Link href={`/patients/${patient.id}/overview`} className="font-medium text-foreground">{patient.display_name}</Link></td>
+                  <td className="px-3 py-2"><Link href={`/patients/${patient.id}/overview`} className="font-medium text-primary hover:underline">{patient.display_name}</Link></td>
                   <td className="whitespace-nowrap px-3 py-2">{formatDob(patient.dob)}</td>
                   <td className="px-3 py-2 font-mono text-xs">{patient.mrn ?? "—"}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{patient.pseudonym}</td>
+                  <td className="px-3 py-2"><PseudonymChip pseudonym={patient.pseudonym} /></td>
                   {withOpenItems && <td className="px-3 py-2 tabular-nums">{openItems ? openItems.get(patient.id) ?? 0 : "—"}</td>}
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{formatWhen(patient.updated_at)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
       )}
+      </TableCard>
     </div>
   );
 }
