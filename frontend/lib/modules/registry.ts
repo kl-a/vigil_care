@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { INSTALLED_MODULES } from "@/modules";
 import type {
   ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
@@ -62,6 +63,14 @@ export function conditionExtensionsFor(config: ModuleConfiguration): ConditionEx
 /** The Treatment Course extensions of the Practice's active modules (e.g. Line of Therapy, best response). */
 export function treatmentCourseExtensionsFor(config: ModuleConfiguration): TreatmentCourseExtension[] {
   return config.active_modules.flatMap((key) => manifest(key)?.treatmentCourseExtensions ?? []);
+}
+
+/** The Patient header chips of the Practice's active modules (e.g. the primary cancer). */
+export function patientHeaderChipsFor(config: ModuleConfiguration): ComponentType<{ patientId: string }>[] {
+  return config.active_modules.flatMap((key) => {
+    const chip = manifest(key)?.patientHeaderChip;
+    return chip ? [chip] : [];
+  });
 }
 
 /** The Imaging Study badges of the Practice's active modules (e.g. Response Assessment). */

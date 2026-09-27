@@ -1,6 +1,7 @@
 import type { ModuleManifest } from "@/lib/modules/types";
 import { BiomarkersTab } from "./Biomarkers";
 import { CancerDiagnosesTab, CancerDiagnosisBlocks, NewPrimaryCancer } from "./CancerDiagnoses";
+import { CancerChip } from "./CancerChip";
 import { DiagnosisSummary } from "./DiagnosisSummary";
 import { lineOfTherapyExtension } from "./LinesOfTherapy";
 import { CnsTab, PerformanceStatusTab } from "./Observations";
@@ -21,6 +22,7 @@ export const oncologyManifest: ModuleManifest = {
   conditionExtension: { factKind: "cancer_diagnosis", label: "This is a primary cancer", Form: NewPrimaryCancer },
   treatmentCourseExtensions: [lineOfTherapyExtension, bestResponseExtension],
   imagingStudyExtension: responseBadgeExtension,
+  patientHeaderChip: CancerChip,
   sections: {
     "cancer-diagnoses": () => <CancerDiagnosisBlocks />,
     "cancer-diagnosis": () => <CancerDiagnosesTab />,
