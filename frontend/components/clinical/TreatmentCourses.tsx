@@ -10,7 +10,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import {
-  addTreatmentCourse, changeTreatmentCourse, fetchConditions, fetchEntryRights, fetchTreatmentCourses, INTENT_LABEL, MODALITY_LABEL,
+  addTreatmentCourse, changeTreatmentCourse, courseTitle, fetchConditions, fetchEntryRights, fetchTreatmentCourses, INTENT_LABEL, MODALITY_LABEL,
   removeTreatmentCourse, type ConditionRow, type Intent, type Modality, type NewTreatmentCourse, type TreatmentCourseRow,
 } from "@/lib/clinical";
 import { formatDate, todayIso } from "@/lib/dates";
@@ -64,7 +64,7 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
             <li key={course.id} className="flex flex-col gap-1 py-2 text-[13px]">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{course.regimen_name ?? course.details?.procedure ?? course.details?.site ?? MODALITY_LABEL[course.modality]}</span>
+                  <span className="font-medium">{courseTitle(course)}</span>
                   <StatusPill tone="neu">{MODALITY_LABEL[course.modality]}{course.intent && ` · ${INTENT_LABEL[course.intent]}`}</StatusPill>
                   {!compact && <VerifiedMark subjectTable="treatment_course" subjectId={course.id} entered={course.entered} />}
                   {extensions.map((extension, index) => {

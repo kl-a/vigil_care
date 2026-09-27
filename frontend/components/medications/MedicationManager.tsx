@@ -10,6 +10,7 @@ import { useSignedInUser } from "@/components/shell/ViewerProvider";
 import { RowMenu } from "@/components/ui/RowMenu";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { SubTabs } from "@/components/ui/SubTabs";
+import { TableCard } from "@/components/ui/TableCard";
 import { NotRecorded } from "@/components/ui/ValueStates";
 import { VerifiedMark } from "@/components/ui/Verified";
 import { FIELD } from "@/components/ui/styles";
@@ -29,18 +30,16 @@ import { formatWhen } from "@/lib/users";
 type View = "active" | "discontinued" | "log";
 const BUTTON = "h-7 rounded-md border border-border px-2 text-xs font-medium hover:bg-muted";
 
-/** The drug's name, linked to its PBS Drug Lookup page when it's in the drug reference. */
+/** The drug's name, itself the link to its PBS Drug Lookup page when it's in the drug reference. */
 export function DrugName({ medication }: { medication: MedicationRow }) {
   const code = medication.pbs_item_codes[0];
   return (
     <span className="flex flex-col">
-      <span className="font-medium">{medication.drug_name}</span>
+      {code
+        ? <Link href={`/pbs/${encodeURIComponent(code)}`} title="Open in the PBS Drug Lookup" className="w-fit font-medium text-primary hover:underline">{medication.drug_name}</Link>
+        : <span className="font-medium">{medication.drug_name}</span>}
       {medication.brand_name && <span className="text-xs text-muted-foreground">{medication.brand_name}</span>}
-      {code ? (
-        <Link href={`/pbs/${encodeURIComponent(code)}`} className="w-fit text-xs text-primary underline-offset-2 hover:underline" data-noprint>PBS Drug Lookup</Link>
-      ) : (
-        !medication.in_drug_reference && <span className="text-xs text-muted-foreground">Not in the drug reference</span>
-      )}
+      {!code && !medication.in_drug_reference && <span className="text-xs text-muted-foreground">Not in the drug reference</span>}
     </span>
   );
 }
@@ -119,11 +118,9 @@ export function MedicationManager() {
             <td className="whitespace-nowrap px-3 py-2 text-right" data-noprint>
               {canEnter && (
                 <span className="inline-flex items-center gap-2">
+                  <button onClick={() => { setEditing(m); setAdding(false); }} className="text-xs font-medium text-primary">Change</button>
                   <button onClick={() => setStopping(m)} className="text-xs font-medium text-primary">Stop</button>
-                  <RowMenu label={m.drug_name} items={[
-                    { label: "Change", onSelect: () => { setEditing(m); setAdding(false); } },
-                    { label: "Remove", danger: true, onSelect: () => setRemoving(m) },
-                  ]} />
+                  <RowMenu label={m.drug_name} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(m) }]} />
                 </span>
               )}
             </td>
@@ -171,14 +168,14 @@ function MedicationTable({ label, rows, empty, headings, render }: {
 }) {
   if (rows.length === 0) return <p className="m-0 text-[13px] text-muted-foreground">{empty}</p>;
   return (
-    <div className="overflow-x-auto rounded-md border border-border">
+    <TableCard label={label} count={`${rows.length} ${rows.length === 1 ? "medication" : "medications"}`}>
       <table aria-label={label} className="w-full border-collapse text-[13px]">
         <thead className="bg-muted text-left text-xs text-muted-foreground">
           <tr>{headings.map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}<th className="px-3 py-2" data-noprint><span className="sr-only">Actions</span></th></tr>
         </thead>
         <tbody>{rows.map((m) => <tr key={m.id} className="border-t border-border align-top">{render(m)}</tr>)}</tbody>
       </table>
-    </div>
+    </TableCard>
   );
 }
 

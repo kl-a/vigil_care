@@ -27,3 +27,10 @@ def test_only_this_practices_history_and_never_for_the_developer_admin(sign_in: 
     assert elsewhere.get(f"/verifications/condition/{condition['id']}").json() == []
     admin, _ = sign_in("developer_admin", practice=ids["practice"])
     assert admin.get(f"/verifications/condition/{condition['id']}").status_code == 403
+
+
+def test_only_the_clinical_records_history(sign_in: SignIn, committed: Seed) -> None:
+    client, ids = sign_in()
+    # A User's own audit trail (e.g. a Job Title change) isn't a value of the Clinical Record.
+    assert client.get(f"/verifications/practice_membership/{ids['user']}").status_code == 404
+    assert client.get(f"/verifications/user/{ids['user']}").status_code == 404

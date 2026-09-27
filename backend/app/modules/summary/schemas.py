@@ -61,12 +61,14 @@ class TrendPoint(BaseModel):
 
 
 class ResultsSection(BaseModel):
-    """Most Recent Results: each analyte's latest value (flagged), its trend, and the latest scans."""
+    """Most Recent Results: each analyte's latest value (flagged), its trend, and the latest scans, each with when
+    it was last updated."""
 
     latest_labs: list[LabResultRow]
     lab_trends: dict[str, list[TrendPoint]]
-    scans: list[ImagingStudyRow]
     updated: LastUpdated | None
+    scans: list[ImagingStudyRow]
+    scans_updated: LastUpdated | None
 
 
 class TreatmentSection(BaseModel):

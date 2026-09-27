@@ -65,6 +65,9 @@ export const COMMON_PANELS: Record<string, { analyte: string; unit: string }[]> 
   ],
 };
 
+/** Outside the report's reference range (a normal result, or one without a range, isn't). */
+export const isFlagged = (flag: LabFlag | null | undefined) => flag === "low" || flag === "high" || flag === "critical";
+
 /** Each analyte's results, oldest first: a trend. Only numbers can be charted. */
 export function trendsOf(results: LabResultRow[]): Map<string, LabResultRow[]> {
   const trends = new Map<string, LabResultRow[]>();
@@ -118,6 +121,10 @@ export type Intent = NonNullable<TreatmentCourseRow["intent"]>;
 
 export const MODALITY_LABEL: Record<Modality, string> = { systemic: "Systemic", surgery: "Surgery", radiation: "Radiation" };
 export const INTENT_LABEL: Record<Intent, string> = { curative: "Curative", neoadjuvant: "Neoadjuvant", adjuvant: "Adjuvant", palliative: "Palliative" };
+
+/** A course by its Regimen, procedure, site, or else its modality. */
+export const courseTitle = (course: Pick<TreatmentCourseRow, "regimen_name" | "details" | "modality">) =>
+  course.regimen_name ?? course.details?.procedure ?? course.details?.site ?? MODALITY_LABEL[course.modality];
 
 export const fetchTreatmentCourses = (patientId: string) => request<TreatmentCourseRow[]>(`/patients/${patientId}/treatment-courses`);
 export const addTreatmentCourse = (patientId: string, course: NewTreatmentCourse) =>

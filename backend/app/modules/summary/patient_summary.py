@@ -43,9 +43,11 @@ def _results(db: Session, actor: Actor, patient_id: uuid.UUID) -> ResultsSection
     scans = imaging.imaging_studies(db, actor, patient_id)[:LATEST_SCANS]
     updated = entry.last_updated(db, actor.practice_id, {
         labs.SUBJECT: (r.id for r in results), labs.PANEL_SUBJECT: (r.panel_id for r in results if r.panel_id),
+    })
+    scans_updated = entry.last_updated(db, actor.practice_id, {
         imaging.STUDY: (s.id for s in scans), imaging.FINDING: (f.id for s in scans for f in s.findings),
     })
-    return ResultsSection(latest_labs=list(latest.values()), lab_trends=dict(trends), scans=scans, updated=updated)
+    return ResultsSection(latest_labs=list(latest.values()), lab_trends=dict(trends), updated=updated, scans=scans, scans_updated=scans_updated)
 
 
 def _treatment(db: Session, actor: Actor, patient_id: uuid.UUID) -> TreatmentSection:

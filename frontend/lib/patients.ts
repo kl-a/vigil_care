@@ -40,11 +40,5 @@ export const changeIdentity = (id: string, change: IdentityChange) =>
 export const removePatient = (id: string, reason: string) =>
   request<void>(`/patients/${id}`, { method: "DELETE", body: JSON.stringify({ reason }) });
 
-/** "03/04/1962 (64)": Australian date order, with age in whole years. */
-export function formatDob(dob: string | null | undefined, today: Date = new Date()): string {
-  if (!dob) return "—";
-  const [year, month, day] = dob.split("-").map(Number) as [number, number, number];
-  let age = today.getFullYear() - year;
-  if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) age -= 1;
-  return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year} (${age})`;
-}
+/** Dates of birth are written in one place (lib/format). */
+export { formatDob } from "./format";

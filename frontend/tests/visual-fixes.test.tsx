@@ -25,6 +25,7 @@ describe("Reference ranges and units", () => {
     expect(formatUnit(null)).toBe("");
     expect(formatUnit("mg/m2")).toBe("mg/m²");
     expect(formatUnit("mL/min/1.73m2")).toBe("mL/min/1.73m²");
+    expect(formatUnit("1000 IU vitamin D3")).toBe("1000 IU vitamin D3");
   });
 });
 

@@ -27,7 +27,9 @@ export function OpenItemActions({ item, onActed, link = false }: { item: OpenIte
   const me = useSignedInUser();
   const [open, setOpen] = useState<OpenItemAction | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (!mayAct(item.who, me.job_title)) return <EntryLock who="clinician" />;
+  // Where to see it in full, and act on it in the other ways (e.g. a new primary instead).
+  const openLink = <Link href={`/patients/${item.patient_id}/${item.open_tab}`} className="text-xs font-medium text-primary">Open</Link>;
+  if (!mayAct(item.who, me.job_title)) return <span className="inline-flex items-center gap-2"><EntryLock who="clinician" />{openLink}</span>;
   const [first, ...rest] = item.actions;
   async function run(action: OpenItemAction, value?: string) {
     setError(null);
@@ -43,6 +45,7 @@ export function OpenItemActions({ item, onActed, link = false }: { item: OpenIte
         </button>
       )}
       {rest.length > 0 && <RowMenu label={item.title} items={rest.map((action) => ({ label: action.label, onSelect: () => start(action) }))} />}
+      {openLink}
       {open && <ActionPopover action={open} onCancel={() => { setOpen(null); setError(null); }} onRun={(value) => run(open, value)} error={error} />}
       {!open && error && <span role="alert" className="text-xs text-neg">{error}</span>}
     </span>
