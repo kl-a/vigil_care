@@ -32,11 +32,12 @@ export function ClinicalData() {
     ...CORE_SUBTABS.filter((tab) => tab.built && isPartShipped(tab.part, showUpcoming)),
     ...moduleTabs.map((tab) => ({ key: tab.id, label: tab.title })),
   ];
-  // A link may open a sub-tab, e.g. the Patient Summary's "See it in the record" (?tab=labs).
-  const [current, setCurrent] = useState<string>(() => {
-    const asked = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("tab");
-    return shown.find((tab) => tab.key === asked)?.key ?? shown[0]!.key;
-  });
+  // A link may open a sub-tab, e.g. the Patient Summary's "See it in the record" (?tab=labs). A Specialty
+  // Module's sub-tabs arrive once the Practice's modules have loaded, so the asked-for tab is kept until then.
+  const [asked, setAsked] = useState(() => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("tab")));
+  const [chosen, setChosen] = useState<string | null>(null);
+  const current = chosen ?? shown.find((tab) => tab.key === asked)?.key ?? shown[0]!.key;
+  const setCurrent = (key: string) => { setChosen(key); setAsked(null); };
   if (state.status !== "ready") return null;
   const patientId = state.patient.id;
   return (

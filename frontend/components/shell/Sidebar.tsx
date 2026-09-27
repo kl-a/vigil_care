@@ -27,17 +27,14 @@ function NavLink({ item, current, expanded }: { item: NavItem; current: boolean;
 export function Sidebar({ jobTitle, pathname, expanded, showUpcoming }: { jobTitle: JobTitle; pathname: string; expanded: boolean; showUpcoming: boolean }) {
   const { main, admin } = navigationFor(jobTitle, (screen) => isVisible(screen, showUpcoming));
   const currentId = navItemForPath(pathname)?.id;
+  // The column carries the background and border the full height of the page; the links stay in view as it scrolls.
   return (
-    <nav
-      aria-label="Main"
-      data-noprint=""
-      className={`sticky top-12 flex h-[calc(100vh-48px)] flex-none flex-col gap-px self-start overflow-y-auto border-r border-border bg-card p-2 transition-[width] ${
-        expanded ? "w-[208px]" : "w-[52px]"
-      }`}
-    >
+    <div data-noprint="" className={`flex-none border-r border-border bg-card transition-[width] ${expanded ? "w-[208px]" : "w-[52px]"}`}>
+    <nav aria-label="Main" className="sticky top-12 flex h-[calc(100vh-48px)] flex-col gap-px overflow-y-auto p-2">
       {main.map((item) => <NavLink key={item.id} item={item} current={item.id === currentId} expanded={expanded} />)}
       {main.length > 0 && <div className="mx-1 my-2 h-px bg-border" />}
       {admin.map((item) => <NavLink key={item.id} item={item} current={item.id === currentId} expanded={expanded} />)}
     </nav>
+    </div>
   );
 }

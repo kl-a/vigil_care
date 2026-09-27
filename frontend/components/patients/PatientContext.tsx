@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { useBreadcrumbLabel } from "@/components/shell/Breadcrumbs";
 import { messageOf } from "@/lib/api";
 import { CARE_TEAM_ROLE_LABEL, fetchCareTeam, type CareTeamRow } from "@/lib/careTeam";
 import { fetchPatient, formatDob, type PatientDetail } from "@/lib/patients";
@@ -55,6 +56,8 @@ export function usePatient(): PatientContextValue {
 /** The Patient header (design doc §5 screen 4): who this is, on every Patient screen. */
 export function PatientHeader() {
   const { state, careTeam } = usePatient();
+  // The breadcrumb names the Patient, never their id.
+  useBreadcrumbLabel(state.status === "ready" ? `/patients/${state.patient.id}` : "", state.status === "ready" ? state.patient.display_name : null);
   const primary = careTeam?.find((member) => member.is_primary && member.is_current);
   return (
     <section aria-label="Patient" className="flex flex-wrap items-baseline gap-x-4 gap-y-1 pb-2">
