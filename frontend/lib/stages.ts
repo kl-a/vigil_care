@@ -7,7 +7,17 @@ import type { ScreenInfo } from "./modules/types";
  * Raise SHIPPED_STAGE when a stage's demo is ready (docs/build-order.md). Mark a screen `built` when
  * it stops being a placeholder.
  */
-export const SHIPPED_STAGE = 3;
+export const SHIPPED_STAGE = 4;
+
+/**
+ * A stage shipped in parts (Stage 4: 4a, 4b, 4c) shows only the parts shipped so far; a stage's other parts
+ * stay hidden (unless upcoming screens are revealed) even once the stage itself has shipped.
+ */
+export const SHIPPED_PARTS: readonly string[] = ["4a"];
+
+export function isPartShipped(part: string, showUpcoming = false): boolean {
+  return showUpcoming || SHIPPED_PARTS.includes(part);
+}
 
 export function isShipped(stage: number): boolean {
   return stage <= SHIPPED_STAGE;

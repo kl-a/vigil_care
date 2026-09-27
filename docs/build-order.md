@@ -68,7 +68,7 @@ This stage can run alongside Stage 2.
 | 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 | 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 
-### Stage 4 · Clinical Record by hand
+### Stage 4 · Clinical Record by hand (4a shipped: `SHIPPED_STAGE = 4`)
 
 **Demo** (in three parts, each shipped as it's built): build Jane Citizen's record by hand. 4a: breast cancer with Stage, HER2 3+ and ER+ history, a Recurrence. 4b: adjuvant then palliative first-line courses (Line of Therapy derived) and current Medications with PBS links. 4c: the latest bloods, a CT with its Response Assessment, the Management Plan and a Next Step. Show that a secretary can't record a Stage, and that with Oncology switched off the cancer details stay visible read-only. Plan: design doc §15 Stage 4. Script so far: [docs/demos/stage-4.md](demos/stage-4.md).
 
@@ -77,13 +77,13 @@ This stage can run alongside Stage 2.
 | 1 | [#35](https://github.com/kl-a/vigil_care/issues/35) | Entering the Clinical Record by hand (provenance, Verification, reason once per save), and Conditions | none | 🔨 Built (`stage-4`) |
 | 1 | [#36](https://github.com/kl-a/vigil_care/issues/36) | Drug reference built from the PBS Schedule (4b) | none | 🔨 Built (`stage-4`) |
 | 2 | [#37](https://github.com/kl-a/vigil_care/issues/37) | Cancer Types (MeSH) and Cancer Diagnosis (4a) | #35 | 🔨 Built (`stage-4`) |
-| 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | ⏭️ Ready |
-| 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | ⏭️ Ready |
-| 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | ⏭️ Ready |
-| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | ⏳ Blocked |
+| 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | 🔨 Built (`stage-4`) |
+| 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | 🔨 Built (`stage-4`) |
+| 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | 🔨 Built (`stage-4`) |
+| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | ⏭️ Ready |
 | 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | 🔨 Built (`stage-4`) |
-| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments (4c); ships 4c if #44 is in | #37, #40 | ⏳ Blocked |
-| 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c); ships 4c if #43 is in | #37 | ⏭️ Ready |
+| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments (4c); ships 4c if #44 is in | #37, #40 | ⏭️ Ready |
+| 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c); ships 4c if #43 is in | #37 | 🔨 Built (`stage-4`) |
 | 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes (4c). 4c ships with the last of #43 and #44, which its demo needs | #35 | 🔨 Built (`stage-4`) |
 
 ### Stage 5 · Patient Summary
@@ -138,7 +138,7 @@ flowchart LR
     T20 --> S3((Stage 3 demo))
     S3 --> T35[#35 Clinical Record entry + Conditions 🔨] --> T37[#37 Cancer Diagnosis 🔨]
     T19 --> T36[#36 drug reference 🔨]
-    T37 --> T38[#38 Biomarkers] & T39[#39 Recurrences] & T40[#40 Treatment Courses] & T44[#44 ECOG/CNS]
+    T37 --> T38[#38 Biomarkers 🔨] & T39[#39 Recurrences 🔨] & T40[#40 Treatment Courses 🔨] & T44[#44 ECOG/CNS 🔨]
     T39 --> S4a((4a demo))
     T38 --> S4a
     T40 --> T41[#41 Medication Manager] --> S4b((4b demo))

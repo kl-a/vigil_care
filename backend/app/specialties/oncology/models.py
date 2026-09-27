@@ -25,7 +25,7 @@ from app.core.vocabulary import REFRESH_STATUSES, TREATMENT_INTENTS
 
 DISEASE_EXTENTS = ("localised", "locally_advanced", "metastatic", "unknown")
 CANCER_STATUSES = ("active", "no_evidence_of_disease", "unknown")
-RECURRENCE_STATUSES = ("suspected", "confirmed", "reclassified_as_new_primary")
+RECURRENCE_STATUSES = ("suspected", "confirmed", "reclassified_as_new_primary", "ruled_out")
 RECURRENCE_EXTENTS = ("local", "regional", "distant")
 BIOMARKER_METHODS = ("NGS", "FISH", "IHC", "PCR", "ctDNA")
 SPECIMEN_KINDS = ("primary", "metastasis", "liquid_biopsy")

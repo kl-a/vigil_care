@@ -213,3 +213,64 @@ class LabPanelRow(BaseModel):
     panel: str | None
     collected_at: dt.datetime
     results: list[LabResultRow]
+
+
+# --- Treatment Courses (#40) ------------------------------------------------------------------------------
+
+Modality = Literal["systemic", "surgery", "radiation"]
+Intent = Literal["curative", "neoadjuvant", "adjuvant", "palliative"]
+Detail = Annotated[str, StringConstraints(strip_whitespace=True, max_length=200)]
+
+
+class RegimenDrug(BaseModel):
+    """One planned drug of a Regimen, with its planned dose (e.g. "60 mg/m2")."""
+
+    drug: Short
+    dose: Detail | None = None
+
+
+class TreatmentCourseFields(BaseModel):
+    intent: Intent | None = None
+    regimen_name: Short | None = None
+    regimen_drugs: list[RegimenDrug] = []
+    start_date: dt.date | None = None
+    # None: ongoing. Set only when a User records that the course ended.
+    end_date: dt.date | None = None
+    reason_stopped: Detail | None = None
+    # Surgery: procedure, margins; radiation: site, dose, fractions.
+    details: dict[Short, Detail] | None = None
+
+
+class NewTreatmentCourse(TreatmentCourseFields):
+    condition_id: uuid.UUID
+    modality: Modality
+
+    @model_validator(mode="after")
+    def _consistent(self) -> "NewTreatmentCourse":
+        if self.modality != "systemic" and (self.regimen_name or self.regimen_drugs):
+            raise ValueError("Only a systemic course has a Regimen.")
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError("A course can't end before it starts.")
+        return self
+
+
+class TreatmentCourseChange(BaseModel):
+    """Only the fields that change, and why (e.g. recording that it ended)."""
+
+    intent: Intent | None = None
+    regimen_name: Short | None = None
+    regimen_drugs: list[RegimenDrug] | None = None
+    start_date: dt.date | None = None
+    end_date: dt.date | None = None
+    reason_stopped: Detail | None = None
+    details: dict[Short, Detail] | None = None
+    reason: Reason
+
+
+class TreatmentCourseRow(TreatmentCourseFields):
+    id: uuid.UUID
+    condition_id: uuid.UUID
+    condition_name: str
+    modality: Modality
+    ongoing: bool
+    entered: Entered | None

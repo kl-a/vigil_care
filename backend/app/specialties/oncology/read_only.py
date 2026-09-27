@@ -9,9 +9,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.modules.clinical.conditions import extended_conditions
+from app.specialties.oncology import biomarkers, lines_of_therapy, observations, recurrences
+from app.specialties.oncology.access import MODULE_KEY
 from app.specialties.oncology.models import CancerDiagnosis
-
-MODULE_KEY = "oncology"
 
 
 def _when(day: date) -> str:
@@ -33,13 +33,21 @@ def _line(name: str, diagnosis: CancerDiagnosis) -> str:
 
 
 def plain_facts(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID) -> list[str]:
-    """One line per Cancer Diagnosis."""
+    """One line per Cancer Diagnosis, then the latest ECOG and CNS status."""
     names = extended_conditions(db, practice_id, patient_id, MODULE_KEY)
-    if not names:
-        return []
-    diagnoses = db.scalars(
-        select(CancerDiagnosis)
-        .where(CancerDiagnosis.practice_id == practice_id, CancerDiagnosis.condition_id.in_(names))
-        .order_by(CancerDiagnosis.dx_date, CancerDiagnosis.created_at)
-    )
-    return [_line(names[diagnosis.condition_id], diagnosis) for diagnosis in diagnoses]
+    lines: list[str] = []
+    if names:
+        diagnoses = db.scalars(
+            select(CancerDiagnosis)
+            .where(CancerDiagnosis.practice_id == practice_id, CancerDiagnosis.condition_id.in_(names))
+            .order_by(CancerDiagnosis.dx_date, CancerDiagnosis.created_at)
+        )
+        for diagnosis in diagnoses:
+            name = names[diagnosis.condition_id]
+            lines.append(_line(name, diagnosis))
+            chips = biomarkers.current_chips(db, practice_id, [diagnosis.id]).get(diagnosis.id, [])
+            if chips:
+                lines.append(f"{name}: " + "; ".join(biomarkers.plain(chip) for chip in chips))
+            lines += recurrences.plain_lines(db, practice_id, diagnosis.id, name, _when)
+        lines += [line.explanation for line in lines_of_therapy.derive(db, practice_id, patient_id)]
+    return lines + observations.latest_lines(db, practice_id, patient_id, _when)

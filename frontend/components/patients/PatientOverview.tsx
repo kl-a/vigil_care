@@ -6,6 +6,7 @@ import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { SectionSlot } from "@/components/SectionSlot";
 import { Conditions } from "@/components/clinical/Conditions";
 import { InactiveModuleFacts } from "@/components/clinical/InactiveModuleFacts";
+import { TreatmentCourses } from "@/components/clinical/TreatmentCourses";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
@@ -14,7 +15,7 @@ import {
   changeIdentity, IDENTITY_FIELDS, IDENTITY_LABEL, removePatient, type IdentityChange, type IdentityField, type IdentityHistoryEntry,
   type PatientDetail,
 } from "@/lib/patients";
-import { isVisible } from "@/lib/stages";
+import { isPartShipped, isVisible } from "@/lib/stages";
 import { formatWhen } from "@/lib/users";
 import { CareTeam } from "./CareTeam";
 import { usePatient } from "./PatientContext";
@@ -27,6 +28,8 @@ export function PatientOverview() {
   const { showUpcoming } = useViewer();
   // Conditions arrive with Stage 4 (#35): shown once it ships, like the Clinical Data tab.
   const stage4 = isVisible({ stage: 4, built: true }, showUpcoming);
+  // The Treatment Course timeline ships with 4b (#40).
+  const part4b = stage4 && isPartShipped("4b", showUpcoming);
   const { state, update } = usePatient();
   const [editing, setEditing] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -59,6 +62,7 @@ export function PatientOverview() {
       </section>
       {stage4 && <Conditions patientId={patient.id} />}
       <CareTeam />
+      {part4b && <TreatmentCourses patientId={patient.id} compact />}
       <SectionSlot slot="patient-overview" />
       {stage4 && <InactiveModuleFacts patientId={patient.id} />}
       <section aria-labelledby="identity-trail" className="flex flex-col gap-2">

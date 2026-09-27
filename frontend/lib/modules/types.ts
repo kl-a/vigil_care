@@ -56,12 +56,35 @@ export interface ConditionExtension {
   Form: ComponentType<{ patientId: string; onSaved: () => void; onCancel: () => void }>;
 }
 
+/** What a module adds to a Treatment Course, e.g. Oncology's Line of Therapy: a label and why. */
+export interface CourseAnnotation {
+  label: string;
+  detail: string;
+  overridden: boolean;
+  /** The number behind the label (e.g. a Line of Therapy's line), for its editor. */
+  value?: number;
+}
+
+/**
+ * A module's view of the Core's Treatment Courses: `load` gives each course's annotation (by course id); Users
+ * who may enter `factKind` can change one with the `Editor`.
+ */
+export interface TreatmentCourseExtension {
+  load: (patientId: string) => Promise<Record<string, CourseAnnotation>>;
+  factKind: string;
+  /** The button that opens the editor, e.g. "Change line". */
+  editLabel: string;
+  Editor: ComponentType<{ patientId: string; courseId: string; annotation: CourseAnnotation | undefined; onSaved: () => void; onCancel: () => void }>;
+}
+
 /** A module's frontend: renderers for the sections and screens its backend declares. */
 export interface ModuleManifest {
   key: ModuleKey;
   sections: Record<string, () => ReactNode>;
   patientTabs: Record<string, { screen: ScreenInfo; slot?: SectionSlotName }>;
-  /** Its Clinical Data sub-tabs (sections in "clinical-data-tabs") that are built; the rest stay hidden. */
-  builtSections?: readonly string[];
+  /** Its Clinical Data sub-tabs (sections in "clinical-data-tabs") that are built, with the part of their stage
+   * that ships them (e.g. "4a"); the rest stay hidden. */
+  builtSections?: Readonly<Record<string, string>>;
   conditionExtension?: ConditionExtension;
+  treatmentCourseExtension?: TreatmentCourseExtension;
 }

@@ -461,7 +461,7 @@ erDiagram
 - `condition.status IN ('active', 'resolved')`
 - `cancer_diagnosis.disease_extent IN ('localised', 'locally_advanced', 'metastatic', 'unknown')`
 - `cancer_diagnosis.cancer_status IN ('active', 'no_evidence_of_disease', 'unknown')`
-- `recurrence.status IN ('suspected', 'confirmed', 'reclassified_as_new_primary')`
+- `recurrence.status IN ('suspected', 'confirmed', 'reclassified_as_new_primary', 'ruled_out')` (ruled out added in #39)
 - `recurrence.extent IN ('local', 'regional', 'distant')`
 - `treatment_course.modality IN ('systemic', 'surgery', 'radiation')`
 - `treatment_course.intent IN ('curative', 'neoadjuvant', 'adjuvant', 'palliative')`
@@ -721,7 +721,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 |---|---|---|---|---|
 | Patient Identity, Care Team, Document Type, redaction review, holding a Document, **Next Steps** (add, mark done, correct or remove with a reason) | ✅ | ✅ | ✅ | ❌ |
 | Lab results, Medications, Conditions (non-cancer), Imaging studies, Findings, *(Oncology)* Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
-| Treatment Courses, *(Oncology)* Biomarkers | ✅ | ✅ | ❌ | ❌ |
+| Treatment Courses, *(Oncology)* Biomarkers, recording a Suspected Recurrence | ✅ | ✅ | ❌ | ❌ |
 | *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution (confirm, new primary instead, rule out), Response Assessment overrides and attribution, Line of Therapy overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
 | *(Oncology)* Marking Differing Biomarker Results "Seen" (one click, optional note) | ✅ | ❌ | ❌ | ❌ |
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
@@ -1160,9 +1160,15 @@ GET    /patients/{id}/cancer-diagnoses      (Oncology) Each primary: Stage at di
 POST   /patients/{id}/cancer-diagnoses      (Oncology) Record a primary cancer (its Condition too): clinician, reauth
 PATCH  /patients/{id}/cancer-diagnoses/{cd} (Oncology) Correct (reason once per save): clinician, reauth
 DELETE /patients/{id}/cancer-diagnoses/{cd} (Oncology) Remove it and its Condition, with reason
-POST   /recurrences/{id}/attribute          Confirm / reclassify as new primary (clinician, reauth)
-GET    /cancer-diagnoses/{id}/biomarkers    (Oncology) Full history + Differing Biomarker Results flags
-GET    /patients/{id}/treatment-courses
+GET    /patients/{id}/recurrences           (Oncology) Every Recurrence of the Patient's Cancer Diagnoses
+POST   /patients/{id}/cancer-diagnoses/{cd}/recurrences  (Oncology) Record a Suspected Recurrence (clinician, coordinator)
+POST   /patients/{id}/recurrences/{r}/confirm | /new-primary | /rule-out   (Oncology) Resolve it (clinician, reauth)
+GET    /patients/{id}/cancer-diagnoses/{cd}/biomarkers   (Oncology) Full history, each marked current and whether results differ
+POST   /patients/{id}/cancer-diagnoses/{cd}/biomarkers   (Oncology) Add a result (never overwritten; DELETE with reason)
+POST   /patients/{id}/cancer-diagnoses/{cd}/biomarkers/{b}/move   (Oncology) To another primary (clinician, reason)
+GET    /patients/{id}/treatment-courses     Most recent first; POST adds, PATCH corrects or ends (reason), DELETE removes
+GET    /patients/{id}/lines-of-therapy      (Oncology) Each palliative systemic course's line, derived unless overridden
+PUT    /patients/{id}/treatment-courses/{tc}/line-of-therapy   (Oncology) Override or derive again (clinician, reason)
 GET    /patients/{id}/imaging               Imaging studies + Findings
 GET    /patients/{id}/response-assessments
 POST   /response-assessments                Clinician override
@@ -1170,8 +1176,8 @@ GET    /patients/{id}/labs                  Newest first
 POST   /patients/{id}/lab-panels            A panel in one save, one Verification (subject `lab_panel`)
 PATCH  /patients/{id}/labs/{lid}            Correct one value (reason); flag recomputed
 DELETE /patients/{id}/labs/{lid}            Remove one value (reason)
-GET    /patients/{id}/performance-status
-GET    /patients/{id}/cns-status
+GET    /patients/{id}/performance-status    (Oncology) ECOG or KPS, newest first; POST adds, DELETE removes (reason)
+GET    /patients/{id}/cns-status            (Oncology) Newest first; POST adds, PATCH corrects, DELETE removes (reason)
 GET    /patients/{id}/conditions/reconcile
 POST   /patients/{id}/conditions/reconcile
 GET    /patients/{id}/management-plans      Newest first (the current plan, then its history); POST adds one, verbatim

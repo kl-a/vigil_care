@@ -105,3 +105,21 @@ export const markNextStepDone = (patientId: string, stepId: string) =>
   request<NextStepRow>(`/patients/${patientId}/next-steps/${stepId}/done`, { method: "POST" });
 export const removeNextStep = (patientId: string, stepId: string, reason: string) =>
   request<void>(`/patients/${patientId}/next-steps/${stepId}`, { method: "DELETE", body: JSON.stringify({ reason }) });
+
+// --- Treatment Courses (#40) --------------------------------------------------------------------------------
+
+export type TreatmentCourseRow = Schemas["TreatmentCourseRow"];
+export type NewTreatmentCourse = Schemas["NewTreatmentCourse"];
+export type Modality = TreatmentCourseRow["modality"];
+export type Intent = NonNullable<TreatmentCourseRow["intent"]>;
+
+export const MODALITY_LABEL: Record<Modality, string> = { systemic: "Systemic", surgery: "Surgery", radiation: "Radiation" };
+export const INTENT_LABEL: Record<Intent, string> = { curative: "Curative", neoadjuvant: "Neoadjuvant", adjuvant: "Adjuvant", palliative: "Palliative" };
+
+export const fetchTreatmentCourses = (patientId: string) => request<TreatmentCourseRow[]>(`/patients/${patientId}/treatment-courses`);
+export const addTreatmentCourse = (patientId: string, course: NewTreatmentCourse) =>
+  request<TreatmentCourseRow>(`/patients/${patientId}/treatment-courses`, { method: "POST", body: JSON.stringify(course) });
+export const changeTreatmentCourse = (patientId: string, id: string, change: Schemas["TreatmentCourseChange"]) =>
+  request<TreatmentCourseRow>(`/patients/${patientId}/treatment-courses/${id}`, { method: "PATCH", body: JSON.stringify(change) });
+export const removeTreatmentCourse = (patientId: string, id: string, reason: string) =>
+  request<void>(`/patients/${patientId}/treatment-courses/${id}`, { method: "DELETE", body: JSON.stringify({ reason }) });

@@ -11,7 +11,10 @@ import { messageOf, request, type Schemas } from "@/lib/api";
 import { changesBetween, fetchEntryRights } from "@/lib/clinical";
 import { formatDate } from "@/lib/dates";
 import { signOffName } from "@/lib/jobTitles";
-import { isVisible } from "@/lib/stages";
+import { isPartShipped, isVisible } from "@/lib/stages";
+import { BiomarkerChip, markerName } from "./Biomarkers";
+import { cnsLine, EcogBadge, fetchCnsStatus, fetchPerformanceStatus, type CnsStatusRow, type PerformanceStatusRow } from "./Observations";
+import { fetchRecurrences, Recurrences, RecurrenceStatus, type RecurrenceRow } from "./Recurrences";
 
 export type CancerDiagnosisRow = Schemas["CancerDiagnosisRow"];
 export type CancerTypeOption = Schemas["CancerTypeOption"];
@@ -60,14 +63,16 @@ function apiValues(values: Values) {
  * Recording or correcting a Cancer Diagnosis (#37): Cancer Type (keyed to MeSH), Stage **at diagnosis**, and
  * Disease Extent **now**. Clinicians only; the backend refuses anyone else.
  */
-export function CancerDiagnosisForm({ initial, submitLabel, onCancel, onSubmit }: {
+export function CancerDiagnosisForm({ initial, prefill, submitLabel, onCancel, onSubmit }: {
   initial?: CancerDiagnosisRow;
+  /** Values to start a new one from, e.g. a Suspected Recurrence's date and site (new primary instead). */
+  prefill?: Partial<Values>;
   submitLabel: string;
   onCancel: () => void;
   onSubmit: (values: Values) => Promise<void>;
 }) {
   const [types, setTypes] = useState<CancerTypeOption[]>([]);
-  const [values, setValues] = useState<Values>(initial ? valuesOf(initial) : EMPTY);
+  const [values, setValues] = useState<Values>(initial ? valuesOf(initial) : { ...EMPTY, ...prefill });
   const [error, setError] = useState<string | null>(null);
   useEffect(() => { fetchCancerTypes().then(setTypes).catch((reason: unknown) => setError(messageOf(reason))); }, []);
   const type = types.find((t) => t.key === values.cancer_type);
@@ -167,11 +172,17 @@ export function CancerDiagnosesTab() {
   const [saving, setSaving] = useState<{ row: CancerDiagnosisRow; values: Values } | null>(null);
   const [removing, setRemoving] = useState<CancerDiagnosisRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [recurrences, setRecurrences] = useState<RecurrenceRow[]>([]);
+  const [rights, setRights] = useState<Record<string, boolean>>({});
   const load = useCallback(() => {
-    if (patientId) fetchCancerDiagnoses(patientId).then(setRows).catch((reason: unknown) => setError(messageOf(reason)));
+    if (!patientId) return;
+    fetchCancerDiagnoses(patientId).then(setRows).catch((reason: unknown) => setError(messageOf(reason)));
+    fetchRecurrences(patientId).then(setRecurrences).catch((reason: unknown) => setError(messageOf(reason)));
   }, [patientId]);
   useEffect(load, [load]);
-  useEffect(() => { fetchEntryRights().then((r) => setCanEnter(Boolean(r.cancer_diagnosis))).catch(() => setCanEnter(false)); }, []);
+  useEffect(() => {
+    fetchEntryRights().then((r) => { setRights(r); setCanEnter(Boolean(r.cancer_diagnosis)); }).catch(() => setCanEnter(false));
+  }, []);
   if (!patientId) return null;
   return (
     <div className="flex flex-col gap-3">
@@ -209,6 +220,11 @@ export function CancerDiagnosesTab() {
             {d.cancer_type.display_name}{d.cancer_type.mesh_term && ` (MeSH: ${d.cancer_type.mesh_term})`}{d.histology && ` · ${d.histology}`}
             {d.laterality && ` · ${d.laterality}`} · <StatusPill tone={d.cancer_status === "active" ? "cau" : "neu"}>{CANCER_STATUS_LABEL[d.cancer_status]}</StatusPill>
           </span>
+          {d.current_biomarkers.length > 0 && (
+            <span className="flex flex-wrap gap-1">{d.current_biomarkers.map((chip) => <BiomarkerChip key={markerName(chip)} chip={chip} />)}</span>
+          )}
+          <Recurrences patientId={patientId} diagnosis={d} recurrences={recurrences.filter((r) => r.cancer_diagnosis_id === d.id)}
+            canRecord={Boolean(rights.recurrence)} canResolve={Boolean(rights.recurrence_attribution)} onChanged={load} />
         </article>
       ))}
       {saving && (
@@ -240,23 +256,47 @@ export function CancerDiagnosisBlocks() {
   const patientId = state.status === "ready" ? state.patient.id : null;
   const shown = isVisible({ stage: 4, built: true }, showUpcoming);
   const [rows, setRows] = useState<CancerDiagnosisRow[] | null>(null);
+  const [latest, setLatest] = useState<{ ecog?: PerformanceStatusRow; cns?: CnsStatusRow }>({});
+  const [recurrences, setRecurrences] = useState<RecurrenceRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    if (patientId && shown) fetchCancerDiagnoses(patientId).then(setRows).catch((reason: unknown) => setError(messageOf(reason)));
-  }, [patientId, shown]);
+    if (!patientId || !shown) return;
+    fetchCancerDiagnoses(patientId).then(setRows).catch((reason: unknown) => setError(messageOf(reason)));
+    fetchRecurrences(patientId).then(setRecurrences).catch(() => setRecurrences([]));
+    // ECOG and CNS ship with 4c.
+    if (isPartShipped("4c", showUpcoming)) {
+      Promise.all([fetchPerformanceStatus(patientId), fetchCnsStatus(patientId)])
+        .then(([ecog, cns]) => setLatest({ ecog: ecog[0], cns: cns[0] })).catch(() => setLatest({}));
+    }
+  }, [patientId, shown, showUpcoming]);
   if (!shown) return <p className="text-sm text-muted-foreground">Cancer Type, Stage, Disease Extent and Biomarkers per Cancer Diagnosis.</p>;
   if (error) return <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>;
   if (rows === null) return <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading…</p>;
-  if (rows.length === 0) return <p className="m-0 text-[13px] text-muted-foreground">None recorded.</p>;
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="flex flex-col gap-3">
+      {(latest.ecog || latest.cns?.present) && (
+        <div className="flex flex-wrap gap-2 text-[13px]">
+          {latest.ecog && <EcogBadge row={latest.ecog} />}
+          {/* The CNS panel only when there's CNS disease (#44). */}
+          {latest.cns?.present && <span className="text-muted-foreground">{cnsLine(latest.cns)}</span>}
+        </div>
+      )}
+      {rows.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">None recorded.</p>}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {rows.map((d) => (
         <div key={d.id} className="flex flex-col gap-1 rounded-md border border-border p-3 text-[13px]">
           <span className="font-semibold">{d.name}</span>
           <span className="text-xs text-muted-foreground">{d.cancer_type.display_name}{d.histology && ` · ${d.histology}`}</span>
           <span>{stageLine(d)}</span>
+          {d.current_biomarkers.length > 0 && (
+            <span className="flex flex-wrap gap-1">{d.current_biomarkers.map((chip) => <BiomarkerChip key={markerName(chip)} chip={chip} />)}</span>
+          )}
+          {recurrences.filter((r) => r.cancer_diagnosis_id === d.id).map((r) => (
+            <span key={r.id} className="text-xs"><RecurrenceStatus status={r.status} /> {r.sites.join(", ") || "site not recorded"} · {formatDate(r.detected_on)}</span>
+          ))}
         </div>
       ))}
+      </div>
     </div>
   );
 }

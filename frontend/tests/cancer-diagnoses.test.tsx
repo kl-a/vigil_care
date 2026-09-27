@@ -18,7 +18,7 @@ const BREAST_TYPE = { key: "breast", display_name: "Breast cancer", mesh_term: "
 const diagnosis = (overrides: Partial<CancerDiagnosisRow>): CancerDiagnosisRow => ({
   id: "cd-1", condition_id: "c-1", name: "Breast cancer", cancer_type: BREAST_TYPE, histology: null, primary_site: null, laterality: "left",
   dx_date: "2024-03-01", stage_system: "TNM", stage: "IIA", disease_extent: "metastatic", disease_extent_as_of: "2026-09-01",
-  cancer_status: "active", entered: null, ...overrides,
+  cancer_status: "active", current_biomarkers: [], entered: null, ...overrides,
 });
 
 describe("Cancer Diagnosis", () => {

@@ -10,10 +10,13 @@ ONCOLOGY_FACT_RIGHTS: Mapping[str, FactRight] = {
     "cns_status": CLINICAL,
     # A Response Assessment as stated in a radiology report; an override is clinician-only (row 4).
     "response_assessment": CLINICAL,
-    # Row 3.
+    # Row 3, and recording a Suspected Recurrence (#39).
     "biomarker": CLINICAL,
-    # Row 4: Cancer Diagnosis (incl. Stage and Disease Extent), Recurrence attribution, overrides.
+    "recurrence": CLINICAL,
+    # Row 4: Cancer Diagnosis (incl. Stage and Disease Extent), Recurrence attribution (confirm, new primary
+    # instead, rule out), overrides.
     "cancer_diagnosis": CLINICIAN_ONLY,
-    "recurrence": CLINICIAN_ONLY,
+    "recurrence_attribution": CLINICIAN_ONLY,
+    "line_of_therapy_override": CLINICIAN_ONLY,
     "response_assessment_override": CLINICIAN_ONLY,
 }

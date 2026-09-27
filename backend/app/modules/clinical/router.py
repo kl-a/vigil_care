@@ -1,4 +1,4 @@
-"""The Clinical Record entered by hand (#35, #42, #45; design doc §5 screen 9). Refusals (403) come from the services."""
+"""The Clinical Record entered by hand (#35, #40, #42, #45; design doc §5 screen 9). Refusals (403) come from the services."""
 
 import uuid
 
@@ -6,11 +6,11 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
-from app.modules.clinical import conditions, entry, labs, plan_and_notes
+from app.modules.clinical import conditions, entry, labs, plan_and_notes, treatment_courses
 from app.modules.clinical.schemas import (
     ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, LabPanelRow, LabResultChange, LabResultRow,
     ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewLabPanel, NewManagementPlan,
-    NewNextStep, NextStepChange, NextStepRow,
+    NewNextStep, NewTreatmentCourse, NextStepChange, NextStepRow, TreatmentCourseChange, TreatmentCourseRow,
 )
 
 router = APIRouter(tags=["clinical record"])
@@ -233,6 +233,49 @@ def change_lab_result(patient_id: uuid.UUID, result_id: uuid.UUID, change: LabRe
 def remove_lab_result(patient_id: uuid.UUID, result_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
     try:
         labs.remove_result(db, actor, patient_id, result_id, removal.reason)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- Treatment Courses (#40) ------------------------------------------------------------------------------
+
+
+@router.get("/patients/{patient_id}/treatment-courses")
+def list_treatment_courses(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[TreatmentCourseRow]:
+    """Most recent start first."""
+    try:
+        return treatment_courses.treatment_courses(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+
+
+@router.post("/patients/{patient_id}/treatment-courses", status_code=status.HTTP_201_CREATED)
+def add_treatment_course(patient_id: uuid.UUID, new: NewTreatmentCourse, actor: SignedIn, db: Db) -> TreatmentCourseRow:
+    try:
+        return treatment_courses.add_course(db, actor, patient_id, new)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except treatment_courses.NoSuchCondition as error:
+        raise _invalid(error) from None
+
+
+@router.patch("/patients/{patient_id}/treatment-courses/{course_id}")
+def change_treatment_course(
+    patient_id: uuid.UUID, course_id: uuid.UUID, change: TreatmentCourseChange, actor: SignedIn, db: Db
+) -> TreatmentCourseRow:
+    try:
+        return treatment_courses.change_course(db, actor, patient_id, course_id, change)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except treatment_courses.InvalidCourse as error:
+        raise _invalid(error) from None
+
+
+@router.delete("/patients/{patient_id}/treatment-courses/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_treatment_course(patient_id: uuid.UUID, course_id: uuid.UUID, removal: Removal, actor: SignedIn, db: Db) -> Response:
+    try:
+        treatment_courses.remove_course(db, actor, patient_id, course_id, removal.reason)
     except tuple(_MISSING) as error:
         raise _missing(error) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
