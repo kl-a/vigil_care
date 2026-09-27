@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/dates";
 import { howTaken } from "@/lib/medications";
 import { imagingStudyExtensionsFor, sectionsFor, treatmentCourseExtensionsFor } from "@/lib/modules/registry";
 import type { CourseAnnotation } from "@/lib/modules/types";
+import { formatUnit } from "@/lib/format";
 import { formatDob } from "@/lib/patients";
 import { fetchPatientSummary, type PatientSummary as Summary } from "@/lib/summary";
 
@@ -145,7 +146,7 @@ export function PatientSummary() {
                     {summary.results.latest_labs.map((r) => (
                       <tr key={r.id} className="border-t border-border first:border-t-0">
                         <td className="py-1 pr-2">{r.analyte}</td>
-                        <td className="py-1 pr-2 tabular-nums">{r.value ?? r.value_text} {r.unit}<LabFlagMark flag={r.flag} /></td>
+                        <td className="py-1 pr-2 tabular-nums">{r.value ?? r.value_text} {formatUnit(r.unit)}<LabFlagMark flag={r.flag} /></td>
                         <td className="py-1 pr-2"><Sparkline values={(summary.results.lab_trends[r.analyte] ?? []).map((p) => Number(p.value))} /></td>
                         <td className="py-1 text-right text-xs text-muted-foreground">{formatDate(r.collected_at.slice(0, 10))}</td>
                       </tr>

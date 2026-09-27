@@ -12,6 +12,7 @@ import {
   type NewLabResult,
 } from "@/lib/clinical";
 import { formatDate, todayIso } from "@/lib/dates";
+import { formatRange, formatUnit } from "@/lib/format";
 import { signOffName } from "@/lib/jobTitles";
 
 type Row = { analyte: string; value: string; unit: string; ref_low: string; ref_high: string };
@@ -106,12 +107,12 @@ export function Labs({ patientId }: { patientId: string }) {
                   <td className="px-3 py-2">{result.analyte}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">
                     <span className={result.flag === "low" || result.flag === "high" ? "font-semibold text-cau" : ""}>
-                      {result.value ?? result.value_text} {result.unit ?? ""}
+                      {result.value ?? result.value_text} {formatUnit(result.unit)}
                     </span>
                     {result.flag && FLAG[result.flag] && <FlagMark flag={FLAG[result.flag]!} />}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 tabular-nums text-muted-foreground">
-                    {result.ref_low ?? result.ref_high ? `${result.ref_low ?? ""}–${result.ref_high ?? ""}` : "—"}
+                    {formatRange(result.ref_low, result.ref_high)}
                   </td>
                   {canEnter && (
                     <td className="whitespace-nowrap px-3 py-2 text-right">
