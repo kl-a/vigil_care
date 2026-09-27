@@ -252,7 +252,7 @@ export function CancerDiagnosesTab() {
 }
 
 /** The Patient Overview's section: one block per Cancer Diagnosis (arrives with Stage 4). */
-export function CancerDiagnosisBlocks() {
+export function CancerDiagnosisBlocks({ stacked = false }: { stacked?: boolean } = {}) {
   const { state } = usePatient();
   const { showUpcoming } = useViewer();
   const patientId = state.status === "ready" ? state.patient.id : null;
@@ -284,7 +284,7 @@ export function CancerDiagnosisBlocks() {
         </div>
       )}
       {rows.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">None recorded.</p>}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className={`grid grid-cols-1 gap-3 ${stacked ? "" : "sm:grid-cols-2"}`}>
       {rows.map((d) => (
         <div key={d.id} className="flex flex-col gap-1 rounded-md border border-border p-3 text-[13px]">
           <span className="font-semibold">{d.name}</span>

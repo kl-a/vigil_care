@@ -15,7 +15,7 @@ import { PatientSummary } from "@/components/summary/PatientSummary";
 import { ageOf, type OpenItem, type PatientSummary as Summary } from "@/lib/summary";
 import { SHIPPED_STAGE } from "@/lib/stages";
 import { NO_MODULES } from "@/lib/modules/types";
-import { userWith } from "./fixtures";
+import { ONCOLOGY_ON, userWith } from "./fixtures";
 
 const NEXT_STEP: OpenItem = {
   type: "next_step", type_label: "Next Step", patient_id: "pt-1", patient_name: "Robin Sample", title: "Discuss lung nodule at MDT",
@@ -152,7 +152,11 @@ describe("Patient Summary", () => {
     const history = screen.getByRole("region", { name: "Medical History" });
     expect(within(history).getAllByText("None recorded")).toHaveLength(2);
     expect(screen.getByRole("region", { name: "Registration" })).toHaveTextContent("0000 00044 1");
-    expect(screen.getByRole("button", { name: "Print" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Print summary" })).toBeInTheDocument();
+    // The glance strip keeps its tiles, saying what isn't recorded.
+    const glance = screen.getByRole("region", { name: "At a glance" });
+    expect(glance).toHaveTextContent("TreatmentNot recorded");
+    expect(glance).toHaveTextContent("Next stepNot recorded");
     // No module draws a Diagnosis: the section still shows, saying so.
     expect(within(await screen.findByRole("region", { name: "Diagnosis" })).getByText("None recorded")).toBeInTheDocument();
   });
@@ -171,6 +175,43 @@ describe("Patient Summary", () => {
     expect(within(history).getByText("Type 2 diabetes")).toBeInTheDocument();
     expect(within(history).getByRole("button", { name: /^Verified by Sam Lee \(Trial coordinator\)/ })).toBeInTheDocument();
     expect(within(history).getByRole("link", { name: "See it in the record" })).toHaveAttribute("href", "/patients/pt-1/clinical-data?tab=conditions");
+  });
+});
+
+describe("The Summary's hierarchy (#53)", () => {
+  beforeEach(() => vi.clearAllMocks());
+  const lab = (analyte: string, value: string, flag: string, low: string | null, high: string | null) => ({
+    id: analyte, panel_id: "p", panel: "FBC", analyte, value, value_text: null, unit: "g/L", ref_low: low, ref_high: high, flag,
+    collected_at: "2026-09-14T00:00:00Z", entered: null,
+  });
+
+  it("puts Oncology's tiles among the Core's, and flagged results first with the rest collapsed", async () => {
+    api.request.mockImplementation(async (path: string) => {
+      if (path === "/modules/active") return ONCOLOGY_ON;
+      if (path === "/patients/pt-1") return PATIENT;
+      if (path === "/patients/pt-1/summary") return {
+        ...EMPTY_SUMMARY,
+        results: { ...EMPTY_SUMMARY.results, latest_labs: [lab("Platelets", "160", "normal", "150", "400"), lab("Haemoglobin", "104", "low", "115", "165")],
+          lab_trends: { Haemoglobin: [{ collected_at: "2026-06-08T00:00:00Z", value: "112" }, { collected_at: "2026-09-14T00:00:00Z", value: "104" }] } },
+        treatment: { courses: [{ id: "tc-1", condition_id: "c-1", condition_name: "Colorectal cancer", modality: "systemic", intent: "palliative",
+          regimen_name: "FOLFOX + bevacizumab", regimen_drugs: [], start_date: "2026-03-02", end_date: null, ongoing: true, reason_stopped: null, details: null, entered: null }], updated: null },
+      };
+      if (path === "/patients/pt-1/cancer-diagnoses") return [{ id: "cd-1", name: "Colorectal cancer", stage: "IIIB", disease_extent: "metastatic", cancer_status: "active", current_biomarkers: [], cancer_type: { display_name: "Colorectal cancer" } }];
+      if (path === "/patients/pt-1/performance-status") return [{ id: "e-1", scale: "ECOG", value: 1, assessed_on: "2026-09-14", entered: null }];
+      if (path === "/patients/pt-1/diagnosis-updated") return null;
+      return [];
+    });
+    render(<ViewerProvider initialUser={userWith("clinician")} loadModules={async () => ONCOLOGY_ON}><PatientProvider patientId="pt-1"><PatientSummary /></PatientProvider></ViewerProvider>);
+    const glance = await screen.findByRole("region", { name: "At a glance" });
+    await vi.waitFor(() => expect(within(glance).getAllByText(/^(Diagnosis|Treatment|Latest response|ECOG|Next step)$/).map((t) => t.textContent))
+      .toEqual(["Diagnosis", "Treatment", "Latest response", "ECOG", "Next step"]));
+    expect(glance).toHaveTextContent("Colorectal cancerStage IIIB at dx · now metastatic");
+    expect(glance).toHaveTextContent("FOLFOX + bevacizumabsince 2 Mar 2026 · ongoing");
+    const bloods = screen.getByRole("list", { name: "Latest bloods" });
+    expect(within(bloods).getAllByRole("listitem").map((li) => li.textContent?.split("g/L")[0])).toEqual(["Haemoglobin"]);
+    expect(bloods).toHaveTextContent("Low");
+    fireEvent.click(screen.getByRole("button", { name: "Show" }));
+    expect(within(bloods).getAllByRole("listitem")).toHaveLength(2);
   });
 });
 
