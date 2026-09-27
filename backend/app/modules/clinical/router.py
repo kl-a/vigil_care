@@ -12,6 +12,7 @@ from app.modules.clinical.schemas import (
     ImagingStudyRow, LabPanelRow, LabResultChange, LabResultRow,
     ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewFinding, NewImagingStudy, NewLabPanel, NewManagementPlan,
     NewNextStep, NewTreatmentCourse, NextStepChange, NextStepRow, TreatmentCourseChange, TreatmentCourseRow,
+    ValueHistoryEntry,
 )
 
 router = APIRouter(tags=["clinical record"])
@@ -31,6 +32,12 @@ def _missing(error: LookupError) -> HTTPException:
 def entry_rights(actor: SignedIn, db: Db) -> dict[str, bool]:
     """Which kinds of Clinical Record value the signed-in User may enter by hand."""
     return entry.entry_rights(db, actor)
+
+
+@router.get("/verifications/{subject_table}/{subject_id}")
+def value_history(subject_table: str, subject_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ValueHistoryEntry]:
+    """A value's history: every Verification of it in this Practice, newest first."""
+    return entry.value_history(db, actor, subject_table, subject_id)
 
 
 @router.get("/patients/{patient_id}/inactive-module-facts")

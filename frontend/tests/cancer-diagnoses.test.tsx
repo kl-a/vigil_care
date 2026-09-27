@@ -23,7 +23,7 @@ const diagnosis = (overrides: Partial<CancerDiagnosisRow>): CancerDiagnosisRow =
 
 describe("Cancer Diagnosis", () => {
   it("reads Stage at diagnosis and Disease Extent now", () => {
-    expect(stageLine(diagnosis({}))).toBe("Stage IIA (TNM) at diagnosis, 01/03/2024 · Metastatic as of 01/09/2026");
+    expect(stageLine(diagnosis({}))).toBe("Stage IIA (TNM) at diagnosis, 1 Mar 2024 · Metastatic as of 1 Sep 2026");
     expect(stageLine(diagnosis({ stage: null, disease_extent: "unknown", disease_extent_as_of: null }))).toBe("Stage not recorded · Unknown");
   });
 });

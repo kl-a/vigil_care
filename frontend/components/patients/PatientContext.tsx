@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { useBreadcrumbLabel } from "@/components/shell/Breadcrumbs";
+import { PseudonymChip } from "@/components/ui/PseudonymChip";
 import { messageOf } from "@/lib/api";
 import { CARE_TEAM_ROLE_LABEL, fetchCareTeam, type CareTeamRow } from "@/lib/careTeam";
 import { fetchPatient, formatDob, type PatientDetail } from "@/lib/patients";
@@ -68,7 +69,7 @@ export function PatientHeader() {
           <h1 className="m-0 text-lg font-semibold">{state.patient.display_name}</h1>
           <span className="text-[13px] text-muted-foreground">DOB {formatDob(state.patient.identity.dob)}</span>
           <span className="font-mono text-xs text-muted-foreground">MRN {state.patient.identity.mrn ?? "—"}</span>
-          <span className="font-mono text-xs text-muted-foreground" title="Pseudonym: printed only on De-identified Exports">{state.patient.pseudonym}</span>
+          <PseudonymChip pseudonym={state.patient.pseudonym} />
           {primary && <span className="text-[13px]">{CARE_TEAM_ROLE_LABEL[primary.role]}: {primary.provider_name}</span>}
         </>
       )}

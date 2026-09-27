@@ -1609,6 +1609,26 @@ export interface paths {
         patch: operations["change_user_users__user_id__patch"];
         trace?: never;
     };
+    "/verifications/{subject_table}/{subject_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Value History
+         * @description A value's history: every Verification of it in this Practice, newest first.
+         */
+        get: operations["value_history_verifications__subject_table___subject_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4178,6 +4198,36 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /**
+         * ValueHistoryEntry
+         * @description One Verification of a value: who (name, Job Title then), what they did, when, why, and what changed.
+         */
+        ValueHistoryEntry: {
+            /** Action */
+            action: string;
+            /** After */
+            after: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Before */
+            before: {
+                [key: string]: unknown;
+            } | null;
+            /** By */
+            by: string;
+            /**
+             * Job Title
+             * @enum {string}
+             */
+            job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
+            /** Reason */
+            reason: string | null;
         };
     };
     responses: never;
@@ -8047,6 +8097,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    value_history_verifications__subject_table___subject_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subject_table: string;
+                subject_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValueHistoryEntry"][];
                 };
             };
             /** @description Validation Error */

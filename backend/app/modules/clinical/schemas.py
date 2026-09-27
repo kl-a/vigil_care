@@ -1,6 +1,6 @@
 import datetime as dt
 import uuid
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from decimal import Decimal
 
@@ -31,6 +31,18 @@ class LastUpdated(BaseModel):
     action: str
     subject_table: str
     subject_id: uuid.UUID
+
+
+class ValueHistoryEntry(BaseModel):
+    """One Verification of a value: who (name, Job Title then), what they did, when, why, and what changed."""
+
+    by: str
+    job_title: JobTitle
+    at: dt.datetime
+    action: str
+    reason: str | None
+    before: dict[str, Any] | None
+    after: dict[str, Any] | None
 
 
 class NewCondition(BaseModel):

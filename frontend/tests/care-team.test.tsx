@@ -62,10 +62,10 @@ describe("Care Team", () => {
       expect.stringContaining("Dr Morgan Grey"),
     ]);
     expect(within(current).getByText("Dr Alex Rivera").closest("li")).toHaveTextContent("Primary");
-    expect(within(current).getByText("Dr Alex Rivera").closest("li")).toHaveTextContent("since 01/03/2024");
+    expect(within(current).getByText("Dr Alex Rivera").closest("li")).toHaveTextContent("since 1 Mar 2024");
     const past = screen.getByRole("list", { name: "Past Care Team" });
     expect(past).toHaveTextContent("Dr Taylor Quinn");
-    expect(past).toHaveTextContent("until 30/06/2024");
+    expect(past).toHaveTextContent("until 30 Jun 2024");
   });
 
   it("adds a Provider in a role", async () => {

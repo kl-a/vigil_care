@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
+import { RowMenu } from "@/components/ui/RowMenu";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import { formatDate } from "@/lib/dates";
@@ -103,7 +105,7 @@ export function Conditions({ patientId }: { patientId: string }) {
                 <th className="px-3 py-2 font-medium">Condition</th>
                 <th className="px-3 py-2 font-medium">Status</th>
                 <th className="px-3 py-2 font-medium">Onset</th>
-                <th className="px-3 py-2 font-medium">Entered by</th>
+                <th className="px-3 py-2 font-medium">Verified</th>
                 {canEnter && <th className="px-3 py-2 font-medium"><span className="sr-only">Actions</span></th>}
               </tr>
             </thead>
@@ -116,7 +118,7 @@ export function Conditions({ patientId }: { patientId: string }) {
                   </td>
                   <td className="px-3 py-2"><StatusPill tone={row.status === "active" ? "cau" : "neu"}>{CONDITION_STATUS_LABEL[row.status]}</StatusPill></td>
                   <td className="whitespace-nowrap px-3 py-2 tabular-nums">{formatDate(row.onset_date)}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground"><EnteredBy entered={row.entered} /></td>
+                  <td className="px-3 py-2"><VerifiedMark subjectTable="condition" subjectId={row.id} entered={row.entered} /></td>
                   {canEnter && row.extended_by_module && (
                     <td className="px-3 py-2 text-right text-xs text-muted-foreground">
                       {modules.active_modules.includes(row.extended_by_module) ? "Changed in its own sub-tab" : "Read-only: its module isn't active"}
@@ -124,9 +126,9 @@ export function Conditions({ patientId }: { patientId: string }) {
                   )}
                   {canEnter && !row.extended_by_module && (
                     <td className="whitespace-nowrap px-3 py-2 text-right">
-                      <span className="inline-flex gap-2">
+                      <span className="inline-flex items-center gap-2">
                         <button onClick={() => { setEditing(row); setAdding(false); }} className="text-xs font-medium text-primary">Edit</button>
-                        <button onClick={() => setRemoving(row)} className="text-xs font-medium text-neg">Remove</button>
+                        <RowMenu label={row.name} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(row) }]} />
                       </span>
                     </td>
                   )}

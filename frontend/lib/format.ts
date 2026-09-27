@@ -18,3 +18,24 @@ export function formatRange(low: string | number | null | undefined, high: strin
   if (has(low)) return `≥${low}`;
   return "—";
 }
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** A clinical date: "18 Sep 2026", or "—". Takes the API's ISO date (a datetime's date part is used as is). */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const [year, month, day] = iso.slice(0, 10).split("-").map(Number) as [number, number, number];
+  return `${day} ${MONTHS[month - 1]} ${year}`;
+}
+
+/** A moment, in the viewer's time: "18 Sep 2026, 13:20" (24-hour), or "Never". */
+export function formatWhen(iso: string | null | undefined): string {
+  if (!iso) return "Never";
+  const at = new Date(iso);
+  return `${at.getDate()} ${MONTHS[at.getMonth()]} ${at.getFullYear()}, ${formatTime(at)}`;
+}
+
+/** A time of day: "13:20". */
+export function formatTime(at: Date): string {
+  return `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
+}

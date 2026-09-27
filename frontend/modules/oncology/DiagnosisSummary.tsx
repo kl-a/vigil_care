@@ -16,7 +16,9 @@ export function DiagnosisSummary() {
   useEffect(() => { if (patientId) fetchDiagnosisUpdated(patientId).then(setUpdated).catch(() => setUpdated(null)); }, [patientId]);
   return (
     <div className="flex flex-col gap-2">
-      <Updated updated={updated} href={patientId ? `/patients/${patientId}/clinical-data?tab=cancer-diagnosis` : undefined} />
+      <p className="m-0 text-xs text-muted-foreground">
+        <Updated updated={updated} href={patientId ? `/patients/${patientId}/clinical-data?tab=cancer-diagnosis` : undefined} />
+      </p>
       <CancerDiagnosisBlocks />
     </div>
   );

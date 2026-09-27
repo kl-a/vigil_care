@@ -56,7 +56,7 @@ describe("Recurrences", () => {
 
   it("lets a clinician confirm, reclassify or rule out a suspected one", async () => {
     const onChanged = renderAs(true);
-    expect(screen.getByText(/Distant: liver · detected 10\/02\/2026/)).toBeInTheDocument();
+    expect(screen.getByText(/Distant: liver · detected 10 Feb 2026/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
     await waitFor(() => expect(api.request).toHaveBeenCalledWith("/patients/pt-1/recurrences/r-1/confirm", { method: "POST" }));
     expect(onChanged).toHaveBeenCalled();
@@ -85,8 +85,8 @@ describe("Recurrences", () => {
 describe("CNS status", () => {
   it("reads in plain words", () => {
     const row = { id: "c", assessed_on: "2026-09-20", present: true, lesion_count: 2, locations: [], entered: null };
-    expect(cnsLine(row as never)).toBe("CNS disease present: 2 lesions (20/09/2026)");
-    expect(cnsLine({ ...row, present: false } as never)).toBe("No CNS disease (20/09/2026)");
+    expect(cnsLine(row as never)).toBe("CNS disease present: 2 lesions (20 Sep 2026)");
+    expect(cnsLine({ ...row, present: false } as never)).toBe("No CNS disease (20 Sep 2026)");
   });
 });
 

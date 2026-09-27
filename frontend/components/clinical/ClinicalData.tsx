@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePatient } from "@/components/patients/PatientContext";
 import { useViewer } from "@/components/shell/ViewerProvider";
+import { SubTabs } from "@/components/ui/SubTabs";
 import { clinicalDataTabsFor } from "@/lib/modules/registry";
 import { isPartShipped } from "@/lib/stages";
 import { Conditions } from "./Conditions";
@@ -42,14 +43,7 @@ export function ClinicalData() {
   const patientId = state.patient.id;
   return (
     <div data-screen-label="Clinical Data Viewer" className="flex w-full max-w-[1200px] flex-col gap-4 px-5 pb-8 pt-3">
-      <nav aria-label="Clinical Data" className="flex gap-1 border-b border-border">
-        {shown.map((tab) => (
-          <button key={tab.key} onClick={() => setCurrent(tab.key)} aria-current={current === tab.key ? "page" : undefined}
-            className={`-mb-px border-b-2 px-3 py-1.5 text-[13px] ${current === tab.key ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      <SubTabs label="Clinical Data" tabs={shown} current={current} onChange={setCurrent} />
       {current === "conditions" && <Conditions patientId={patientId} />}
       {current === "labs" && <Labs patientId={patientId} />}
       {current === "imaging" && <Imaging patientId={patientId} />}

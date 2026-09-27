@@ -148,7 +148,7 @@ describe("Patient Summary", () => {
     renderAs("clinician", <PatientProvider patientId="pt-1"><PatientSummary /></PatientProvider>);
     const history = await screen.findByRole("region", { name: "Medical History" });
     expect(within(history).getByText("Type 2 diabetes")).toBeInTheDocument();
-    expect(history).toHaveTextContent("by Sam Lee (Trial coordinator)");
+    expect(within(history).getByRole("button", { name: /^Verified by Sam Lee \(Trial coordinator\)/ })).toBeInTheDocument();
     expect(within(history).getByRole("link", { name: "See it in the record" })).toHaveAttribute("href", "/patients/pt-1/clinical-data?tab=conditions");
   });
 });

@@ -13,6 +13,4 @@ export const createUser = (user: NewUser) => request<UserRow>("/users", { method
 export const changeUser = (id: string, change: UserChange) =>
   request<UserRow>(`/users/${id}`, { method: "PATCH", body: JSON.stringify(change) });
 
-export function formatWhen(iso: string | null | undefined): string {
-  return iso ? new Date(iso).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" }) : "Never";
-}
+export { formatWhen } from "./format";

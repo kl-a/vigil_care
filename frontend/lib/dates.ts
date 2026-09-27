@@ -1,9 +1,5 @@
-/** "01/03/2024", or "—". */
-export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const [year, month, day] = iso.split("-");
-  return `${day}/${month}/${year}`;
-}
+/** Clinical dates are written one way everywhere (lib/format). */
+export { formatDate } from "./format";
 
 /** Today in the browser's calendar, as the API's ISO date. */
 export function todayIso(now: Date = new Date()): string {

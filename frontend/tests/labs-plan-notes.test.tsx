@@ -137,7 +137,7 @@ describe("Plan and notes", () => {
     clinical.fetchEntryRights.mockResolvedValue({ management_plan: false, clinical_note: false });
     renderAs(<PlanAndNotes patientId="pt-1" />, "secretary");
     const open = (await screen.findByText("Discuss at breast MDT")).closest("li")!;
-    expect(open).toHaveTextContent("MDT · due 02/10/2026");
+    expect(open).toHaveTextContent("MDT · due 2 Oct 2026");
     expect(screen.getByText("Clinic review").closest("li")).toHaveTextContent("done by Jordan Park (synthetic)");
     fireEvent.click(within(open).getByRole("button", { name: "Mark done" }));
     await waitFor(() => expect(clinical.markNextStepDone).toHaveBeenCalledWith("pt-1", "ns-1"));
