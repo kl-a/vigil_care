@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePatient } from "@/components/patients/PatientContext";
 import { useViewer } from "@/components/shell/ViewerProvider";
 import { SubTabs } from "@/components/ui/SubTabs";
-import { clinicalDataTabsFor } from "@/lib/modules/registry";
+import { fetchClinicalCounts } from "@/lib/clinical";
+import { clinicalDataCountsFor, clinicalDataTabsFor } from "@/lib/modules/registry";
 import { isPartShipped } from "@/lib/stages";
 import { Conditions } from "./Conditions";
 import { Imaging } from "./Imaging";
@@ -29,10 +30,18 @@ export function ClinicalData() {
   const { modules, showUpcoming } = useViewer();
   // Core sub-tabs, then the active modules' built ones; each once its part has shipped.
   const moduleTabs = clinicalDataTabsFor(modules).filter((tab) => isPartShipped(tab.part, showUpcoming));
+  // Each sub-tab's count (#57): the Core's, and each active module's for its own.
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const patientReady = state.status === "ready" ? state.patient.id : null;
+  useEffect(() => {
+    if (!patientReady) return;
+    const loaders = [fetchClinicalCounts, ...clinicalDataCountsFor(modules)];
+    Promise.all(loaders.map((load) => load(patientReady).catch(() => ({})))).then((all) => setCounts(Object.assign({}, ...all)));
+  }, [patientReady, modules]);
   const shown = [
     ...CORE_SUBTABS.filter((tab) => tab.built && isPartShipped(tab.part, showUpcoming)),
     ...moduleTabs.map((tab) => ({ key: tab.id, label: tab.title })),
-  ];
+  ].map((tab) => ({ ...tab, count: counts[tab.key] ?? null }));
   // A link may open a sub-tab, e.g. the Patient Summary's "See it in the record" (?tab=labs). A Specialty
   // Module's sub-tabs arrive once the Practice's modules have loaded, so the asked-for tab is kept until then.
   const [asked, setAsked] = useState(() => (typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("tab")));

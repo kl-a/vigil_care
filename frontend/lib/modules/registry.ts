@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { INSTALLED_MODULES } from "@/modules";
 import type {
-  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
+  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientListColumns, PatientTab, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
 } from "./types";
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
@@ -63,6 +63,22 @@ export function conditionExtensionsFor(config: ModuleConfiguration): ConditionEx
 /** The Treatment Course extensions of the Practice's active modules (e.g. Line of Therapy, best response). */
 export function treatmentCourseExtensionsFor(config: ModuleConfiguration): TreatmentCourseExtension[] {
   return config.active_modules.flatMap((key) => manifest(key)?.treatmentCourseExtensions ?? []);
+}
+
+/** Each active module's Clinical Data counts loader. */
+export function clinicalDataCountsFor(config: ModuleConfiguration): ((patientId: string) => Promise<Record<string, number>>)[] {
+  return config.active_modules.flatMap((key) => {
+    const counts = manifest(key)?.clinicalDataCounts;
+    return counts ? [counts] : [];
+  });
+}
+
+/** The Patient List columns of the Practice's active modules. */
+export function patientListColumnsFor(config: ModuleConfiguration): PatientListColumns[] {
+  return config.active_modules.flatMap((key) => {
+    const columns = manifest(key)?.patientListColumns;
+    return columns ? [columns] : [];
+  });
 }
 
 /** The Patient header chips of the Practice's active modules (e.g. the primary cancer). */

@@ -1,8 +1,9 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { CircleHelp, Minus, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { EnteredBy } from "@/components/clinical/Conditions";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { usePatient } from "@/components/patients/PatientContext";
@@ -120,11 +121,11 @@ export function ResponseAssessmentsTab() {
                   {row.cancer_diagnosis_name ?? <StatusPill tone="cau"><span className="inline-flex items-center gap-1"><CircleHelp aria-hidden className="h-3 w-3" />Not sure which Cancer Diagnosis</span></StatusPill>}
                   <span>· {formatDate(row.assessed_on)}</span>
                   {row.overridden_by_id && <span className="text-xs">(overridden by a clinician)</span>}
+                  <VerifiedMark subjectTable="response_assessment" subjectId={row.id} entered={row.entered} />
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {SOURCE_LABEL[row.source]}{row.imaging_study_id && scans[row.imaging_study_id] && ` · ${scans[row.imaging_study_id]}`}
                   {row.override_reason && ` · Overrode the report: ${row.override_reason}`}
-                  {" · Entered by "}<EnteredBy entered={row.entered} />
                 </span>
               </span>
               <span className="inline-flex items-center gap-2">
@@ -135,7 +136,7 @@ export function ResponseAssessmentsTab() {
                   </select>
                 )}
                 {isClinician && !row.overridden_by_id && <button onClick={() => setOverriding(row)} className="text-xs font-medium text-primary">Override</button>}
-                {(row.source === "clinician" ? isClinician : canRecord) && <button onClick={() => setRemoving(row)} className="text-xs font-medium text-neg">Remove</button>}
+                {(row.source === "clinician" ? isClinician : canRecord) && <RowMenu label={`${row.direction} ${formatDate(row.assessed_on)}`} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(row) }]} />}
               </span>
             </li>
           ))}

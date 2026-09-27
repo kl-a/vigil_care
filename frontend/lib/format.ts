@@ -7,7 +7,9 @@ export function formatUnit(unit: string | null | undefined): string {
   if (!unit) return "";
   return unit
     .replace(/^x(?=10\^)/, "×")
-    .replace(/\^(-?\d+)/g, (_, power: string) => [...power].map((c) => SUPERSCRIPT[c] ?? c).join(""));
+    .replace(/\^(-?\d+)/g, (_, power: string) => [...power].map((c) => SUPERSCRIPT[c] ?? c).join(""))
+    // Areas and volumes written without a caret, e.g. "mg/m2", "mL/min/1.73m2".
+    .replace(/(?<=[a-zA-Z])([23])\b/g, (_, power: string) => SUPERSCRIPT[power]!);
 }
 
 /** A reference range. One-sided ranges read as the flag does (a value above the high end is High): "≤20", "≥60". */

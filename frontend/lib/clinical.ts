@@ -12,6 +12,9 @@ export const CONDITION_STATUS_LABEL: Record<ConditionStatus, string> = { active:
 /** Which Clinical Record kinds the signed-in User may enter by hand (Verification Rights, design doc §6.4). */
 export const fetchEntryRights = () => request<Record<string, boolean>>("/clinical/entry-rights");
 
+/** How many of each Clinical Record kind, by Clinical Data sub-tab (#57). */
+export const fetchClinicalCounts = (patientId: string) => request<Record<string, number>>(`/patients/${patientId}/clinical-counts`);
+
 export const fetchConditions = (patientId: string) => request<ConditionRow[]>(`/patients/${patientId}/conditions`);
 export const addCondition = (patientId: string, condition: NewCondition) =>
   request<ConditionRow>(`/patients/${patientId}/conditions`, { method: "POST", body: JSON.stringify(condition) });

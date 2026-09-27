@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
@@ -64,6 +66,7 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{course.regimen_name ?? course.details?.procedure ?? course.details?.site ?? MODALITY_LABEL[course.modality]}</span>
                   <StatusPill tone="neu">{MODALITY_LABEL[course.modality]}{course.intent && ` · ${INTENT_LABEL[course.intent]}`}</StatusPill>
+                  {!compact && <VerifiedMark subjectTable="treatment_course" subjectId={course.id} entered={course.entered} />}
                   {extensions.map((extension, index) => {
                     const annotation = annotations[index]?.[course.id];
                     return annotation && (annotation.badge ? <span key={index} title={annotation.detail}>{annotation.badge}</span> : (
@@ -73,14 +76,14 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
                     ));
                   })}
                 </span>
-                <span className="inline-flex gap-2">
+                <span className="inline-flex items-center gap-2">
                   {!compact && extensions.map(({ edit }, index) => edit && rights[edit.factKind] && annotations[index]?.[course.id] && (
                     <button key={index} onClick={() => setEditing({ edit, course, annotation: annotations[index]?.[course.id] })} className="text-xs font-medium text-primary">
                       {edit.label}
                     </button>
                   ))}
                   {canEnter && course.ongoing && <button onClick={() => setEnding(course)} className="text-xs font-medium text-primary">End course</button>}
-                  {canEnter && <button onClick={() => setRemoving(course)} className="text-xs font-medium text-neg">Remove</button>}
+                  {canEnter && <RowMenu label={course.regimen_name ?? MODALITY_LABEL[course.modality]} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(course) }]} />}
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">
