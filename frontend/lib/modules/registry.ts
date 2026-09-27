@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { INSTALLED_MODULES } from "@/modules";
 import type {
-  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientListColumns, PatientTab, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
+  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientListColumns, PatientTab, SummaryGlanceExtension, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
 } from "./types";
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
@@ -78,6 +78,14 @@ export function patientListColumnsFor(config: ModuleConfiguration): PatientListC
   return config.active_modules.flatMap((key) => {
     const columns = manifest(key)?.patientListColumns;
     return columns ? [columns] : [];
+  });
+}
+
+/** The at-a-glance tiles of the Practice's active modules (the Patient Summary). */
+export function summaryGlanceFor(config: ModuleConfiguration): SummaryGlanceExtension[] {
+  return config.active_modules.flatMap((key) => {
+    const glance = manifest(key)?.summaryGlance;
+    return glance ? [glance] : [];
   });
 }
 

@@ -19,7 +19,7 @@ export function DiagnosisSummary() {
       <p className="m-0 text-xs text-muted-foreground">
         <Updated updated={updated} href={patientId ? `/patients/${patientId}/clinical-data?tab=cancer-diagnosis` : undefined} />
       </p>
-      <CancerDiagnosisBlocks />
+      <CancerDiagnosisBlocks stacked />
     </div>
   );
 }

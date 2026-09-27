@@ -14,8 +14,9 @@ export function PatientOpenItems({ patientId, initial, cards = false }: { patien
   }, [patientId]);
   useEffect(() => { if (!initial) load(); }, [load, initial]);
   return (
-    <section aria-labelledby="open-items" className="flex flex-col gap-2 rounded-md border border-border bg-card p-4">
-      <h2 id="open-items" className="m-0 text-sm font-semibold">Open Items{items && items.length > 0 && ` (${items.length})`}</h2>
+    // As cards (the Summary) they stand on the page under a plain heading; as a list (the Overview), in a card.
+    <section aria-labelledby="open-items" className={`flex flex-col gap-2 ${cards ? "" : "rounded-md border border-border bg-card p-4"}`}>
+      <h2 id="open-items" className="m-0 text-sm font-semibold">Open Items{items && items.length > 0 && <span className="ml-1.5 rounded-full border border-cau-bd bg-cau-bg px-1.5 text-xs font-semibold text-cau">{items.length}</span>}</h2>
       {error && <p role="alert" className="m-0 text-[13px] text-neg">{error}</p>}
       {items === null && !error && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Open Items…</p>}
       {items && (cards ? <OpenItemCards items={items} onActed={load} /> : <OpenItemList items={items} onActed={load} />)}

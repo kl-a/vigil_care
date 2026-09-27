@@ -5,6 +5,7 @@ import { CancerChip } from "./CancerChip";
 import { DiagnosisSummary } from "./DiagnosisSummary";
 import { lineOfTherapyExtension } from "./LinesOfTherapy";
 import { fetchOncologyCounts, oncologyPatientListColumns } from "./overview";
+import { oncologySummaryGlance } from "./SummaryGlance";
 import { CnsTab, PerformanceStatusTab } from "./Observations";
 import { bestResponseExtension, ResponseAssessmentsTab, responseBadgeExtension } from "./ResponseAssessments";
 
@@ -24,6 +25,7 @@ export const oncologyManifest: ModuleManifest = {
   treatmentCourseExtensions: [lineOfTherapyExtension, bestResponseExtension],
   imagingStudyExtension: responseBadgeExtension,
   patientHeaderChip: CancerChip,
+  summaryGlance: oncologySummaryGlance,
   clinicalDataCounts: fetchOncologyCounts,
   patientListColumns: oncologyPatientListColumns,
   sections: {
