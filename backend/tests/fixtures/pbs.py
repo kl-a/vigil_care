@@ -19,7 +19,8 @@ from app.db.provision import APP_ROLE, OWNER_ROLE, DatabaseSettings
 from app.modules.pbs import refresh as pbs_refresh
 from app.modules.pbs.api_client import HttpTransport, PbsApiClient
 from app.modules.pbs.schedule import ScheduleSource
-from app.core.jobs import JobHandler, JobRegistry
+from app.core.jobs import JobRegistry
+from app.jobs import pbs_refresh_handler
 from app.orchestrator.queue import DbJobQueue
 from app.orchestrator.worker import Worker
 from tests.conftest import make_settings
@@ -68,8 +69,14 @@ def api(recorded: RecordedPbsApi) -> pbs_refresh.SourceFactory:
 
 
 def clear_pbs(database: DatabaseSettings) -> None:
-    """PBS data is shared by every Practice, so each PBS test starts from none (the owner may delete)."""
+    """PBS data (and the drug reference built from it) is shared by every Practice, so each PBS test starts from
+    none (the owner may delete)."""
     with psycopg.connect(database.role_url(OWNER_ROLE), autocommit=True) as conn:
+        # The drug reference is built from PBS data; rows a Medication points at stay.
+        conn.execute(
+            "DELETE FROM drug_reference WHERE id NOT IN"
+            " (SELECT drug_reference_id FROM medication WHERE drug_reference_id IS NOT NULL)"
+        )
         conn.execute("DELETE FROM pbs_item")
         conn.execute("DELETE FROM pbs_refresh_log")
 
@@ -79,7 +86,7 @@ class PbsRefresher:
 
     def __init__(self, database: DatabaseSettings, kind: str, transport: RecordedPbsApi) -> None:
         registry = JobRegistry()
-        registry.register(JobHandler(kind, steps=pbs_refresh.handler(api=api(transport)).steps))
+        registry.register(pbs_refresh_handler(kind, api=api(transport)))
         self.kind = kind
         self.queue = DbJobQueue(session_factory(database.role_url(APP_ROLE)))
         settings = make_settings(database_url=database.role_url(APP_ROLE))

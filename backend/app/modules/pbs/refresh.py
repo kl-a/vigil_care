@@ -6,6 +6,8 @@ developer admin. Each attempt writes a `pbs_refresh_log` row: succeeded, partial
   Schedule is used instead (partial, marked as sample data), so demos work offline.
 - `store` fetches every PBS Item in the schedule and stores them, with their log row, in one
   transaction. Items are upserted on (item code, schedule date), so running it again is safe.
+
+`app/jobs.py` adds the Medications module's `drug_reference` step after these (#36).
 """
 
 from collections.abc import Callable, Iterator, Mapping, Sequence

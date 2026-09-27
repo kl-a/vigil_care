@@ -9,7 +9,7 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, synonym
 
 from app.core.base_model import PracticeEntity, Provenance, allowed, member_fk, practice_fk, provenance_args
 from app.core.vocabulary import TREATMENT_INTENTS
@@ -135,6 +135,8 @@ class LabResult(PracticeEntity, Provenance):
     flag: Mapped[str | None] = mapped_column(info=allowed(*LAB_FLAGS))
     collected_at: Mapped[datetime]
     panel: Mapped[str | None]
+    # The panel it was entered in (#42): one save, one Verification (subject `lab_panel`) for all its results.
+    panel_id: Mapped[uuid.UUID | None] = mapped_column(index=True)
 
 
 class ManagementPlan(PracticeEntity, Provenance):
@@ -189,3 +191,5 @@ class ClinicalNote(PracticeEntity, Provenance):
     note_date: Mapped[date | None]
     content_summary: Mapped[str | None]
     key_points: Mapped[list[Any] | None]
+    # The note's text as the API names it (a note entered by hand is its own content, not a summary).
+    content = synonym("content_summary")

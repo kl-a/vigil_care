@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 /** Places in Core screens where Specialty Modules contribute UI (design doc §4.1). */
 export type SectionSlotName = "patient-overview" | "patient-summary" | "clinical-data-tabs";
@@ -46,9 +46,55 @@ export interface SectionDefinition {
   render: () => ReactNode;
 }
 
+/**
+ * A Condition a module extends (e.g. Oncology: a primary cancer → Cancer Diagnosis). "Add Condition" offers it,
+ * as `label`, to Users who may enter `factKind`; the module's Form then records it.
+ */
+export interface ConditionExtension {
+  factKind: string;
+  label: string;
+  Form: ComponentType<{ patientId: string; onSaved: () => void; onCancel: () => void }>;
+}
+
+/** What a module adds to a Treatment Course, e.g. Oncology's Line of Therapy or best response: a label and why. */
+export interface CourseAnnotation {
+  label: string;
+  detail: string;
+  overridden: boolean;
+  /** Drawn as a status (colour, icon and label) rather than a plain chip, e.g. a best response. */
+  badge?: ReactNode;
+  /** The number behind the label (e.g. a Line of Therapy's line), for its editor. */
+  value?: number;
+}
+
+/**
+ * A module's view of the Core's Treatment Courses: `load` gives each course's annotation (by course id). With an
+ * `edit`, Users who may enter its `factKind` can change one (a derived one like best response has none).
+ */
+export interface TreatmentCourseExtension {
+  load: (patientId: string) => Promise<Record<string, CourseAnnotation>>;
+  edit?: {
+    factKind: string;
+    /** The button that opens the editor, e.g. "Change line". */
+    label: string;
+    Editor: ComponentType<{ patientId: string; courseId: string; annotation: CourseAnnotation | undefined; onSaved: () => void; onCancel: () => void }>;
+  };
+}
+
+/** A module's badge on the Core's Imaging Studies (by study id), e.g. Oncology's Response Assessment. */
+export interface ImagingStudyExtension {
+  load: (patientId: string) => Promise<Record<string, ReactNode>>;
+}
+
 /** A module's frontend: renderers for the sections and screens its backend declares. */
 export interface ModuleManifest {
   key: ModuleKey;
   sections: Record<string, () => ReactNode>;
   patientTabs: Record<string, { screen: ScreenInfo; slot?: SectionSlotName }>;
+  /** Its Clinical Data sub-tabs (sections in "clinical-data-tabs") that are built, with the part of their stage
+   * that ships them (e.g. "4a"); the rest stay hidden. */
+  builtSections?: Readonly<Record<string, string>>;
+  conditionExtension?: ConditionExtension;
+  treatmentCourseExtensions?: readonly TreatmentCourseExtension[];
+  imagingStudyExtension?: ImagingStudyExtension;
 }

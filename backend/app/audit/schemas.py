@@ -20,10 +20,14 @@ class VerificationEntry(BaseModel):
     at: datetime
 
 
+# Why: a soft delete, and every correction of the Clinical Record (asked once per save), says so.
+Reason = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+
+
 class Removal(BaseModel):
     """Soft-deleting anything needs a reason (design doc §6.2)."""
 
-    reason: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+    reason: Reason
 
 
 class PipelineRunView(BaseModel):

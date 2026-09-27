@@ -153,7 +153,7 @@ def test_line_of_therapy_is_rejected_on_any_other_course(seed: Seed, rejects: Re
 def test_a_course_detail_without_a_line_is_fine_on_any_course(seed: Seed, app_db: Any) -> None:
     ids = seed.everyone()
     course = seed.treatment_course(ids, modality="surgery", intent="curative")
-    seed.insert("oncology_course_detail", practice_id=ids["practice"], treatment_course_id=course, best_response="CR", entered_by_user_id=ids["user"])
+    seed.insert("oncology_course_detail", practice_id=ids["practice"], treatment_course_id=course, entered_by_user_id=ids["user"])
     app_db.execute("SET CONSTRAINTS ALL IMMEDIATE")
 
 

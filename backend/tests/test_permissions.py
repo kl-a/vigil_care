@@ -31,12 +31,14 @@ def test_row_2_results_medications_conditions_imaging_notes_plans(fact_kind: str
     assert not RIGHTS.needs_reauthentication(fact_kind)
 
 
-@pytest.mark.parametrize("fact_kind", ["treatment_course", "biomarker"])
-def test_row_3_treatment_courses_and_biomarkers(fact_kind: str) -> None:
+@pytest.mark.parametrize("fact_kind", ["treatment_course", "biomarker", "recurrence"])
+def test_row_3_treatment_courses_biomarkers_and_suspected_recurrences(fact_kind: str) -> None:
     assert allowed(lambda jt: RIGHTS.can_verify(jt, fact_kind)) == {"clinician", "trial_coordinator"}
 
 
-@pytest.mark.parametrize("fact_kind", ["cancer_diagnosis", "recurrence", "response_assessment_override"])
+@pytest.mark.parametrize(
+    "fact_kind", ["cancer_diagnosis", "recurrence_attribution", "response_assessment_override", "line_of_therapy_override"]
+)
 def test_row_4_cancer_diagnosis_stage_extent_recurrence_and_overrides_are_clinician_only(fact_kind: str) -> None:
     assert allowed(lambda jt: RIGHTS.can_verify(jt, fact_kind)) == {"clinician"}
     assert RIGHTS.required_job_title(fact_kind) == "clinician"

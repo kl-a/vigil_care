@@ -7,11 +7,14 @@ from app.core.config import Settings, keystore, refuse_unsafe_startup
 from app.core.crypto import FieldCipher, TamperedCiphertext
 from app.core.database import DatabaseCheck, postgres_check, session_factory
 from app.core.permissions import NotAllowed
+from app.modules.registry.registry import installed_modules
 from app.modules.accounts import router as accounts
 from app.modules.accounts import users_router
 from app.modules.patients import router as patients
 from app.modules.pbs import router as pbs
 from app.modules.practice import router as practice
+from app.modules.clinical import router as clinical_router
+from app.modules.medications import router as medications_router
 from app.modules.practice import care_team_router, providers_router, sites_router
 from app.modules.registry import router as specialty_modules
 from app.orchestrator import router as jobs
@@ -57,9 +60,15 @@ def create_app(settings: Settings | None = None, database_check: DatabaseCheck |
     app.include_router(providers_router.router)
     app.include_router(patients.router)
     app.include_router(care_team_router.router)
+    app.include_router(clinical_router.router)
+    app.include_router(medications_router.router)
+    app.include_router(medications_router.patients)
     app.include_router(pbs.router)
     app.include_router(jobs.router)
     app.include_router(specialty_modules.router)
+    for module in installed_modules().values():
+        if module.router is not None:
+            app.include_router(module.router)
     if settings.environment == "dev" and settings.dev_login_enabled:
         app.include_router(accounts.dev_router)
     return app

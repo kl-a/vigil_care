@@ -27,10 +27,10 @@ const showUpcoming = () => fireEvent.click(screen.getByLabelText("Show upcoming 
 describe("build stages (design doc §15)", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("is at Stage 3: Stages 1 to 3 have shipped", () => {
-    expect(SHIPPED_STAGE).toBe(3);
-    expect(isShipped(3)).toBe(true);
-    expect(isShipped(4)).toBe(false);
+  it("is at Stage 4: Stages 1 to 4 have shipped (4a with #39)", () => {
+    expect(SHIPPED_STAGE).toBe(4);
+    expect(isShipped(4)).toBe(true);
+    expect(isShipped(5)).toBe(false);
   });
 
   it("gives every screen and Patient tab a stage", () => {
@@ -87,6 +87,6 @@ describe("build stages (design doc §15)", () => {
       </ViewerProvider>,
     );
     const tabs = within(await screen.findByRole("navigation", { name: "Patient" }));
-    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview"]);
+    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview", "Clinical Data", "Medications"]);
   });
 });

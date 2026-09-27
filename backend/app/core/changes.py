@@ -12,12 +12,17 @@ def blank_to_none(values: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def changed_fields(
-    current: Mapping[str, Any], change: BaseModel, required: Collection[str] = (), mode: Literal["python", "json"] = "python"
+    current: Mapping[str, Any],
+    change: BaseModel,
+    required: Collection[str] = (),
+    mode: Literal["python", "json"] = "python",
+    exclude: Collection[str] = (),
 ) -> dict[str, Any]:
     """The fields sent that differ from `current`. A required field sent empty is ignored, never cleared.
 
-    `mode="json"` compares (and returns) dates as ISO text, ready for a Verification's before/after."""
-    requested = blank_to_none(change.model_dump(exclude_unset=True, mode=mode))
+    `mode="json"` compares (and returns) dates as ISO text, ready for a Verification's before/after. `exclude`
+    names fields of the request that aren't fields of the record (e.g. a correction's `reason`)."""
+    requested = blank_to_none(change.model_dump(exclude_unset=True, mode=mode, exclude=set(exclude)))
     return {
         field: value
         for field, value in requested.items()

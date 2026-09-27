@@ -20,7 +20,7 @@ from app.modules.pbs.logs import current_log, last_log
 from app.modules.pbs.models import RESTRICTION_LEVELS, PbsItem, PbsRefreshLog
 from app.modules.pbs.schemas import (
     PbsDrug, PbsDrugPage, PbsDrugRow, PbsFilters, PbsItemView, PbsListingView, PbsOption, PbsRefreshView,
-    PbsScheduleStatus,
+    PbsScheduleStatus, ScheduleDrug,
 )
 
 PAGE_SIZE = 50
@@ -108,6 +108,26 @@ def drugs(db: Session, actor: Actor, wanted: DrugFilters, page: int = 1, page_si
     for item in db.scalars(in_page.order_by(PbsItem.item_code)):
         by_drug[item.drug_name].append(item)
     return PbsDrugPage(drugs=[_row(name, items) for name, items in by_drug.items()], total=total, page=page, page_size=page_size)
+
+
+def schedule_drugs(db: Session) -> list[ScheduleDrug]:
+    """Every drug in the schedule Vigil shows, for other modules' reference data (no Patient data, so no actor).
+    Empty until a Refresh has loaded a schedule."""
+    current = current_log(db)
+    if current is None:
+        return []
+    by_drug: dict[str, list[PbsItem]] = {}
+    for item in db.scalars(select(PbsItem).where(PbsItem.refresh_log_id == current.id).order_by(PbsItem.item_code)):
+        by_drug.setdefault(item.drug_name, []).append(item)
+    return [
+        ScheduleDrug(
+            drug_name=name,
+            item_codes=[item.item_code for item in items],
+            brand_names=_brands(items),
+            atc_codes=[str(code) for item in items for code in item.atc_codes],
+        )
+        for name, items in by_drug.items()
+    ]
 
 
 def drug(db: Session, actor: Actor, item_code: str) -> PbsDrug:

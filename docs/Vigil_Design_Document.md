@@ -125,7 +125,7 @@ Built on the Clinical Record. Three sub-components:
 ### Tier 3: Patient Summary ("At a Glance")
 The clinical payoff screen: a single view with the most current picture of a Patient before a consultation, built from the Clinical Record. It contains:
 - Patient Identity.
-- Each Condition in focus; for oncology, each Cancer Diagnosis with its Stage, Disease Extent, Biomarkers (with discordance flags) and Recurrences.
+- Each Condition in focus; for oncology, each Cancer Diagnosis with its Stage, Disease Extent, Biomarkers (with Differing Biomarker Results flags) and Recurrences.
 - Latest scans with their Response Assessment, and most recent bloods with anything flagged.
 - Current Treatment Course and Line of Therapy, with best response.
 - ECOG.
@@ -277,17 +277,19 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | Extension point | What a module contributes | Oncology example |
 |---|---|---|
 | Clinical Record | Extension tables (via ordinary migrations; **no runtime DDL**) and fact kinds with Pydantic schemas | `cancer_diagnosis`, `biomarker`, `recurrence` |
-| Condition extension | Which Conditions it extends, and how | A Condition that is a cancer → Cancer Diagnosis |
+| Condition extension | Which Conditions it extends, and how; the frontend offers it in "Add Condition" to Users who may enter it (a Condition it extends is then changed only through the module) | "This is a primary cancer" → Cancer Diagnosis |
 | Document Types | Document Types, classification hints, extraction prompts | `pathology_molecular` |
 | Verification rights | Rows added to §6.4 for its fact kinds | Stage: clinician only |
 | Patient Summary & Clinical Data | UI sections and tabs | Diagnosis block, Biomarkers tab |
 | Trial matching | Its criteria attribute vocabulary and evaluators | `required_biomarker`, `prior_systemic_lines` |
 | Treatment Options (optional) | A Treatment Option source | eviQ + PBS |
-| Open Items | Extra Open Item types | Biomarker discordance |
+| Open Items | Extra Open Item types | Differing Biomarker Results, Suspected Recurrences |
+| API | Its own router, mounted for every installed module; its services refuse Practices where it isn't active (#37) | `/cancer-types`, `/patients/{id}/cancer-diagnoses` |
+| Read-only view | Its recorded facts in plain words, shown by the Core when it's inactive (ADR 0004, amended; #35) | "Breast cancer: Stage IIA (TNM) at diagnosis, 1 Mar 2024; metastatic" |
 
 2. **Module registry.** The Core discovers modules only through the registry and **never imports a module**. Modules may import the Core's public service interfaces, never another module.
 3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers. *(Built with each extension point's first behaviour; the Treatment Options lookup in Stage 11. The contract, registry and Builder exist from Stage 1, #15.)*
-4. **Per-Practice activation.** A Practice may have several modules active. Only a **developer admin** switches modules on or off, in Settings, and each change is recorded as a Verification. Deactivating a module hides its sections and stops its extraction, but its **data is kept and never deleted**. A Document whose Document Type belongs to an inactive module becomes a **Held Document**. Users aren't restricted by module in the MVP. A **Builder** assembles each Practice's active configuration (extension points, sections, vocabularies) from its enabled modules at startup.
+4. **Per-Practice activation.** A Practice may have several modules active. Only a **developer admin** switches modules on or off, in Settings, and each change is recorded as a Verification. A module owns **tools, not visibility**: deactivating it removes its entry forms, extraction, rules, Open Items and specialised sections, but its **data is kept and never deleted, and stays visible read-only** to every clinical User in a plain form each module provides (e.g. "Breast cancer: Stage IIA at diagnosis, HER2 3+ (Mar 2024)"). A clinician is never unaware of a recorded fact because of a setting (decided 2026-09-27). A Document whose Document Type belongs to an inactive module becomes a **Held Document**. Users aren't restricted by module in the MVP. A **Builder** assembles each Practice's active configuration (extension points, sections, vocabularies) from its enabled modules at startup.
 5. **Portability rule.** Each concept (e.g. Line of Therapy, Response Assessment) is implemented as **one self-contained unit** (its tables, schemas, extraction prompt, rules, evaluators and UI section), reached only through its own interface. That way, moving a concept from Oncology to the Core, or to another module, is a mechanical move, not a rewrite. Tests target the unit's interface so they move with it.
 
 **Where today's concepts live:**
@@ -312,20 +314,20 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | # | Screen | Purpose | Key elements |
 |---|--------|---------|--------------|
 | 1 | **Login** | Individual sign-in | Username + password, TOTP 2FA prompt, 2FA enrolment (QR code) on first login. In dev only, a clearly badged **"Dev login"** button. Inactivity lock after 10 minutes returns here with the session preserved. |
-| 2 | **Dashboard** | Practice overview | Practice-wide **Open Items** queue, filterable by type (Held Documents, Extracted Facts awaiting review, Needs Information criteria, Next Steps due, Stale Match Runs, Biomarker discordance) and by who can act (e.g. clinician-only Verifications). Recent activity, next refresh dates (PBS/eviQ/trials), VLM worker status, environment badge (DEV/TEST). |
+| 2 | **Dashboard** | Practice overview | Practice-wide **Open Items** queue, filterable by type (Held Documents, Extracted Facts awaiting review, Needs Information criteria, Next Steps coming due, Stale Match Runs, Differing Biomarker Results, Suspected Recurrences, unattributed Response Assessments and new Findings) and by who can act (e.g. clinician-only Verifications). Recent activity, next refresh dates (PBS/eviQ/trials), VLM worker status, environment badge (DEV/TEST). |
 | 3 | **Patient List** | Browse/search/create Patients | Table: name, Cancer Type(s), Disease Extent, #Documents, #Open Items, last updated. "New patient" button. Search/filter by Cancer Type. |
-| 4 | **Patient Overview** | Clinical profile for one Patient | Conditions list; sections from active Specialty Modules. Oncology: header per Cancer Diagnosis (Cancer Type, Stage, Disease Extent, Biomarker chips), Treatment Course timeline with Line of Therapy markers, ECOG badge, CNS status panel (if applicable), key lab trends, Open Items. Tabs: Clinical Data / Documents / Treatment Options / Trials / Exports. |
+| 4 | **Patient Overview** | Clinical profile for one Patient | Conditions list with "Add Condition" ("This is a primary cancer" opens a Cancer Diagnosis, clinician-only; a Patient may have several primaries); sections from Specialty Modules (read-only when a module is inactive). Oncology: header per Cancer Diagnosis (Cancer Type, Stage, Disease Extent, Biomarker chips), Treatment Course timeline with Line of Therapy markers, ECOG badge, CNS status panel (if applicable), key lab trends, Open Items. Tabs: Clinical Data / Documents / Treatment Options / Trials / Exports. |
 | 5 | **Document Upload** | Ingest Documents | Drag-drop zone + camera/scanner input. Per-Document status stepper: uploaded → OCR → PII masked → classified → extracted → in review, or **Held** (with reason). Document Type badge. Batch upload. "Hold this document" action (User chooses to file it as a scan only). "Enhance with cloud" button on low-confidence pages, which opens the pre-flight view first. |
 | 6 | **Extraction Review** | Review Extracted Facts one by one | Split view: the page (left) with the **shared box viewer** highlighting each fact's source location ↔ list of Extracted Facts (right) with confidence band. Accept / edit / reject **per fact**. Facts whose VLM and classic-OCR numbers disagree are flagged "numbers disagree" and forced to low confidence. Facts the current User's Job Title can't verify are shown read-only, with "needs clinician". |
 | 7 | **Redaction QA** | Review and correct PII masking | Shared box viewer over the page: proposed boxes coloured by entity type (Name, DOB, Medicare, MRN, Address, Phone, Provider), each marked auto or manual. Draw rectangle, remove false positive, restore, relabel; select OCR words to box them. "Burn in" produces the masked output and runs the leak check (pass/fail shown). **Pre-flight tab:** exactly what would leave the Practice Boundary for a cloud request (masked image and/or pseudonymised text, and the request ID). |
 | 8 | **Redaction Jobs** | Standalone de-identification for trial portals and referrals | New job: upload one or many files, optionally link a Patient. Each file goes through the same masking and review as screen 7. Download redacted PDFs. Job list with an **"Unlinked" filter** for jobs awaiting filing to a Patient. Originals and outputs are kept. |
-| 9 | **Clinical Data Viewer** | Longitudinal Clinical Record | Core tabs: Conditions / Labs / Imaging & Findings / Treatment Courses. Oncology module tabs: Response Assessments / Biomarkers / Performance Status / CNS. Time-series tables, lab trend charts with reference ranges. Biomarkers show full history by specimen and date, with discordance flags. Each row links to its source Document and Verification (who, Job Title, when). |
-| 10 | **Medication Manager** | Medication list with reconciliation | As v1.1, plus: a cancer drug's Medication links to its Treatment Course; the verified badge shows who verified and their Job Title; the reconciliation queue covers Medications (brand/generic) and **Conditions** ("Is 'T2DM' the same as 'type 2 diabetes'?"). Change log. Print view. |
+| 9 | **Clinical Data Viewer** | Longitudinal Clinical Record | Where the Clinical Record is **viewed and entered by hand** (Stage 4). Core tabs: Conditions / Labs / Imaging & Findings / Treatment Courses / Plan & notes (Clinical Notes, Management Plan, Next Steps). Oncology module tabs: Cancer Diagnosis (with Recurrences) / Biomarkers / Response Assessments / Performance Status / CNS. Corrections need a reason, asked once per save. Bloods are entered as a panel. Time-series tables, lab trend charts with reference ranges. Biomarkers show full history by specimen and date, with a Differing Biomarker Results flag. Each row links to its source Document and Verification (who, Job Title, when). |
+| 10 | **Medication Manager** | Medication list with reconciliation | As v1.1, plus: a cancer drug's Medication links to its Treatment Course; the verified badge shows who verified and their Job Title; Medications are picked from the drug reference (built from the PBS Schedule) or entered as free text marked "not in the drug reference"; the reconciliation queue (Stage 9, for extracted duplicates) covers Medications (brand/generic) and **Conditions** ("Is 'T2DM' the same as 'type 2 diabetes'?"). Change log. Print view. |
 | 11 | **Treatment Options** | Standard-of-care options for one Condition (Oncology module: eviQ) | Condition selector (Cancer Diagnoses in the MVP). Treatment Options matched on Cancer Type + Disease Extent/intent + next Line of Therapy + Biomarkers. Each shows: protocol name, intent, line, drugs, **PBS Listing per drug** (Unrestricted / Restricted / Authority Required / Not Listed for this indication), **PBS Coverage** badge (Fully / Partially / Not Covered, naming the gap), co-payment, eviQ link and "as of <eviQ version date>". Stale-data warning if the eviQ refresh failed. |
 | 12 | **Trial Browser** | Explore the local trial database | Filter by phase/status/site/condition/drug. Trial detail: parsed criteria (each marked "about the target cancer" or "whole person"), sites with distance from the practice, registry link, last refreshed. |
 | 13 | **Match Board** | Patient vs trials | **Target Condition selector** (preselected when the Patient has one active Condition in the relevant module). "Run match". Three columns: **Potentially Eligible / Needs Information / Excluded**. Each trial card expands to per-criterion evidence (**Met / Not Met / Unknown**, with rationale and source data). **Stale banner** (Clinical Record changed, trial data refreshed, or run over a month old) with a Re-run button; stale runs remain viewable. Diff vs the previous run. |
 | 14 | **PBS Drug Lookup** | Quick drug reference, across the whole PBS Schedule | Opens on every drug, A–Z, 50 to a page; filter by search (drug, brand, active ingredient or item code), therapeutic group (ATC, with a Cancer drugs shortcut), PBS program and listing type. The list's state is in the page address, so going back returns to it. A drug's page, in labelled sections: its PBS Items (item code, form and strength, program, maximum per prescription with its unit, repeats, listing types); when it can be prescribed (PBS Listing per indication, prescribing conditions; items with the same restrictions shown once); what the patient pays (co-payments and Safety Net, once). Schedule date throughout. |
-| 15 | **Patient Summary** | "At a Glance" consultation page (Tier 3) | **Registration:** name, DOB, age, Medicare number, address, contact details, mobile. **Diagnosis** (Oncology section; one block per Cancer Diagnosis): Cancer Type, histology, Stage (at diagnosis), Disease Extent (now), Biomarker chips (latest, with discordance flag), Recurrences (site, date, confirmed/suspected). **Most Recent Results:** latest bloods (flagged values, sparklines), latest scans with Response Assessment (responding/stable/progressing) and key Findings. **Recent Treatment:** Treatment Courses in the last 6 months, current Regimen, Line of Therapy, best response. **Clinical Notes:** most recent note, most recent letter to referrer. **Management:** Management Plan quoted verbatim with source link, plus **Next Steps**. **Medical History:** Comorbidities (active/resolved), current Medications. **Open Items.** Each section shows "last updated" linking to its source. Print-friendly layout. |
+| 15 | **Patient Summary** | "At a Glance" consultation page (Tier 3) | **Registration:** name, DOB, age, Medicare number, address, contact details, mobile. **Diagnosis** (Oncology section; one block per Cancer Diagnosis): Cancer Type, histology, Stage (at diagnosis), Disease Extent (now), Biomarker chips (latest, with a Differing Biomarker Results flag), Recurrences (site, date, confirmed/suspected). **Most Recent Results:** latest bloods (flagged values, sparklines), latest scans with Response Assessment (responding/stable/progressing) and key Findings. **Recent Treatment:** Treatment Courses in the last 6 months, current Regimen, Line of Therapy, best response. **Clinical Notes:** most recent note, most recent letter to referrer. **Management:** Management Plan quoted verbatim with source link, plus **Next Steps**. **Medical History:** Comorbidities (active/resolved), current Medications. **Open Items.** Each section shows "last updated" linking to its source (the Verification of a hand-entered value; the Document once there are Documents). An empty section says "None recorded", never hidden. Print-friendly layout. |
 | 16 | **Exports** | Generate and sign off reports | Template picker (treatment summary, trial matching report, Patient Summary snapshot, combined). **Kind selector, no default: Identified Export or De-identified Export** (the latter labelled with the Pseudonym and masked). Live preview. **Sign-off step:** the User confirms and signs off (recorded with name, Job Title, time, recipient). Export to PDF/DOCX. Vigil never sends the file; the User sends or prints it. Export history. |
 | 17 | **Provider Management** | Manage the Practice's provider directory | Internal and external Providers: title, name, provider number, specialty, contact details. Link to Patients with **Care Team** roles (treating oncologist, referring GP, referring specialist, surgeon, radiation oncologist, trial-site contact). |
 | 18 | **User Management** | Manage who can log in (clinicians, secretaries and developer admins only) | Users with Job Title (clinician / trial coordinator / secretary / developer admin), optional link to their own Provider record, 2FA status, active/inactive, last login. Reset password / reset 2FA. |
@@ -381,7 +383,7 @@ erDiagram
     MEDICATION }o--o| TREATMENT_COURSE : part_of
     MEDICATION }o--o| DRUG_REFERENCE : resolved_to
     MEDICATION ||--o{ MEDICATION_CHANGE_LOG : tracks
-    DRUG_REFERENCE }o--o| PBS_ITEM : listed_on
+    DRUG_REFERENCE }o..o{ PBS_ITEM : "built from (item codes)"
     PATIENT ||--o{ MANAGEMENT_PLAN : has
     PATIENT ||--o{ NEXT_STEP : has
     PATIENT ||--o{ CLINICAL_NOTE : has
@@ -459,7 +461,7 @@ erDiagram
 - `condition.status IN ('active', 'resolved')`
 - `cancer_diagnosis.disease_extent IN ('localised', 'locally_advanced', 'metastatic', 'unknown')`
 - `cancer_diagnosis.cancer_status IN ('active', 'no_evidence_of_disease', 'unknown')`
-- `recurrence.status IN ('suspected', 'confirmed', 'reclassified_as_new_primary')`
+- `recurrence.status IN ('suspected', 'confirmed', 'reclassified_as_new_primary', 'ruled_out')` (ruled out added in #39)
 - `recurrence.extent IN ('local', 'regional', 'distant')`
 - `treatment_course.modality IN ('systemic', 'surgery', 'radiation')`
 - `treatment_course.intent IN ('curative', 'neoadjuvant', 'adjuvant', 'palliative')`
@@ -479,7 +481,6 @@ erDiagram
   - `confidence BETWEEN 0 AND 1`.
 - Oncology:
   - `biomarker.method IN ('NGS', 'FISH', 'IHC', 'PCR', 'ctDNA')` and `biomarker.specimen_kind IN ('primary', 'metastasis', 'liquid_biopsy')`.
-  - `oncology_course_detail.best_response IN ('CR', 'PR', 'SD', 'PD', 'NE')`.
   - `performance_status.scale IN ('ECOG', 'KPS')`, with ECOG 0–5 and KPS 0–100 in multiples of 10.
 - Medications:
   - `medication.status IN ('active', 'discontinued', 'on_hold', 'completed', 'unknown')`.
@@ -550,7 +551,7 @@ erDiagram
 - `patient`: partial index on `deleted_at IS NULL`.
 - `lab_result`: `(patient_id, analyte, collected_at DESC)`.
 - `imaging_study`: `(patient_id, modality, study_date DESC)`.
-- `biomarker`: `(cancer_diagnosis_id, name, collected_on DESC)`, for the latest result and discordance checks.
+- `biomarker`: `(cancer_diagnosis_id, name, collected_on DESC)`, for the latest result and Differing Biomarker Results.
 - `treatment_course`: `(condition_id, start_date)`.
 - `condition`: `(patient_id, status)`.
 - `document`: `(patient_id, doc_date DESC)`; partial index on `status = 'held'`.
@@ -627,7 +628,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
-| `cancer_type` *(Oncology)* | Registry of Cancer Types (site + histology only, **no subtypes**) | `key` (e.g. `breast`, `nsclc`, `colorectal`, `melanoma`), `display_name`, `icd10_codes` (JSONB), `staging_systems` (JSONB), `is_active` |
+| `cancer_type` *(Oncology)* | Registry of Cancer Types (site + histology only, **no subtypes**), keyed to **MeSH** so they match the trial registries' conditions (ClinicalTrials.gov maps conditions to MeSH) | `key` (e.g. `breast`, `nsclc`, `colorectal`, `melanoma`), `display_name`, `mesh_term` + `mesh_id` (e.g. *Breast Neoplasms*, D001943; added in Stage 4), `icd10_codes` (JSONB), `staging_systems` (JSONB), `is_active`. Seeded with a shortlist of about 25 types; the full MeSH Neoplasms list is kept in the repo ready to load ([revisit-later.md](revisit-later.md) #28). |
 | `condition` | Any diagnosed condition of a Patient (**Core**). Comorbidities are a view over this table: the Conditions other than the one in focus. | `patient_id`, `name`, `code_system` (nullable; SNOMED CT-AU or ICD-10-AM, TBD per [revisit-later.md](revisit-later.md) #6), `code` (nullable), `status` (active/resolved), `onset_date` (nullable), `extended_by_module` (nullable module key, e.g. `oncology`), `notes`, + provenance |
 | `cancer_diagnosis` *(Oncology)* | Oncology's extension of a Condition that is a primary cancer: one per primary | `condition_id` (unique FK), `cancer_type_id`, `histology`, `primary_site`, `laterality`, `dx_date`, `stage_system` (TNM/FIGO/Ann Arbor/…), `stage` (**at diagnosis, never updated**), `disease_extent`, `disease_extent_as_of`, `cancer_status`, + provenance |
 | `recurrence` *(Oncology)* | A return of a Cancer Diagnosis's cancer | `cancer_diagnosis_id`, `status`, `detected_on`, `extent` (local/regional/distant), `sites` (JSONB), `evidence_document_id` (biopsy/pathology report), `attributed_by_user_id` (clinician), `attributed_at`, `new_cancer_diagnosis_id` (set when reclassified as a new primary), + provenance |
@@ -638,8 +639,8 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | Table | Purpose | Key columns |
 |-------|---------|-------------|
 | `treatment_course` | Any course of treatment for a Condition (**Core**): systemic, procedure/surgery, radiation or other | `condition_id`, `modality` (systemic/surgery/radiation; modules may add values), `intent`, `regimen_name` (systemic only), `regimen_planned` (JSONB: planned drugs and doses), `start_date`, `end_date` (null = ongoing; set only when a User records that the course ended), `reason_stopped`, `details` (JSONB: surgery = procedure, margins; radiation = site, dose, fractions), + provenance |
-| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable; see the Line of Therapy rule), `treatment_protocol_id` (nullable), `best_response` (CR/PR/SD/PD/NE, nullable) |
-| `drug_reference` | Canonical drug lookup | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_id`, `common_doses`, `common_routes` |
+| `oncology_course_detail` *(Oncology)* | Oncology's extension of a Treatment Course | `treatment_course_id` (unique FK; the row has its own UUID `id` like every table), `line_of_therapy` (nullable: **a clinician's override** with a reason; when null the line is derived, numbering the Cancer Diagnosis's palliative systemic courses by start date; see the Line of Therapy rule), `treatment_protocol_id` (nullable). **Best response is derived**, not stored: the best direction among the Response Assessments dated during the course (responding > stable > progressing), linked to its source (the `best_response` column was dropped in Stage 4c). |
+| `drug_reference` | Canonical drug lookup (Shared Reference Data) | As v1.1: `generic_name`, `brand_names`, `drug_class`, `atc_code`, `is_cancer_drug`, `pbs_item_codes` (JSONB: its PBS Items' codes; replaced the single `pbs_item_id` in #36, as PBS Items are replaced each Refresh), `in_current_schedule`, `common_doses`, `common_routes`. **Built from the current PBS Schedule** by the PBS Refresh's `drug_reference` step (#36): one row per PBS drug (unique `generic_name`), its brands, most common ATC code, `is_cancer_drug` from ATC L01/L02. A drug that leaves the Schedule stays, as Medications may point at it, with `in_current_schedule = false`, and is no longer offered. A Medication not in it is entered as free text. A fuller source (AMT) may come later ([revisit-later.md](revisit-later.md) #34). |
 | `medication` | One drug a Patient takes or has taken | As v1.1, with these changes: `treatment_course_id` (replaces `therapy_line_id`; set when the drug belongs to a Treatment Course); `verified_by`/`verified_at` removed (Verification lives in `verification`); `prescribed_by_provider_id`. Stopping one drug of a Regimen changes this row's status; the Treatment Course continues. |
 | `medication_change_log` | Audit trail of Medication changes. Never changes once written. | As v1.1 (`medication_id`, `change_type`, `previous_value`, `new_value`, `changed_at`, `reason`), with `changed_by_user_id` (replaces `changed_by` → provider) |
 
@@ -650,7 +651,7 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 | `imaging_study` | One imaging examination | `patient_id`, `modality` (CT/MRI/PET/PET-CT/bone/ultrasound/X-ray), `body_region`, `study_date`, `impression` (verbatim), `comparison_date`, + provenance |
 | `finding` | One observation in a single study (**not linked across studies**) | `imaging_study_id`, `patient_id`, `condition_id` (nullable: attributed only when the report says so), `site`, `laterality`, `description`, `size_mm` (nullable), `suv_max` (nullable), `is_new` (nullable), `is_measurable` (nullable: ≥10 mm on CT, for trial criteria), + provenance |
 | `response_assessment` *(Oncology)* | Stated direction of a Cancer Diagnosis at a point in time | `patient_id`, `cancer_diagnosis_id` (nullable = unattributed; unattributed rows show as Needs Information), `assessed_on`, `direction`, `source`, `imaging_study_id` (nullable), `overrides_id` (nullable: a clinician override of an earlier row), + provenance |
-| `lab_result` | One lab value | As v1.1 (`analyte`, `value`, `unit`, `ref_low`, `ref_high`, `flag`, `collected_at`, `panel`) + `value_text` for non-numeric results + provenance |
+| `lab_result` | One lab value | As v1.1 (`analyte`, `value`, `unit`, `ref_low`, `ref_high`, `flag`, `collected_at`, `panel`) + `value_text` for non-numeric results + `panel_id` (the panel it was entered in: one save, one Verification whose subject is the panel, #42) + provenance. `flag` comes from the reference range entered with it, the report's own (low/normal/high; none without a number or a range). |
 | `performance_status` *(Oncology)* | ECOG or KPS at a point in time | As v1.1 + provenance |
 | `cns_status` *(Oncology)* | CNS disease status (first-class because it gates most trials) | As v1.1 + provenance |
 
@@ -703,7 +704,11 @@ Roles are created by `python -m app.db.provision` (`make migrate`; the `migrate`
 
 > **Retired from v1.1:** `therapy_line` (→ `treatment_course`), `molecular_result` (→ `biomarker`), `lesion` / `lesion_measurement` (→ `finding` + `response_assessment`), `diagnosis` (→ Core `condition` + Oncology `cancer_diagnosis`, v1.3), `comorbidity` (→ a view over `condition`, v1.3), `observation` (PET/bone → `finding`; surgery/radiation → `treatment_course.details`; anything else → the Document is Held), `patient.display_name` (→ real name from `patient_identity`; `pseudonym` only for exports), `patient.is_synthetic` (synthetic data lives only in dev/test), `patient_provider` (→ `care_team_member`), and the `document_type.status = proposed` flow.
 
-**Open Items are derived, not stored.** A `summary/open_items` query builds them from: Held Documents, `extracted_fact` rows with `review_status = 'pending'`, Criterion Results of `UNKNOWN` in non-Stale Match Runs, `next_step` rows that are due, Stale Match Runs, Biomarker discordance, unattributed Response Assessments and Findings, suspected Recurrences, and unlinked Redaction Jobs.
+**Open Items are derived, not stored.** A `summary/open_items` query builds them from: Held Documents, `extracted_fact` rows with `review_status = 'pending'`, Criterion Results of `UNKNOWN` in non-Stale Match Runs, `next_step` rows due within 7 days or overdue and not done, Stale Match Runs, Differing Biomarker Results not yet seen by a clinician, unattributed Response Assessments, **new** (`is_new`) unattributed Findings in a Patient with a Cancer Diagnosis, Suspected Recurrences, and unlinked Redaction Jobs. An Open Item clears only when someone acts on what's behind it (mark a Next Step done; a clinician marks Differing Biomarker Results "Seen", with an optional note, as a Verification; attribute; confirm, reclassify or rule out a Recurrence); there is no generic dismiss. Stage 5 shows the types whose data exists by then.
+
+**Differing Biomarker Results** (Oncology) are found by a deterministic rule, no LLM and no knowledge base: for one Cancer Diagnosis, results of the same Biomarker `name` and `variant` whose recorded `result` categories aren't all the same. No thresholds, no numeric comparison, no interpretation: both results are shown with specimen and dates, worded "Results differ", never a cause or an action. This keeps Vigil on the decision-support side of the TGA line (§1).
+
+**Sign-offs and prompts are kept to what's needed** (decision fatigue): Vigil asks for a sign-off only where §6.4 requires one, raises an Open Item only when someone must act, and makes acknowledgements one click with an optional note ([revisit-later.md](revisit-later.md) #33).
 
 ### 6.4 Verification Rights
 
@@ -713,10 +718,11 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 
 | Value | Clinician | Trial coordinator | Secretary | Developer admin |
 |---|---|---|---|---|
-| Patient Identity, Care Team, Document Type, redaction review, holding a Document | ✅ | ✅ | ✅ | ❌ |
+| Patient Identity, Care Team, Document Type, redaction review, holding a Document, **Next Steps** (add, mark done, correct or remove with a reason) | ✅ | ✅ | ✅ | ❌ |
 | Lab results, Medications, Conditions (non-cancer), Imaging studies, Findings, *(Oncology)* Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
-| Treatment Courses, *(Oncology)* Biomarkers | ✅ | ✅ | ❌ | ❌ |
-| *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution, Response Assessment overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
+| Treatment Courses, *(Oncology)* Biomarkers, recording a Suspected Recurrence | ✅ | ✅ | ❌ | ❌ |
+| *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution (confirm, new primary instead, rule out), Response Assessment overrides and attribution, Line of Therapy overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
+| *(Oncology)* Marking Differing Biomarker Results "Seen" (one click, optional note) | ✅ | ❌ | ❌ | ❌ |
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
 | **Manage Users** (create, deactivate, reset password/2FA, change Job Title) at this Practice: its Practice Memberships only | ✅ | ❌ | ✅ | ✅ |
@@ -837,9 +843,9 @@ Write to medication (source = 'document_extracted') + verification row
 
 **Conditions** follow the same shape, with string/synonym matching ("T2DM" ↔ "type 2 diabetes") in place of `drug_reference`. Whether to match against a standard terminology (SNOMED CT-AU / ICD-10-AM) is open ([revisit-later.md](revisit-later.md) #6).
 
-### 7.3 Drug Reference Table Seeding
+### 7.3 The Drug Reference
 
-Unchanged from v1.1. `drug_reference` is pre-seeded from PBS data (oncology-listed drugs), eviQ protocol drugs, and a curated list of ~500 common non-cancer medications (`data/seed/common_medications.json`, shipped with the repo). Seed script: `backend/scripts/seed_drug_reference.py`.
+`drug_reference` is **built from the PBS Schedule** (#36): every PBS Refresh ends with the Medications module's `drug_reference` step, composed in `app/jobs.py`, which rebuilds it from the schedule Vigil shows (the whole Schedule, or the Sample Schedule offline), one row per PBS drug. It isn't seeded by hand. A Medication not on the PBS is entered as free text; a fuller source (AMT) may come later ([revisit-later.md](revisit-later.md) #34). A database whose schedule loaded before #36 gets its drug reference at the next PBS Refresh (a developer admin can start one).
 
 ### 7.4 Numeric Cross-check
 
@@ -970,7 +976,7 @@ The adapter:
 The adapter pulls the whole PBS Schedule monthly (1st of the month, or on demand), normalises it into `pbs_item`, and cross-links with `protocol_drug` (Stage 11). Built in #19 as the Refresh Job Kind `refresh_pbs`, and widened to every PBS Item in #30 (`backend/app/modules/pbs/`):
 
 - **Source:** the public PBS Schedule API v3 (`data-api.health.gov.au/pbs/api/v3`), with the Subscription-Key set as `VIGIL_PBS_API_KEY` in `.env`, never committed (one request every 20 seconds, **shared by every user of the public API**, so a Refresh takes a few minutes, and 20+ when others are busy; without a key it fails with `pbs_api_key_missing`). Newcomers get the key from the PBS API Catalogue (README, Getting started). In prod, secrets and the shared store for Shared Reference Data follow [revisit-later.md](revisit-later.md) #26; the faster embargo API is an option there. Every PBS Item is kept (about 7,000), with its ATC codes, its program's title (from `/programs`) and its pack size. ATC files a drug by its main use, so the Lookup's therapeutic groups are for browsing, not a statement of what a drug may be used for; "Cancer drugs" is ATC L01 (antineoplastic agents) and L02 (endocrine therapy). Each PBS restriction on an item becomes one indication: its text gives the indication and the prescribing conditions, and its authority method the level (Restricted, Authority Required, or Authority Required (streamlined)).
-- **Steps:** `fetch` asks the API which schedule is current; `store` fetches its items and upserts them, with the Refresh's `pbs_refresh_log` row, in one transaction.
+- **Steps:** `fetch` asks the API which schedule is current; `store` fetches its items and upserts them, with the Refresh's `pbs_refresh_log` row, in one transaction; `drug_reference` rebuilds the Medication Manager's drug reference from the schedule now shown (#36).
 - **Request log:** the worker logs each API request: path, page, HTTP status (or `unreachable`), how long it took and how long it waited its turn; never the key or the rest of the query (#31). A timed Refresh is about 3 minutes; a much slower one shows whether the API was throttling (429) or slow.
 - **Failure:** every attempt writes a `pbs_refresh_log` row. A failed Refresh keeps the previous schedule visible (the lookup warns). If the API can't be reached (or there's no key) and Vigil has no schedule from it yet, the **Sample Schedule** (`sample_schedule.json.gz`: the whole PBS Schedule of 1 September 2026) loads instead, logged `partial` with `source = 'sample'` and shown as out of date, for demos only, not for clinical use, so demos work offline.
 - **Snapshots:** `backend/scripts/pbs_snapshot.py` takes the Sample Schedule and the tests' recorded fixture from the live API in one run.
@@ -999,7 +1005,7 @@ For a given Cancer Diagnosis D:
      AND (line_of_therapy IS NULL OR line_of_therapy = next line)
 5. Filter by biomarker_requirements against D's CURRENT Biomarkers (latest per name).
      Requirement unmet → drop. Biomarker missing → keep, marked "Biomarker needed" (becomes an Open Item).
-     Biomarker discordant → keep, marked "Biomarker discordance: check".
+     Biomarker results differ → keep, marked "Biomarker results differ: check".
 6. For each remaining protocol → Treatment Option with PBS Listing per drug and PBS Coverage.
 7. Order: current standard of care first, then alternatives. Show "as of <eviq_updated_on>".
 ```
@@ -1142,35 +1148,58 @@ POST   /redaction-jobs/{id}/files/{fid}/burn-in
 GET    /redaction-jobs/{id}/files/{fid}/download   Signed-off De-identified Export
 
 # Clinical Record
-GET    /patients/{id}/conditions            Conditions (Core); ?view=comorbidities&focus={condition_id}
-POST   /patients/{id}/conditions            Direct entry
-GET    /conditions/{id}/cancer-diagnosis    (Oncology) Stage, Disease Extent, Biomarkers, Recurrences
-PUT    /conditions/{id}/cancer-diagnosis    (Oncology) Create/update: clinician, reauth
-POST   /recurrences/{id}/attribute          Confirm / reclassify as new primary (clinician, reauth)
-GET    /cancer-diagnoses/{id}/biomarkers    (Oncology) Full history + discordance flags
-GET    /patients/{id}/treatment-courses
-GET    /patients/{id}/imaging               Imaging studies + Findings
-GET    /patients/{id}/response-assessments
-POST   /response-assessments                Clinician override
-GET    /patients/{id}/labs
-GET    /patients/{id}/performance-status
-GET    /patients/{id}/cns-status
+GET    /clinical/entry-rights               Which Clinical Record kinds the signed-in User may enter (Verification Rights)
+GET    /patients/{id}/conditions            Conditions (Core), active first; ?view=comorbidities&focus={condition_id} later
+POST   /patients/{id}/conditions            Direct entry (a Verification)
+PATCH  /patients/{id}/conditions/{cid}      Correct: only the changed fields + `reason` (one per save)
+DELETE /patients/{id}/conditions/{cid}      Remove: soft delete with `reason`
+GET    /patients/{id}/inactive-module-facts Facts of modules inactive at this Practice, read-only in plain words
+GET    /cancer-types                        (Oncology) Cancer Types with their MeSH term and ID
+GET    /patients/{id}/cancer-diagnoses      (Oncology) Each primary: Stage at diagnosis, Disease Extent now
+POST   /patients/{id}/cancer-diagnoses      (Oncology) Record a primary cancer (its Condition too): clinician, reauth
+PATCH  /patients/{id}/cancer-diagnoses/{cd} (Oncology) Correct (reason once per save): clinician, reauth
+DELETE /patients/{id}/cancer-diagnoses/{cd} (Oncology) Remove it and its Condition, with reason
+GET    /patients/{id}/recurrences           (Oncology) Every Recurrence of the Patient's Cancer Diagnoses
+POST   /patients/{id}/cancer-diagnoses/{cd}/recurrences  (Oncology) Record a Suspected Recurrence (clinician, coordinator)
+POST   /patients/{id}/recurrences/{r}/confirm | /new-primary | /rule-out   (Oncology) Resolve it (clinician, reauth)
+GET    /patients/{id}/cancer-diagnoses/{cd}/biomarkers   (Oncology) Full history, each marked current and whether results differ
+POST   /patients/{id}/cancer-diagnoses/{cd}/biomarkers   (Oncology) Add a result (never overwritten; DELETE with reason)
+POST   /patients/{id}/cancer-diagnoses/{cd}/biomarkers/{b}/move   (Oncology) To another primary (clinician, reason)
+GET    /patients/{id}/treatment-courses     Most recent first; POST adds, PATCH corrects or ends (reason), DELETE removes
+GET    /patients/{id}/lines-of-therapy      (Oncology) Each palliative systemic course's line, derived unless overridden
+PUT    /patients/{id}/treatment-courses/{tc}/line-of-therapy   (Oncology) Override or derive again (clinician, reason)
+GET    /patients/{id}/imaging-studies      Most recent first, each with its Findings; POST adds a study and its Findings in one save
+PATCH  /patients/{id}/imaging-studies/{s}   Correct (reason); DELETE removes it and its Findings (reason)
+POST   /patients/{id}/imaging-studies/{s}/findings   Add a Finding; PATCH /findings/{f} corrects, DELETE removes (reason)
+GET    /patients/{id}/response-assessments  (Oncology) Newest first; an overridden one names the override
+POST   /patients/{id}/response-assessments  (Oncology) Record one; no Cancer Diagnosis = "not sure which" (source clinician: clinician only)
+POST   /patients/{id}/response-assessments/{ra}/attribute | /override   (Oncology) Attribute an unattributed one, or override (clinician, reason)
+DELETE /patients/{id}/response-assessments/{ra}   (Oncology) Remove (reason)
+GET    /patients/{id}/best-responses        (Oncology) Each course's best response, derived, with the assessment it came from
+GET    /patients/{id}/labs                  Newest first
+POST   /patients/{id}/lab-panels            A panel in one save, one Verification (subject `lab_panel`)
+PATCH  /patients/{id}/labs/{lid}            Correct one value (reason); flag recomputed
+DELETE /patients/{id}/labs/{lid}            Remove one value (reason)
+GET    /patients/{id}/performance-status    (Oncology) ECOG or KPS, newest first; POST adds, DELETE removes (reason)
+GET    /patients/{id}/cns-status            (Oncology) Newest first; POST adds, PATCH corrects, DELETE removes (reason)
 GET    /patients/{id}/conditions/reconcile
 POST   /patients/{id}/conditions/reconcile
-GET    /patients/{id}/management-plan
-GET    /patients/{id}/next-steps
-POST   /patients/{id}/next-steps
-PATCH  /next-steps/{id}                     Mark done
-GET    /patients/{id}/clinical-notes
+GET    /patients/{id}/management-plans      Newest first (the current plan, then its history); POST adds one, verbatim
+PATCH  /patients/{id}/management-plans/{m}  Correct (reason); DELETE removes (reason)
+GET    /patients/{id}/next-steps            Open first, soonest due; POST adds (any staff)
+POST   /patients/{id}/next-steps/{n}/done   Mark done (any staff); PATCH corrects, DELETE removes (reason)
+GET    /patients/{id}/clinical-notes        Newest first; POST adds; PATCH corrects, DELETE removes (reason)
 GET    /patients/{id}/timeline
 DELETE /{record-type}/{id}                  Soft delete with reason (verification row); never hard
 
 # Medications (as v1.1, with User-based verification)
-GET    /patients/{id}/medications
-POST   /patients/{id}/medications
-PATCH  /medications/{id}
-POST   /medications/{id}/discontinue
-GET    /medications/{id}/changelog
+GET    /drugs?q=                            The drug reference (built from the PBS Schedule), by generic or brand name
+GET    /patients/{id}/medications          Most recently started first
+POST   /patients/{id}/medications          From the drug reference (`drug_reference_id`) or free text (`drug_name`)
+PATCH  /patients/{id}/medications/{m}      Change (reason); logged as a dose change, status change or correction
+POST   /patients/{id}/medications/{m}/stop | /restart   Discontinue from a date, or restart (reason)
+DELETE /patients/{id}/medications/{m}      Remove one entered by mistake (reason)
+GET    /patients/{id}/medication-changes   The change log: every change, who, when and why
 GET    /patients/{id}/medications/reconcile
 POST   /patients/{id}/medications/reconcile
 GET    /drug-reference
@@ -1380,7 +1409,7 @@ vigil/
 │   │
 │   ├── alembic/
 │   ├── scripts/
-│   │   ├── seed_drug_reference.py
+│   │   ├── pbs_snapshot.py          # Sample Schedule + recorded PBS API fixture, from the live API
 │   │   └── backup_restore.py        # Encrypted local backup + restore test
 │   ├── tests/
 │   │   ├── modules/
@@ -1540,29 +1569,32 @@ flowchart LR
 
 ### Stage 4: Clinical Record entered by hand
 
-Three parts, each with its own section of the Clinical Data Viewer (§5 screen 9):
-- **4a Conditions and cancer:** Conditions (the Comorbidity view), and *(Oncology)* Cancer Diagnosis with Stage and Disease Extent, Biomarker history with discordance flags, and Recurrences with clinician attribution.
-- **4b Treatment and Medications:** Treatment Courses and Regimens, *(Oncology)* Line of Therapy and best response, and the Medication Manager. This covers drug reference seeding, linking a cancer drug to its Treatment Course, the change log, and PBS links from Stage 3.
-- **4c Results and plan:** labs with trends, Imaging Studies and Findings, *(Oncology)* Response Assessments, ECOG and CNS status, Clinical Notes, the Management Plan (verbatim) and Next Steps.
+Fleshed out 2026-09-27. Three parts, each shipped with its own mini-demo as its tabs of the Clinical Data Viewer (§5 screen 9) are built (`SHIPPED_STAGE = 4` from 4a; each tab's `built` flag decides what appears). Tickets are listed in [build-order.md](build-order.md).
 
-Every entry is recorded as "entered by a User" with a Verification, and clinician-only values check the Job Title (§6.4).
+- **Foundation:** direct entry with provenance (§6.2), a Verification on every add, edit and removal, and a reason for every correction, **asked once per save**, not per field. Job Title checks come from Verification Rights (§6.4): clinicians and trial coordinators enter most values; secretaries enter none ([revisit-later.md](revisit-later.md) #27); Cancer Diagnosis, Stage, Disease Extent and Recurrence decisions are clinician-only. Corrections are edits in place, except that a Biomarker is never overwritten (removed with a reason and re-entered), and Stage is never updated as the disease changes, only corrected by a clinician. **Conditions** (Core) come first: the Overview's Conditions list and "Add Condition". Each Specialty Module provides a plain read-only view of its facts for when it's inactive (§4.1).
+- **4a Conditions and cancer:** Cancer Types keyed to MeSH (§6.3); "This is a primary cancer" opens a Cancer Diagnosis with Stage and Disease Extent, and a Patient may have several primaries; Biomarker history by specimen and date with **Differing Biomarker Results** (§6.3, deterministic, never interpreted); Recurrences: suspected, then confirmed, **new primary instead** (the Cancer Diagnosis form prefilled from the Recurrence) or ruled out with a reason. A differing Biomarker result can likewise be moved to a new primary.
+- **4b Treatment and Medications:** Treatment Courses (systemic, surgery, radiation) with their Regimen; *(Oncology)* Line of Therapy **derived** from the palliative systemic courses by start date, which a clinician may override with a reason. One Condition per course ([revisit-later.md](revisit-later.md) #32). The **drug reference** is built from the PBS Schedule (Stage 3) and rebuilt after each PBS Refresh; the **Medication Manager** picks from it or takes free text, links a cancer drug to its Treatment Course, shows PBS links and keeps the change log. Reconciliation of duplicates waits for Stage 9.
+- **4c Results and plan:** bloods entered **as a panel** (common analytes prefilled; H/L flags from the report's own reference range; trends with the range shaded); Imaging Studies (impression verbatim) and Findings; *(Oncology)* Response Assessments per Cancer Diagnosis ("not sure which" allowed) and each course's **derived best response**; ECOG and CNS status; Clinical Notes, the Management Plan (verbatim) and Next Steps.
 
-**Stage demo:** build Jane Citizen's record by hand: breast cancer with HER2 3+ and ER+ history, adjuvant then palliative first-line courses, current Medications, and the latest bloods. Show that a secretary can't record a Stage.
+**Stage demos:** build Jane Citizen's record by hand: breast cancer with HER2 3+ and ER+ history (4a), adjuvant then palliative first-line courses and current Medications (4b), then the latest bloods, a CT with its Response Assessment, and the plan (4c). Show that a secretary can't record a Stage, and that with Oncology switched off the cancer details stay visible read-only.
 
-**Depends on:** Stage 2, and Stage 3 for the PBS links in 4b.
+**Depends on:** Stage 2, and Stage 3 for the drug reference and PBS links in 4b.
 
 ---
 
 ### Stage 5: Patient Summary v1 & Open Items
 
 **What:**
-- `summary/` builder and the **Patient Summary** (§5 screen 15), with sections for the data that exists: Registration, Diagnosis, Most Recent Results, Recent Treatment, Clinical Notes, Management, Medical History, each linked to its source.
-- **Derived Open Items** per Patient, and on the Dashboard across the Practice. Types appear as their sources exist.
+- **A fully recorded demo Patient:** `make demo-data` adds a second synthetic Patient whose record is entered through the same services (every row with its Verification), so the Summary can be shown without typing it in live.
+- `summary/` builder and the **Patient Summary** (§5 screen 15), with sections for the data that exists: Registration, Diagnosis, Most Recent Results, Recent Treatment, Clinical Notes, Management, Medical History. An empty section says **"None recorded"**; each section's "last updated" links to the Verification of its newest value (Documents from Stage 6).
+- **Derived Open Items** per Patient, on the Patient List (#Open Items) and on the **Dashboard** (§5 screen 2) across the Practice. The types with data by Stage 5: Next Steps coming due (7 days, [revisit-later.md](revisit-later.md) #29), Differing Biomarker Results (clinician "Seen", [revisit-later.md](revisit-later.md) #30), unattributed Response Assessments and new unattributed Findings, Suspected Recurrences ([revisit-later.md](revisit-later.md) #31). Each clears by acting on it; nothing is dismissed. Later types join in their stages.
 - Print-friendly layout.
 
-**Stage demo:** open Jane Citizen's Summary as it would look in a consultation, then follow a value back to where it came from.
+**Stage demo:** open the pre-filled Patient's Summary as it would look in a consultation, follow a value back to who entered it, then work the Open Items on the Dashboard.
 
 **Depends on:** Stage 4.
+
+After each stage, Dr De Souza tries it hands-on in dev with synthetic Patients ([revisit-later.md](revisit-later.md), "For Dr De Souza").
 
 ---
 

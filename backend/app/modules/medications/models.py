@@ -54,9 +54,10 @@ class DrugReference(SharedEntity):
     drug_class: Mapped[str | None]
     atc_code: Mapped[str | None]
     is_cancer_drug: Mapped[bool] = mapped_column(server_default=text("false"))
-    pbs_item_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("pbs_item.id", ondelete="SET NULL"), index=True
-    )
+    # Built from the PBS Schedule (#36): its PBS Items' codes in the current schedule, and whether it's still
+    # in it (a drug that leaves stays, as Medications may point at it, but is no longer offered).
+    pbs_item_codes: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
+    in_current_schedule: Mapped[bool] = mapped_column(server_default=text("true"))
     common_doses: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
     common_routes: Mapped[list[Any]] = mapped_column(server_default=text("'[]'::jsonb"))
 

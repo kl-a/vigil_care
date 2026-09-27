@@ -60,7 +60,7 @@ def test_a_refresh_stores_every_pbs_item_of_the_current_schedule(
 ) -> None:
     job = refresher(database, kind).run()
     assert job.status == "succeeded"
-    assert [step.name for step in job.steps] == ["fetch", "store"]
+    assert [step.name for step in job.steps] == ["fetch", "store", "drug_reference"]
 
     [log] = logs(db)
     assert (log["status"], log["source"], log["schedule_date"], log["error_detail"]) == ("succeeded", "pbs_api", date(2026, 9, 1), None)

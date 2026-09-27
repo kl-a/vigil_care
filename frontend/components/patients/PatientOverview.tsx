@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { SectionSlot } from "@/components/SectionSlot";
-import { useSignedInUser } from "@/components/shell/ViewerProvider";
+import { Conditions } from "@/components/clinical/Conditions";
+import { InactiveModuleFacts } from "@/components/clinical/InactiveModuleFacts";
+import { TreatmentCourses } from "@/components/clinical/TreatmentCourses";
+import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import { JOB_TITLE_LABEL, isKnownJobTitle, signOffName } from "@/lib/jobTitles";
@@ -12,14 +15,21 @@ import {
   changeIdentity, IDENTITY_FIELDS, IDENTITY_LABEL, removePatient, type IdentityChange, type IdentityField, type IdentityHistoryEntry,
   type PatientDetail,
 } from "@/lib/patients";
+import { isPartShipped, isVisible } from "@/lib/stages";
 import { formatWhen } from "@/lib/users";
 import { CareTeam } from "./CareTeam";
 import { usePatient } from "./PatientContext";
 
-/** Patient Overview (design doc §5 screen 4). Stage 2: Patient Identity and Care Team; later stages add Conditions and modules' sections. */
+/** Patient Overview (design doc §5 screen 4): Patient Identity, Conditions (#35), Care Team, and modules' sections
+ * (read-only when a module is inactive). */
 export function PatientOverview() {
   const router = useRouter();
   const me = useSignedInUser();
+  const { showUpcoming } = useViewer();
+  // Conditions arrive with Stage 4 (#35): shown once it ships, like the Clinical Data tab.
+  const stage4 = isVisible({ stage: 4, built: true }, showUpcoming);
+  // The Treatment Course timeline ships with 4b (#40).
+  const part4b = stage4 && isPartShipped("4b", showUpcoming);
   const { state, update } = usePatient();
   const [editing, setEditing] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -50,8 +60,11 @@ export function PatientOverview() {
           Shown in full inside Vigil only. It never leaves the Practice; De-identified Exports use the Pseudonym {patient.pseudonym} instead.
         </p>
       </section>
+      {stage4 && <Conditions patientId={patient.id} />}
       <CareTeam />
+      {part4b && <TreatmentCourses patientId={patient.id} compact />}
       <SectionSlot slot="patient-overview" />
+      {stage4 && <InactiveModuleFacts patientId={patient.id} />}
       <section aria-labelledby="identity-trail" className="flex flex-col gap-2">
         <h2 id="identity-trail" className="m-0 text-sm font-semibold">Audit trail</h2>
         <ol aria-label="Identity audit trail" className="m-0 flex list-none flex-col gap-2 p-0">

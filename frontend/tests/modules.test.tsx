@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SectionSlot } from "@/components/SectionSlot";
 import { ViewerProvider } from "@/components/shell/ViewerProvider";
-import { patientTabsFor, sectionsFor } from "@/lib/modules/registry";
+import { clinicalDataTabsFor, conditionExtensionsFor, patientTabsFor, sectionsFor } from "@/lib/modules/registry";
 import { NO_MODULES } from "@/lib/modules/types";
 import { INSTALLED_MODULES } from "@/modules";
 import { ONCOLOGY_ON, userWith } from "./fixtures";
@@ -20,9 +20,16 @@ describe("Specialty Module sections and tabs (the API decides what; manifests re
 
   it("returns a slot's sections in the API's order, with the API's titles", () => {
     expect(sectionsFor("clinical-data-tabs", ONCOLOGY_ON).map((s) => s.title)).toEqual([
-      "Response Assessments", "Biomarkers", "Performance Status", "CNS",
+      "Cancer Diagnosis", "Response Assessments", "Biomarkers", "Performance Status", "CNS",
     ]);
     expect(sectionsFor("clinical-data-tabs", NO_MODULES)).toEqual([]);
+  });
+
+  it("offers only a module's built Clinical Data sub-tabs, and its Condition extension", () => {
+    expect(clinicalDataTabsFor(ONCOLOGY_ON).map((s) => s.title)).toEqual(["Cancer Diagnosis", "Response Assessments", "Biomarkers", "Performance Status", "CNS"]);
+    expect(clinicalDataTabsFor(NO_MODULES)).toEqual([]);
+    expect(conditionExtensionsFor(ONCOLOGY_ON).map((e) => [e.factKind, e.label])).toEqual([["cancer_diagnosis", "This is a primary cancer"]]);
+    expect(conditionExtensionsFor(NO_MODULES)).toEqual([]);
   });
 
   it("skips a section the API lists but no manifest can render", () => {

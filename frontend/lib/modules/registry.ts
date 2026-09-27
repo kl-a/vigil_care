@@ -1,12 +1,14 @@
 import { INSTALLED_MODULES } from "@/modules";
-import type { ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName } from "./types";
+import type {
+  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
+} from "./types";
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "overview", label: "Overview", slot: "patient-overview", screen: { number: 4, title: "Patient Overview", purpose: "Clinical profile for one Patient.", stage: 2, built: true } },
   { segment: "summary", label: "Summary", slot: "patient-summary", screen: { number: 15, title: "Patient Summary", purpose: "The consultation-ready “At a Glance” page.", stage: 5 } },
-  { segment: "clinical-data", label: "Clinical Data", slot: "clinical-data-tabs", screen: { number: 9, title: "Clinical Data Viewer", purpose: "Longitudinal Clinical Record.", stage: 4 } },
+  { segment: "clinical-data", label: "Clinical Data", slot: "clinical-data-tabs", screen: { number: 9, title: "Clinical Data Viewer", purpose: "Longitudinal Clinical Record.", stage: 4, built: true } },
   { segment: "documents", label: "Documents", screen: { title: "Patient Documents", purpose: "This Patient's Documents.", stage: 6 } },
-  { segment: "medications", label: "Medications", screen: { number: 10, title: "Medication Manager", purpose: "Medication list with reconciliation.", stage: 4 } },
+  { segment: "medications", label: "Medications", screen: { number: 10, title: "Medication Manager", purpose: "Medication list with reconciliation.", stage: 4, built: true } },
   { segment: "trials", label: "Trials", screen: { number: 13, title: "Match Board", purpose: "Patient vs trials for a target Condition.", stage: 10 } },
   { segment: "exports", label: "Exports", screen: { number: 16, title: "Exports", purpose: "Generate and sign off Identified or De-identified Exports.", stage: 12 } },
 ];
@@ -37,4 +39,35 @@ export function patientTabsFor(config: ModuleConfiguration): PatientTab[] {
   });
   const trials = CORE_PATIENT_TABS.findIndex((tab) => tab.segment === "trials");
   return [...CORE_PATIENT_TABS.slice(0, trials), ...moduleTabs, ...CORE_PATIENT_TABS.slice(trials)];
+}
+
+/** The Clinical Data tab's module sub-tabs: the active modules' "clinical-data-tabs" sections that are built,
+ * with the part of the stage that ships each. */
+export function clinicalDataTabsFor(config: ModuleConfiguration): (SectionDefinition & { part: string })[] {
+  return sectionsFor("clinical-data-tabs", config).flatMap((section) => {
+    const owner = config.sections.find((s) => s.id === section.id && s.slot === "clinical-data-tabs")?.module;
+    const part = owner ? manifest(owner)?.builtSections?.[section.id] : undefined;
+    return part ? [{ ...section, part }] : [];
+  });
+}
+
+/** The Condition extensions of the Practice's active modules (e.g. "This is a primary cancer"). */
+export function conditionExtensionsFor(config: ModuleConfiguration): ConditionExtension[] {
+  return config.active_modules.flatMap((key) => {
+    const extension = manifest(key)?.conditionExtension;
+    return extension ? [extension] : [];
+  });
+}
+
+/** The Treatment Course extensions of the Practice's active modules (e.g. Line of Therapy, best response). */
+export function treatmentCourseExtensionsFor(config: ModuleConfiguration): TreatmentCourseExtension[] {
+  return config.active_modules.flatMap((key) => manifest(key)?.treatmentCourseExtensions ?? []);
+}
+
+/** The Imaging Study badges of the Practice's active modules (e.g. Response Assessment). */
+export function imagingStudyExtensionsFor(config: ModuleConfiguration): ImagingStudyExtension[] {
+  return config.active_modules.flatMap((key) => {
+    const extension = manifest(key)?.imagingStudyExtension;
+    return extension ? [extension] : [];
+  });
 }

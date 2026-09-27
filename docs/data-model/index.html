@@ -5842,6 +5842,15 @@ const DATA = [
    {
     "allowed": [],
     "default": null,
+    "name": "panel_id",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "uuid"
+   },
+   {
+    "allowed": [],
+    "default": null,
     "name": "source_fact_id",
     "nullable": true,
     "references": "extracted_fact",
@@ -5983,6 +5992,15 @@ const DATA = [
     "name": "ix_lab_result_entered_by_user_id",
     "on": [
      "entered_by_user_id"
+    ],
+    "unique": false,
+    "using": false,
+    "where": null
+   },
+   {
+    "name": "ix_lab_result_panel_id",
+    "on": [
+     "panel_id"
     ],
     "unique": false,
     "using": false,
@@ -6982,12 +7000,21 @@ const DATA = [
    },
    {
     "allowed": [],
-    "default": null,
-    "name": "pbs_item_id",
-    "nullable": true,
-    "references": "pbs_item",
+    "default": "'[]'::jsonb",
+    "name": "pbs_item_codes",
+    "nullable": false,
+    "references": null,
     "standard": false,
-    "type": "uuid"
+    "type": "jsonb"
+   },
+   {
+    "allowed": [],
+    "default": "true",
+    "name": "in_current_schedule",
+    "nullable": false,
+    "references": null,
+    "standard": false,
+    "type": "boolean"
    },
    {
     "allowed": [],
@@ -7062,14 +7089,6 @@ const DATA = [
     "composite": false,
     "onDelete": "RESTRICT",
     "table": "user"
-   },
-   {
-    "columns": [
-     "pbs_item_id"
-    ],
-    "composite": false,
-    "onDelete": "SET NULL",
-    "table": "pbs_item"
    }
   ],
   "immutable": false,
@@ -7078,15 +7097,6 @@ const DATA = [
     "name": "ix_drug_reference_deleted_by_user_id",
     "on": [
      "deleted_by_user_id"
-    ],
-    "unique": false,
-    "using": false,
-    "where": null
-   },
-   {
-    "name": "ix_drug_reference_pbs_item_id",
-    "on": [
-     "pbs_item_id"
     ],
     "unique": false,
     "using": false,
@@ -12915,6 +12925,24 @@ const DATA = [
    },
    {
     "allowed": [],
+    "default": null,
+    "name": "mesh_term",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
+    "allowed": [],
+    "default": null,
+    "name": "mesh_id",
+    "nullable": true,
+    "references": null,
+    "standard": false,
+    "type": "text"
+   },
+   {
+    "allowed": [],
     "default": "'[]'::jsonb",
     "name": "icd10_codes",
     "nullable": false,
@@ -13552,21 +13580,6 @@ const DATA = [
     "references": "treatment_protocol",
     "standard": false,
     "type": "uuid"
-   },
-   {
-    "allowed": [
-     "CR",
-     "PR",
-     "SD",
-     "PD",
-     "NE"
-    ],
-    "default": null,
-    "name": "best_response",
-    "nullable": true,
-    "references": null,
-    "standard": false,
-    "type": "text"
    },
    {
     "allowed": [],
@@ -14288,7 +14301,8 @@ const DATA = [
     "allowed": [
      "suspected",
      "confirmed",
-     "reclassified_as_new_primary"
+     "reclassified_as_new_primary",
+     "ruled_out"
     ],
     "default": "'suspected'",
     "name": "status",

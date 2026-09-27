@@ -5,10 +5,13 @@ public interfaces; the Core never imports it (the registry loads it by name). Ea
 self-contained unit so a concept can move between modules, or into the Core (portability rule).
 """
 
-from collections.abc import Mapping, Sequence
+import uuid
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 
+from fastapi import APIRouter
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.core.permissions import FactRight
 
@@ -40,6 +43,11 @@ class DocumentTypeDefinition:
     extraction_prompt_ref: str | None = None
 
 
+# A module's recorded facts for one Patient in plain words, e.g. "Breast cancer: Stage IIA (TNM) at diagnosis".
+# Called with (session, practice_id, patient_id).
+ReadOnlyView = Callable[[Session, uuid.UUID, uuid.UUID], list[str]]
+
+
 @dataclass(frozen=True)
 class SpecialtyModule:
     key: str
@@ -60,3 +68,9 @@ class SpecialtyModule:
     # "which source applies to this Condition?" is built with Treatment Options (Stage 11).
     treatment_option_source: str | None = None
     open_item_types: Sequence[str] = ()
+    # A module owns tools, not visibility (ADR 0004, amended): when it's inactive for a Practice, the Core
+    # shows its recorded facts read-only through this view, so no clinician loses sight of them.
+    read_only_view: ReadOnlyView | None = None
+    # The module's own API (its screens' endpoints), mounted for every installed module; its services refuse
+    # Practices where the module isn't active.
+    router: APIRouter | None = None

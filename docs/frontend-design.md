@@ -140,7 +140,7 @@ Build each as a reusable component in the scaffold, with a **component gallery p
 | **StateBadge** | One component driven by a `kind` + `value` map: MatchState, CriterionResult, PbsListing, PbsCoverage, ConfidenceBand (high/medium/low), ReviewStatus (pending/accepted/edited/rejected/withdrawn), Stale, Held (with reason), LeakCheck (pass/fail), ResponseDirection. Always icon + label + colour. |
 | **VerificationMark** | Small tick with tooltip: "Verified by Dr A Smith (Clinician), 24 Sep 2026 10:14". Pending variant is an amber dot. |
 | **SourceLink** | "📄 CT chest 02 Sep · p2", opening the page viewer at the exact region. |
-| **BiomarkerChip** | Name + result (e.g. `EGFR ex19del +`, `PD-L1 60%`). A discordance flag (amber ⚠) opens the history. |
+| **BiomarkerChip** | Name + result (e.g. `EGFR ex19del +`, `PD-L1 60%`). A "Results differ" flag (amber ⚠, Differing Biomarker Results) opens the history. |
 | **CancerDiagnosisBlock** *(Oncology section)* | Cancer Type, histology, Stage (at dx), Disease Extent (now), BiomarkerChips, Recurrences (confirmed/suspected). |
 | **PageViewer** ⭐ | **The most important component.** A page image with zoom/pan, rotate, page thumbnails, and an overlay of **boxes**. Box types: PII (coloured by entity type, auto/manual) and source highlights for Extracted Facts. Tools: draw rectangle, select OCR words, delete/restore box, relabel. Shared by Redaction QA and Extraction Review. |
 | **StatusStepper** | Document pipeline: Uploaded → OCR → PII masked → Classified → Extracted → In review → Complete; or **Held** (red branch with reason). |
@@ -187,7 +187,7 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 
 **4. Patient Overview**
 - Patient header plus tabs.
-- Overview content: Conditions list, then **sections from active Specialty Modules** (Oncology: CancerDiagnosisBlocks, ECOG badge, CNS status panel), plus Core sections: Treatment Course Timeline, key lab sparklines, **Care Team** card (role, Provider, dates, primary), Open Items.
+- Overview content: Conditions list with **"Add Condition"** (a "This is a primary cancer" tick opens the Cancer Diagnosis form, clinician-only; several primaries are normal), then **sections from Specialty Modules** (Oncology: CancerDiagnosisBlocks, ECOG badge, CNS status panel; read-only in a plain form when the module is inactive), plus Core sections: Treatment Course Timeline, key lab sparklines, **Care Team** card (role, Provider, dates, primary), Open Items.
 
 **Developer admin home: System status** *(from design doc §6.4)*
 - Tiles: DB, VLM worker, job queue depth, last PBS/eviQ/trial refresh, last backup + restore test.
@@ -208,12 +208,16 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
   6. Management: the Management Plan quoted verbatim (blockquote style, "Quoted from letter 12 Sep" link) plus Next Steps with due dates.
   7. Medical History: Comorbidities (the other Conditions, active/resolved), current Medications.
   8. Open Items.
+- An empty section shows **"None recorded"** (never hidden: "none recorded" isn't "has none"). Before Documents exist (Stage 6), "Last updated" links to the Verification of the newest value: who entered it, their Job Title, when.
 - Must fit the key facts **above the fold on a 1440×900 screen**.
 
 **9. Clinical Data Viewer**
-- Core sub-tabs: Conditions / Labs / Imaging & Findings / Treatment Courses. Oncology module sub-tabs: Response Assessments / Biomarkers / Performance Status / CNS.
-- Labs: analyte picker, TrendChart with reference band, DataTable.
-- Biomarkers: full history grouped by marker, specimen (primary / metastasis / liquid biopsy) and date, with a discordance callout.
+- Core sub-tabs: Conditions / Labs / Imaging & Findings / Treatment Courses / Plan & notes. Oncology module sub-tabs: Cancer Diagnosis (with Recurrences) / Biomarkers / Response Assessments / Performance Status / CNS. Each appears when built (Stage 4a–4c).
+- **Entry by hand** happens here: "Add" on each tab; edits in place; a **reason prompt once per save** for any correction or removal. Values a User's Job Title can't enter are read-only with a "Needs clinician" lock.
+- Labs: entered **as a panel** (collection date, then analyte / value / unit / reference low–high rows, common FBC/EUC/LFT analytes prefilled); H/L flags from the report's own range; analyte picker, TrendChart with reference band, DataTable.
+- Biomarkers: full history grouped by marker, specimen (primary / metastasis / liquid biopsy) and date, with a **"Results differ"** callout (Differing Biomarker Results: both results side by side, never interpreted).
+- Treatment Courses: Line of Therapy shown as derived ("2nd line: second palliative systemic course since Mar 2025") with a clinician override (reason); best response derived from Response Assessments, linked to its source.
+- Recurrences: suspected → Confirm / New primary instead (opens the Cancer Diagnosis form prefilled) / Rule out (reason), clinician-only.
 - Every row has a VerificationMark and a SourceLink.
 
 **5. Document Upload**
@@ -242,7 +246,8 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 - Practice-wide pending Extracted Facts grouped by Document, filterable by fact kind and by required Job Title.
 
 **10. Medication Manager**
-- Tabs: Active / Discontinued / Reconciliation / Change log.
+- Tabs: Active / Discontinued / Reconciliation / Change log. Reconciliation arrives with Extraction Review (Stage 9).
+- Adding a Medication searches the drug reference (built from the PBS Schedule, with PBS links); anything else is free text marked "not in the drug reference".
 - Active table: generic + brand, dose, frequency, route, indication, category badge, source badge, confidence, VerificationMark, linked Treatment Course.
 - Reconciliation cards: "Is 'Norvasc 5mg' the same as 'Amlodipine 5mg'?", with Same / Different / Update existing / Reject. The same pattern is used for Conditions.
 
@@ -250,7 +255,7 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 - Condition selector (Cancer Diagnoses in the MVP). This screen comes from the Oncology module; a module without a Treatment Option source shows no tab.
 - Disclaimer line.
 - Cards per Treatment Option: protocol name, intent, Line of Therapy, drug list with a PBS Listing badge per drug, a PBS Coverage badge (naming the gap), co-payments, "eviQ ↗", "as of <date>".
-- Flags: "Biomarker needed", "Biomarker discordance".
+- Flags: "Biomarker needed", "Biomarker results differ".
 - A stale-data banner when the eviQ refresh failed.
 
 **12. Trial Browser**
@@ -278,6 +283,7 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 
 **2. Dashboard**
 - Open Items table (practice-wide), filter chips by type and "who can act".
+- Each Open Item carries its own action, never a generic dismiss: Next Step → "Mark done"; Differing Biomarker Results → "Seen" (clinician, one click, optional note) or "Record a new primary"; unattributed Response Assessment or new Finding → "Attribute"; Suspected Recurrence → Confirm / New primary instead / Rule out.
 - Side tiles: recent activity, next refreshes, VLM worker status.
 
 **19. Settings**
@@ -303,7 +309,7 @@ Numbering follows design doc §5. For each screen: purpose, layout, key content,
 - **Patients:**
   1. **Jane Citizen**, DOB 03/04/1962, MRN 1002003, Pseudonym `VG-0042`.
      - Cancer Diagnosis: NSCLC adenocarcinoma, Stage IIIA (dx 2024), Disease Extent **metastatic**.
-     - Biomarkers: EGFR exon 19 deletion (2024, primary), **T790M positive (2026, liver met, discordant with 2024 result)**, PD-L1 TPS 5%.
+     - Biomarkers: EGFR exon 19 deletion (2024, primary), **T790M positive (2026, liver met: a different variant, so not flagged as Differing Biomarker Results)**, PD-L1 TPS 5%.
      - Treatment Courses: surgery 2024; adjuvant chemo 2024; Line 1 osimertinib 2025–2026 (best response PR); Line 2 planned.
      - Response Assessment: Progressing (Aug 2026).
      - Other Conditions (shown as Comorbidities): type 2 diabetes (active), knee OA (active), DVT 2019 (resolved).

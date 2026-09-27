@@ -101,3 +101,13 @@ class PbsScheduleStatus(BaseModel):
     current: PbsRefreshView | None
     # The most recent Refresh of any outcome.
     last_refresh: PbsRefreshView | None
+
+
+class ScheduleDrug(BaseModel):
+    """One drug in the schedule Vigil shows, for other modules (e.g. the drug reference): its PBS Items' codes,
+    brands and ATC codes."""
+
+    drug_name: str
+    item_codes: list[str]
+    brand_names: list[str]
+    atc_codes: list[str]
