@@ -7,11 +7,12 @@ const api = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock("@/lib/api", async (importOriginal) => ({ ...(await importOriginal<object>()), ...api }));
 
 import { Dashboard } from "@/components/dashboard/Dashboard";
-import { OpenItemList } from "@/components/openItems/OpenItemList";
+import { OpenItemCards, OpenItemList, OpenItemTable } from "@/components/openItems/OpenItemList";
 import { PatientProvider } from "@/components/patients/PatientContext";
+import { Sidebar } from "@/components/shell/Sidebar";
 import { ViewerProvider } from "@/components/shell/ViewerProvider";
 import { PatientSummary } from "@/components/summary/PatientSummary";
-import type { OpenItem, PatientSummary as Summary } from "@/lib/summary";
+import { ageOf, type OpenItem, type PatientSummary as Summary } from "@/lib/summary";
 import { SHIPPED_STAGE } from "@/lib/stages";
 import { NO_MODULES } from "@/lib/modules/types";
 import { userWith } from "./fixtures";
@@ -41,34 +42,42 @@ function renderAs(jobTitle: "clinician" | "secretary", ui: React.ReactNode) {
 describe("Open Items", () => {
   beforeEach(() => { vi.clearAllMocks(); api.request.mockResolvedValue(undefined); });
 
-  it("lets a clinician act on each: Seen with a note, Attribute from a choice", async () => {
+  it("act in one click, or through a small popover when they need a note or a choice", async () => {
     const onActed = vi.fn();
-    renderAs("clinician", <OpenItemList items={[DIFFERING, UNATTRIBUTED]} onActed={onActed} />);
-    const differing = screen.getByText("BRAF V600E results differ").closest("li")!;
-    fireEvent.change(within(differing).getByLabelText("Note (optional)"), { target: { value: "Discussed at MDT" } });
-    fireEvent.click(within(differing).getByRole("button", { name: "Seen" }));
+    renderAs("clinician", <OpenItemTable items={[NEXT_STEP, DIFFERING, UNATTRIBUTED]} onActed={onActed} />);
+    fireEvent.click(within(screen.getByText("Discuss lung nodule at MDT").closest("tr")!).getByRole("button", { name: "Mark done" }));
+    await waitFor(() => expect(api.request).toHaveBeenCalledWith(NEXT_STEP.actions[0]!.path, { method: "POST", body: "{}" }));
+    fireEvent.click(within(screen.getByText("BRAF V600E results differ").closest("tr")!).getByRole("button", { name: "Seen" }));
+    const seen = await screen.findByRole("dialog", { name: "Seen" });
+    fireEvent.change(within(seen).getByLabelText("Note (optional)"), { target: { value: "Discussed at MDT" } });
+    fireEvent.click(within(seen).getByRole("button", { name: "Seen" }));
     await waitFor(() => expect(api.request).toHaveBeenCalledWith(DIFFERING.actions[0]!.path, { method: "POST", body: JSON.stringify({ note: "Discussed at MDT" }) }));
-    const unattributed = screen.getByText(/not attributed/).closest("li")!;
-    fireEvent.change(within(unattributed).getByLabelText("Attribute to"), { target: { value: "cd-2" } });
+    fireEvent.click(within(screen.getByText(/not attributed/).closest("tr")!).getByRole("button", { name: "Attribute" }));
+    const attribute = await screen.findByRole("dialog", { name: "Attribute" });
+    expect(within(attribute).getByRole("button", { name: "Attribute" })).toBeDisabled();
+    fireEvent.change(within(attribute).getByLabelText("Attribute to"), { target: { value: "cd-2" } });
+    fireEvent.click(within(attribute).getByRole("button", { name: "Attribute" }));
     await waitFor(() => expect(api.request).toHaveBeenCalledWith(UNATTRIBUTED.actions[0]!.path, { method: "POST", body: JSON.stringify({ cancer_diagnosis_id: "cd-2" }) }));
-    expect(onActed).toHaveBeenCalledTimes(2);
+    expect(onActed).toHaveBeenCalledTimes(3);
   });
 
-  it("asks why before ruling out, and draws each kind with its own icon and who can act", async () => {
+  it("put a second action behind ⋯, and ask why before ruling out", async () => {
     const recurrence: OpenItem = { ...DIFFERING, type: "suspected_recurrence", type_label: "Suspected Recurrence", icon: "alert", title: "Suspected Recurrence of Melanoma",
-      actions: [{ label: "Rule out", path: "/patients/pt-1/recurrences/r-1/rule-out", input: "reason", field: null, choices: [] }] };
-    renderAs("clinician", <OpenItemList items={[recurrence]} onActed={vi.fn()} />);
-    const row = screen.getByText("Suspected Recurrence of Melanoma").closest("li")!;
-    expect(row).toHaveTextContent("Clinician only");
-    expect(row.querySelector("svg")).not.toBeNull();
-    const ruleOut = within(row).getByRole("button", { name: "Rule out" });
-    expect(ruleOut).toBeDisabled();
-    fireEvent.change(within(row).getByLabelText("Why (rule out)"), { target: { value: "Benign on biopsy" } });
-    fireEvent.click(ruleOut);
+      actions: [{ label: "Confirm", path: "/patients/pt-1/recurrences/r-1/confirm", input: "none", field: null, choices: [] },
+        { label: "Rule out", path: "/patients/pt-1/recurrences/r-1/rule-out", input: "reason", field: null, choices: [] }] };
+    renderAs("clinician", <OpenItemCards items={[recurrence]} onActed={vi.fn()} />);
+    const card = screen.getByText("Suspected Recurrence of Melanoma").closest("li")!;
+    expect(within(card).getByText("Suspected Recurrence").querySelector("svg")).not.toBeNull();
+    fireEvent.click(within(card).getByRole("button", { name: "More actions: Suspected Recurrence of Melanoma" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Rule out" }));
+    const dialog = await screen.findByRole("dialog", { name: "Rule out" });
+    expect(within(dialog).getByRole("button", { name: "Rule out" })).toBeDisabled();
+    fireEvent.change(within(dialog).getByLabelText("Why (required)"), { target: { value: "Benign on biopsy" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Rule out" }));
     await waitFor(() => expect(api.request).toHaveBeenCalledWith("/patients/pt-1/recurrences/r-1/rule-out", { method: "POST", body: JSON.stringify({ reason: "Benign on biopsy" }) }));
   });
 
-  it("shows a secretary clinician-only items as 'Needs clinician', and lets them mark a Next Step done", () => {
+  it("show a secretary clinician-only items as 'Needs clinician', and let them mark a Next Step done", () => {
     renderAs("secretary", <OpenItemList items={[NEXT_STEP, DIFFERING]} onActed={vi.fn()} />);
     const differing = screen.getByText("BRAF V600E results differ").closest("li")!;
     expect(within(differing).queryByRole("button", { name: "Seen" })).not.toBeInTheDocument();
@@ -76,26 +85,38 @@ describe("Open Items", () => {
     expect(within(screen.getByText("Discuss lung nodule at MDT").closest("li")!).getByRole("button", { name: "Mark done" })).toBeInTheDocument();
   });
 
-  it("never offers a dismiss or snooze", () => {
-    renderAs("clinician", <OpenItemList items={[NEXT_STEP, DIFFERING, UNATTRIBUTED]} onActed={vi.fn()} />);
+  it("never offer a dismiss or snooze", () => {
+    renderAs("clinician", <OpenItemTable items={[NEXT_STEP, DIFFERING, UNATTRIBUTED]} onActed={vi.fn()} />);
     expect(screen.queryByRole("button", { name: /dismiss|snooze|hide/i })).not.toBeInTheDocument();
+  });
+
+  it("say how long each has waited, or when a Next Step is due", () => {
+    const today = new Date(2026, 8, 27);
+    expect(ageOf({ type: "next_step", dated: "2026-09-30" }, today)).toBe("due 3 d");
+    expect(ageOf({ type: "next_step", dated: "2026-09-25" }, today)).toBe("2 d overdue");
+    expect(ageOf({ type: "differing_biomarker_results", dated: "2026-09-20" }, today)).toBe("7 d");
+    expect(ageOf({ type: "differing_biomarker_results", dated: "2026-02-20" }, today)).toBe("7 mo");
   });
 });
 
 describe("Dashboard", () => {
-  beforeEach(() => { vi.clearAllMocks(); api.request.mockImplementation(async (path: string) => (path === "/open-items" ? [NEXT_STEP, DIFFERING, UNATTRIBUTED] : undefined)); });
+  beforeEach(() => { vi.clearAllMocks(); api.request.mockImplementation(async (path: string) => (path === "/open-items" ? [NEXT_STEP, DIFFERING, UNATTRIBUTED] : path === "/refreshes" ? [] : null)); });
 
-  it("lists the Practice's Open Items with their Patients, filtered by type and by who can act", async () => {
+  it("lists the Practice's Open Items as a table with their Patients, filtered by type and by who can act", async () => {
     renderAs("secretary", <Dashboard />);
-    expect((await screen.findAllByRole("link", { name: "Robin Sample" }))[0]).toHaveAttribute("href", "/patients/pt-1/summary");
-    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    const table = await screen.findByRole("table", { name: "Open Items" });
+    expect(screen.getByText("3 across the practice")).toBeInTheDocument();
+    expect(within(table).getAllByRole("link", { name: "Robin Sample" })[0]).toHaveAttribute("href", "/patients/pt-1/summary");
+    const rows = () => within(screen.getByRole("table", { name: "Open Items" })).getAllByRole("row").slice(1);
+    expect(rows()).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "Differing Biomarker Results (1)" }));
-    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(rows()).toHaveLength(1);
     fireEvent.click(screen.getByRole("button", { name: "All (3)" }));
     fireEvent.click(screen.getByRole("button", { name: "I can act" }));
-    expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual([expect.stringContaining("Discuss lung nodule at MDT")]);
+    expect(rows().map((row) => row.textContent)).toEqual([expect.stringContaining("Discuss lung nodule at MDT")]);
     fireEvent.click(screen.getByRole("button", { name: "Clinician only" }));
-    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(rows()).toHaveLength(2);
+    expect(screen.getByRole("region", { name: "Reference data" })).toHaveTextContent("PBS Schedule");
   });
 });
 
@@ -155,4 +176,15 @@ describe("Patient Summary", () => {
 
 describe("Stage 5", () => {
   it("has shipped", () => expect(SHIPPED_STAGE).toBe(5));
+});
+
+describe("The Dashboard's count in the sidebar", () => {
+  it("counts only the Open Items this User can act on, and none for the developer admin", async () => {
+    api.request.mockImplementation(async (path: string) => (path === "/open-items" ? [NEXT_STEP, DIFFERING, UNATTRIBUTED] : null));
+    const { unmount } = render(<Sidebar jobTitle="secretary" pathname="/dashboard" expanded showUpcoming={false} />);
+    expect(await screen.findByLabelText("1 Open Items you can act on")).toBeInTheDocument();
+    unmount();
+    render(<Sidebar jobTitle="clinician" pathname="/dashboard" expanded showUpcoming={false} />);
+    expect(await screen.findByLabelText("3 Open Items you can act on")).toBeInTheDocument();
+  });
 });
