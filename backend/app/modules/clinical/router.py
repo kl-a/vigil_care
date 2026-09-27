@@ -8,7 +8,7 @@ from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
 from app.modules.clinical import conditions, entry, imaging, labs, plan_and_notes, treatment_courses
 from app.modules.clinical.schemas import (
-    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, FindingChange, FindingRow, ImagingStudyChange,
+    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, FindingAttribution, FindingChange, FindingRow, ImagingStudyChange,
     ImagingStudyRow, LabPanelRow, LabResultChange, LabResultRow,
     ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewFinding, NewImagingStudy, NewLabPanel, NewManagementPlan,
     NewNextStep, NewTreatmentCourse, NextStepChange, NextStepRow, TreatmentCourseChange, TreatmentCourseRow,
@@ -352,3 +352,18 @@ def remove_finding(patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.
     except tuple(_MISSING) as error:
         raise _missing(error) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(STUDY_PATH + "/findings/{finding_id}/attribute")
+def attribute_finding(
+    patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.UUID, attribution: FindingAttribution, actor: SignedIn, db: Db
+) -> FindingRow:
+    """Clinicians only: which Condition an unattributed Finding belongs to."""
+    try:
+        return imaging.attribute_finding(db, actor, patient_id, study_id, finding_id, attribution.condition_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except imaging.NoSuchCondition as error:
+        raise _invalid(error) from None
+    except imaging.AlreadyAttributed as error:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from None

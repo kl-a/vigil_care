@@ -4,9 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { IdentityFields } from "@/components/patients/PatientOverview";
+import { useViewer } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import { createPatient, formatDob, IDENTITY_FIELDS, listPatients, type IdentityField, type NewPatient, type PatientRow } from "@/lib/patients";
+import { isVisible } from "@/lib/stages";
+import { fetchOpenItems } from "@/lib/summary";
 import { formatWhen } from "@/lib/users";
 
 /** Patient List (design doc §5 screen 3, #8). The Cancer Type filter arrives with Stage 4. */
@@ -16,6 +19,16 @@ export default function PatientsPage() {
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [adding, setAdding] = useState(false);
+  const { showUpcoming } = useViewer();
+  // Open Items per Patient ship with Stage 5 (#48): counted from the Practice's queue.
+  const withOpenItems = isVisible({ stage: 5, built: true }, showUpcoming);
+  const [openItems, setOpenItems] = useState<Map<string, number> | null>(null);
+  useEffect(() => {
+    if (!withOpenItems) return;
+    fetchOpenItems()
+      .then((items) => setOpenItems(items.reduce((counts, i) => counts.set(i.patient_id, (counts.get(i.patient_id) ?? 0) + 1), new Map<string, number>())))
+      .catch(() => setOpenItems(null));
+  }, [withOpenItems]);
 
   useEffect(() => {
     listPatients(q).then(setPatients).catch((reason: unknown) => setError(messageOf(reason)));
@@ -46,6 +59,7 @@ export default function PatientsPage() {
                 <th className="px-3 py-2 font-medium">DOB (age)</th>
                 <th className="px-3 py-2 font-medium">MRN</th>
                 <th className="px-3 py-2 font-medium">Pseudonym</th>
+                {withOpenItems && <th className="px-3 py-2 font-medium">Open Items</th>}
                 <th className="px-3 py-2 font-medium">Last updated</th>
               </tr>
             </thead>
@@ -56,6 +70,7 @@ export default function PatientsPage() {
                   <td className="whitespace-nowrap px-3 py-2">{formatDob(patient.dob)}</td>
                   <td className="px-3 py-2 font-mono text-xs">{patient.mrn ?? "—"}</td>
                   <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{patient.pseudonym}</td>
+                  {withOpenItems && <td className="px-3 py-2 tabular-nums">{openItems ? openItems.get(patient.id) ?? 0 : "—"}</td>}
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">{formatWhen(patient.updated_at)}</td>
                 </tr>
               ))}

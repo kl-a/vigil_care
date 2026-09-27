@@ -234,6 +234,26 @@ export interface paths {
         patch: operations["set_module_active_modules__key__patch"];
         trace?: never;
     };
+    "/open-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Practice Open Items
+         * @description The Practice's queue for the Dashboard, filtered by type and by who can act.
+         */
+        get: operations["practice_open_items_open_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients": {
         parameters: {
             query?: never;
@@ -378,6 +398,26 @@ export interface paths {
         put?: never;
         /** Move Biomarker */
         post: operations["move_biomarker_patients__patient_id__cancer_diagnoses__diagnosis_id__biomarkers__biomarker_id__move_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/cancer-diagnoses/{diagnosis_id}/biomarkers/{biomarker_id}/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Biomarker Seen
+         * @description Clinicians only: Differing Biomarker Results seen (clears their Open Item until a later result).
+         */
+        post: operations["mark_biomarker_seen_patients__patient_id__cancer_diagnoses__diagnosis_id__biomarkers__biomarker_id__seen_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -547,6 +587,27 @@ export interface paths {
         patch: operations["change_condition_patients__patient_id__conditions__condition_id__patch"];
         trace?: never;
     };
+    "/patients/{patient_id}/diagnosis-updated": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Diagnosis Updated
+         * @description When the Diagnosis section was last updated: the newest Verification of its Cancer Diagnoses, Biomarkers
+         *     and Recurrences.
+         */
+        get: operations["diagnosis_updated_patients__patient_id__diagnosis_updated_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients/{patient_id}/identity": {
         parameters: {
             query?: never;
@@ -636,6 +697,26 @@ export interface paths {
         head?: never;
         /** Change Finding */
         patch: operations["change_finding_patients__patient_id__imaging_studies__study_id__findings__finding_id__patch"];
+        trace?: never;
+    };
+    "/patients/{patient_id}/imaging-studies/{study_id}/findings/{finding_id}/attribute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attribute Finding
+         * @description Clinicians only: which Condition an unattributed Finding belongs to.
+         */
+        post: operations["attribute_finding_patients__patient_id__imaging_studies__study_id__findings__finding_id__attribute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/patients/{patient_id}/inactive-module-facts": {
@@ -924,6 +1005,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/{patient_id}/open-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Patient Open Items
+         * @description Soonest first.
+         */
+        get: operations["patient_open_items_patients__patient_id__open_items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients/{patient_id}/performance-status": {
         parameters: {
             query?: never;
@@ -1122,6 +1223,26 @@ export interface paths {
          * @description Clinicians only: their direction counts instead, with why.
          */
         post: operations["override_response_assessment_patients__patient_id__response_assessments__assessment_id__override_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{patient_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Summary
+         * @description The Core's sections of the Patient Summary, each with when it was last updated.
+         */
+        get: operations["summary_patients__patient_id__summary_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1763,6 +1884,16 @@ export interface components {
             /** Start Date */
             start_date: string | null;
         };
+        /** Choice */
+        Choice: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
         /** ClinicalNoteChange */
         ClinicalNoteChange: {
             /** Author Provider Id */
@@ -2020,6 +2151,14 @@ export interface components {
              */
             job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
         };
+        /** FindingAttribution */
+        FindingAttribution: {
+            /**
+             * Condition Id
+             * Format: uuid
+             */
+            condition_id: string;
+        };
         /** FindingChange */
         FindingChange: {
             /** Condition Id */
@@ -2127,6 +2266,17 @@ export interface components {
             reason: string | null;
             /** Reauthenticated */
             reauthenticated: boolean;
+        };
+        /**
+         * HistorySection
+         * @description Medical History: Comorbidities (Conditions no Specialty Module extends) and current Medications.
+         */
+        HistorySection: {
+            /** Comorbidities */
+            comorbidities: components["schemas"]["ConditionRow"][];
+            /** Medications */
+            medications: components["schemas"]["MedicationRow"][];
+            updated: components["schemas"]["LastUpdated"] | null;
         };
         /**
          * IdentityChange
@@ -2376,6 +2526,33 @@ export interface components {
             value_text: string | null;
         };
         /**
+         * LastUpdated
+         * @description The Verification of a section's newest value: who, their Job Title then, when, what they did, and to what.
+         */
+        LastUpdated: {
+            /** Action */
+            action: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** By */
+            by: string;
+            /**
+             * Job Title
+             * @enum {string}
+             */
+            job_title: "clinician" | "trial_coordinator" | "secretary" | "developer_admin";
+            /**
+             * Subject Id
+             * Format: uuid
+             */
+            subject_id: string;
+            /** Subject Table */
+            subject_table: string;
+        };
+        /**
          * LineOfTherapy
          * @description A palliative systemic course's Line of Therapy: derived by start date, unless a clinician set it.
          */
@@ -2437,6 +2614,16 @@ export interface components {
             plan_date: string | null;
             /** Plan Text */
             plan_text: string;
+        };
+        /**
+         * ManagementSection
+         * @description The current Management Plan, verbatim, and the Next Steps not yet done.
+         */
+        ManagementSection: {
+            /** Next Steps */
+            next_steps: components["schemas"]["NextStepRow"][];
+            plan: components["schemas"]["ManagementPlanRow"] | null;
+            updated: components["schemas"]["LastUpdated"] | null;
         };
         /**
          * MedicationChange
@@ -3111,6 +3298,86 @@ export interface components {
              */
             kind: "rescan" | "mdt" | "trial_window" | "review" | "other";
         };
+        /** NotesSection */
+        NotesSection: {
+            latest_letter: components["schemas"]["ClinicalNoteRow"] | null;
+            latest_note: components["schemas"]["ClinicalNoteRow"] | null;
+            updated: components["schemas"]["LastUpdated"] | null;
+        };
+        /**
+         * OpenItem
+         * @description Something someone must act on for a Patient. Derived each time; clears only when acted on.
+         */
+        OpenItem: {
+            /** Actions */
+            actions: components["schemas"]["OpenItemAction"][];
+            /** Dated */
+            dated?: string | null;
+            /** Detail */
+            detail?: string | null;
+            /**
+             * Icon
+             * @enum {string}
+             */
+            icon: "calendar" | "compare" | "help" | "scan" | "alert";
+            /**
+             * Open Tab
+             * @default clinical-data
+             */
+            open_tab: string;
+            /**
+             * Patient Id
+             * Format: uuid
+             */
+            patient_id: string;
+            /**
+             * Patient Name
+             * @default
+             */
+            patient_name: string;
+            /**
+             * Subject Id
+             * Format: uuid
+             */
+            subject_id: string;
+            /** Subject Table */
+            subject_table: string;
+            /** Title */
+            title: string;
+            /** Type */
+            type: string;
+            /** Type Label */
+            type_label: string;
+            /**
+             * Who
+             * @enum {string}
+             */
+            who: "staff" | "clinician";
+        };
+        /**
+         * OpenItemAction
+         * @description What clears an Open Item: a POST to the API, made as the User acting. `input` says what the User adds:
+         *     nothing, an optional `note`, a required `reason`, or one of `choices` sent as `field`.
+         */
+        OpenItemAction: {
+            /**
+             * Choices
+             * @default []
+             */
+            choices: components["schemas"]["Choice"][];
+            /** Field */
+            field?: string | null;
+            /**
+             * Input
+             * @default none
+             * @enum {string}
+             */
+            input: "none" | "note" | "reason" | "choose";
+            /** Label */
+            label: string;
+            /** Path */
+            path: string;
+        };
         /**
          * PatientDetail
          * @description The Patient header and Overview's identity card, with the identity's audit trail (newest first).
@@ -3152,6 +3419,20 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /**
+         * PatientSummary
+         * @description The Core's sections of the Patient Summary. Registration comes from the Patient; Diagnosis from the
+         *     Specialty Modules' own sections.
+         */
+        PatientSummary: {
+            history: components["schemas"]["HistorySection"];
+            management: components["schemas"]["ManagementSection"];
+            notes: components["schemas"]["NotesSection"];
+            /** Open Items */
+            open_items: components["schemas"]["OpenItem"][];
+            results: components["schemas"]["ResultsSection"];
+            treatment: components["schemas"]["TreatmentSection"];
         };
         /** PbsDrug */
         PbsDrug: {
@@ -3650,10 +3931,33 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /**
+         * ResultsSection
+         * @description Most Recent Results: each analyte's latest value (flagged), its trend, and the latest scans.
+         */
+        ResultsSection: {
+            /** Lab Trends */
+            lab_trends: {
+                [key: string]: components["schemas"]["TrendPoint"][];
+            };
+            /** Latest Labs */
+            latest_labs: components["schemas"]["LabResultRow"][];
+            /** Scans */
+            scans: components["schemas"]["ImagingStudyRow"][];
+            updated: components["schemas"]["LastUpdated"] | null;
+        };
         /** RuleOut */
         RuleOut: {
             /** Reason */
             reason: string;
+        };
+        /**
+         * Seen
+         * @description Differing Biomarker Results seen by a clinician, with an optional note.
+         */
+        Seen: {
+            /** Note */
+            note?: string | null;
         };
         /**
          * SiteChange
@@ -3772,6 +4076,25 @@ export interface components {
             regimen_name?: string | null;
             /** Start Date */
             start_date?: string | null;
+        };
+        /**
+         * TreatmentSection
+         * @description Recent Treatment: courses ongoing, or started or ended in the last 6 months.
+         */
+        TreatmentSection: {
+            /** Courses */
+            courses: components["schemas"]["TreatmentCourseRow"][];
+            updated: components["schemas"]["LastUpdated"] | null;
+        };
+        /** TrendPoint */
+        TrendPoint: {
+            /**
+             * Collected At
+             * Format: date-time
+             */
+            collected_at: string;
+            /** Value */
+            value: string;
         };
         /**
          * UserChange
@@ -4173,6 +4496,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModuleStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    practice_open_items_open_items_get: {
+        parameters: {
+            query?: {
+                type?: string | null;
+                who?: ("staff" | "clinician") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenItem"][];
                 };
             };
             /** @description Validation Error */
@@ -4609,6 +4964,41 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["BiomarkerRow"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_biomarker_seen_patients__patient_id__cancer_diagnoses__diagnosis_id__biomarkers__biomarker_id__seen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                diagnosis_id: string;
+                biomarker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Seen"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -5167,6 +5557,37 @@ export interface operations {
             };
         };
     };
+    diagnosis_updated_patients__patient_id__diagnosis_updated_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LastUpdated"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     change_identity_patients__patient_id__identity_patch: {
         parameters: {
             query?: never;
@@ -5423,6 +5844,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["FindingChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attribute_finding_patients__patient_id__imaging_studies__study_id__findings__finding_id__attribute_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+                study_id: string;
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FindingAttribution"];
             };
         };
         responses: {
@@ -6187,6 +6645,37 @@ export interface operations {
             };
         };
     };
+    patient_open_items_patients__patient_id__open_items_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_performance_status_patients__patient_id__performance_status_get: {
         parameters: {
             query?: never;
@@ -6615,6 +7104,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResponseAssessmentRow"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_patients__patient_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                patient_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientSummary"];
                 };
             };
             /** @description Validation Error */

@@ -3,6 +3,8 @@ hand (Cancer Diagnosis in #37, more to come); Document Types, trial vocabulary a
 Stages 9, 10 and 11."""
 
 from app.modules.registry.contract import PatientTab, SpecialtyModule, UiSection
+from app.specialties.oncology.demo_patient import demo_data
+from app.specialties.oncology.open_items import TYPES, open_items
 from app.specialties.oncology.read_only import plain_facts
 from app.specialties.oncology.router import router
 from app.specialties.oncology.verification_rights import ONCOLOGY_FACT_RIGHTS
@@ -23,6 +25,9 @@ MODULE = SpecialtyModule(
         UiSection("cns", "clinical-data-tabs", "CNS", 40),
     ),
     patient_tabs=(PatientTab("treatment-options", "Treatment Options"),),
+    open_item_types=TYPES,
+    open_items=open_items,
+    demo_data=demo_data,
     read_only_view=plain_facts,
     router=router,
 )

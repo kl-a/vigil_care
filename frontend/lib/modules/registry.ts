@@ -5,7 +5,7 @@ import type {
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "overview", label: "Overview", slot: "patient-overview", screen: { number: 4, title: "Patient Overview", purpose: "Clinical profile for one Patient.", stage: 2, built: true } },
-  { segment: "summary", label: "Summary", slot: "patient-summary", screen: { number: 15, title: "Patient Summary", purpose: "The consultation-ready “At a Glance” page.", stage: 5 } },
+  { segment: "summary", label: "Summary", slot: "patient-summary", screen: { number: 15, title: "Patient Summary", purpose: "The consultation-ready “At a Glance” page.", stage: 5, built: true } },
   { segment: "clinical-data", label: "Clinical Data", slot: "clinical-data-tabs", screen: { number: 9, title: "Clinical Data Viewer", purpose: "Longitudinal Clinical Record.", stage: 4, built: true } },
   { segment: "documents", label: "Documents", screen: { title: "Patient Documents", purpose: "This Patient's Documents.", stage: 6 } },
   { segment: "medications", label: "Medications", screen: { number: 10, title: "Medication Manager", purpose: "Medication list with reconciliation.", stage: 4, built: true } },

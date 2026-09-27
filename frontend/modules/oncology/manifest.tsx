@@ -1,13 +1,10 @@
 import type { ModuleManifest } from "@/lib/modules/types";
 import { BiomarkersTab } from "./Biomarkers";
 import { CancerDiagnosesTab, CancerDiagnosisBlocks, NewPrimaryCancer } from "./CancerDiagnoses";
+import { DiagnosisSummary } from "./DiagnosisSummary";
 import { lineOfTherapyExtension } from "./LinesOfTherapy";
 import { CnsTab, PerformanceStatusTab } from "./Observations";
 import { bestResponseExtension, ResponseAssessmentsTab, responseBadgeExtension } from "./ResponseAssessments";
-
-function SectionNote({ text }: { text: string }) {
-  return <p className="text-sm text-muted-foreground">{text}</p>;
-}
 
 /**
  * Oncology's frontend: renderers for the sections and tabs its backend module declares
@@ -27,7 +24,7 @@ export const oncologyManifest: ModuleManifest = {
   sections: {
     "cancer-diagnoses": () => <CancerDiagnosisBlocks />,
     "cancer-diagnosis": () => <CancerDiagnosesTab />,
-    diagnosis: () => <SectionNote text="One block per Cancer Diagnosis: Stage (at diagnosis), Disease Extent (now), Biomarkers, Recurrences." />,
+    diagnosis: () => <DiagnosisSummary />,
     "response-assessments": () => <ResponseAssessmentsTab />,
     biomarkers: () => <BiomarkersTab />,
     "performance-status": () => <PerformanceStatusTab />,

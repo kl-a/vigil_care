@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 
-from app.core.permissions import CLINICAL, CLINICIAN_ONLY, FactRight
+from app.core.permissions import CLINICAL, CLINICIAN_ONE_CLICK, CLINICIAN_ONLY, FactRight
 
 ONCOLOGY_FACT_RIGHTS: Mapping[str, FactRight] = {
     # Row 2.
@@ -19,4 +19,6 @@ ONCOLOGY_FACT_RIGHTS: Mapping[str, FactRight] = {
     "recurrence_attribution": CLINICIAN_ONLY,
     "line_of_therapy_override": CLINICIAN_ONLY,
     "response_assessment_override": CLINICIAN_ONLY,
+    # Row 5: marking Differing Biomarker Results "Seen" (#48).
+    "biomarker_seen": CLINICIAN_ONE_CLICK,
 }

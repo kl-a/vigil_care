@@ -8,11 +8,12 @@ from fastapi import APIRouter, HTTPException, Response, status
 from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
 from app.modules.clinical import entry
-from app.specialties.oncology import biomarkers, cancer_diagnoses, lines_of_therapy, observations, recurrences, response_assessments
+from app.modules.clinical.schemas import LastUpdated
+from app.specialties.oncology import biomarkers, cancer_diagnoses, diagnosis_summary, lines_of_therapy, observations, recurrences, response_assessments
 from app.specialties.oncology.schemas import (
     Attribution, BestResponse, BiomarkerMove, BiomarkerRow, CancerDiagnosisChange, CancerDiagnosisRow, CancerTypeOption, CnsStatusChange, CnsStatusRow,
     LineOfTherapy, LineOverride, NewBiomarker, NewCancerDiagnosis, NewCnsStatus, NewPerformanceStatus, NewRecurrence,
-    NewResponseAssessment, PerformanceStatusRow, RecurrenceRow, ResponseAssessmentRow, ResponseOverride, RuleOut,
+    NewResponseAssessment, PerformanceStatusRow, RecurrenceRow, ResponseAssessmentRow, ResponseOverride, RuleOut, Seen,
 )
 
 router = APIRouter(tags=["oncology"])
@@ -169,6 +170,20 @@ def move_biomarker(
         return biomarkers.move_biomarker(db, actor, patient_id, diagnosis_id, biomarker_id, move)
     except _MISSING:
         raise _not_found() from None
+
+
+@router.post(BIOMARKERS + "/{biomarker_id}/seen", status_code=status.HTTP_204_NO_CONTENT)
+def mark_biomarker_seen(
+    patient_id: uuid.UUID, diagnosis_id: uuid.UUID, biomarker_id: uuid.UUID, seen: Seen, actor: SignedIn, db: Db
+) -> Response:
+    """Clinicians only: Differing Biomarker Results seen (clears their Open Item until a later result)."""
+    try:
+        biomarkers.mark_seen(db, actor, patient_id, diagnosis_id, biomarker_id, (seen.note or "").strip() or None)
+    except _MISSING:
+        raise _not_found() from None
+    except biomarkers.NotDiffering as error:
+        raise _conflict(error) from None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # --- Recurrences (#39) ------------------------------------------------------------------------------------
@@ -331,3 +346,16 @@ def list_best_responses(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> list[
         return response_assessments.best_responses(db, actor, patient_id)
     except _ASSESSMENT_REFUSED as error:
         raise _assessment_refused(error) from None
+
+
+# --- The Patient Summary's Diagnosis section (#47) --------------------------------------------------------
+
+
+@router.get("/patients/{patient_id}/diagnosis-updated")
+def diagnosis_updated(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> LastUpdated | None:
+    """When the Diagnosis section was last updated: the newest Verification of its Cancer Diagnoses, Biomarkers
+    and Recurrences."""
+    try:
+        return diagnosis_summary.last_updated(db, actor, patient_id)
+    except _MISSING:
+        raise _not_found() from None

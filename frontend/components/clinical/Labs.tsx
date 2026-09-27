@@ -135,6 +135,12 @@ export function Labs({ patientId }: { patientId: string }) {
   );
 }
 
+/** A lab result's flag: colour, icon and letter together. None for a normal result. */
+export function LabFlagMark({ flag }: { flag: LabFlag | null | undefined }) {
+  const mark = flag ? FLAG[flag] : undefined;
+  return mark ? <FlagMark flag={mark} /> : null;
+}
+
 function FlagMark({ flag }: { flag: { letter: string; label: string; icon: typeof ArrowDown } }) {
   const Icon = flag.icon;
   return (

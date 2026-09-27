@@ -92,6 +92,8 @@ class FactRight:
 
 CLINICAL = FactRight(frozenset({"clinician", "trial_coordinator"}))
 CLINICIAN_ONLY = FactRight(frozenset({"clinician"}), reauthenticate=True)
+# An acknowledgement, one click with an optional note (decision fatigue, revisit-later #33): no re-authentication.
+CLINICIAN_ONE_CLICK = FactRight(frozenset({"clinician"}))
 
 # Rows 2–3, Core fact kinds. Oncology's rows live in the Oncology module.
 CORE_FACT_RIGHTS: Mapping[str, FactRight] = {
@@ -100,6 +102,8 @@ CORE_FACT_RIGHTS: Mapping[str, FactRight] = {
     "condition": CLINICAL,
     "imaging_study": CLINICAL,
     "finding": CLINICAL,
+    # Attributing a Finding to a Condition after the fact (row 4).
+    "finding_attribution": CLINICIAN_ONLY,
     "clinical_note": CLINICAL,
     "management_plan": CLINICAL,
     "treatment_course": CLINICAL,

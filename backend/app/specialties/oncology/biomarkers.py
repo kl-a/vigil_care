@@ -11,13 +11,15 @@ it never says why or what to do (TGA decision-support line, design doc §1).
 
 import uuid
 from collections import defaultdict
+from datetime import date
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Final
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.audit import service as audit
+from app.audit.models import Verification
 from app.audit.service import Actor
 from app.modules.clinical import entry
 from app.specialties.oncology import access
@@ -29,6 +31,16 @@ SUBJECT = "biomarker"
 # Moving a result to another primary is a Cancer Diagnosis decision: clinicians only (§6.4 row 4).
 MOVE_FACT_KIND = "cancer_diagnosis"
 FIELDS = tuple(NewBiomarker.model_fields)
+# A clinician marks Differing Biomarker Results "Seen" (one click, optional note), which clears their Open Item
+# until a later result arrives (design doc §6.3, revisit-later #30).
+SEEN_FACT_KIND = "biomarker_seen"
+SEEN_ACTION: Final = "accept"
+# Marks the Verification as a "Seen" (other `accept`s, e.g. Extraction Review's from Stage 9, aren't).
+SEEN_MARK = "Differing Biomarker Results"
+
+
+class NotDiffering(ValueError):
+    """Only a result whose Biomarker has differing results is marked Seen."""
 
 
 def _key(biomarker: Biomarker) -> tuple[str, str]:
@@ -53,6 +65,30 @@ def _judge(biomarkers: Iterable[Biomarker]) -> tuple[set[uuid.UUID], set[uuid.UU
         if len({c for b in group if (c := _category(b.result))}) > 1:
             differing.update(b.id for b in group)
     return current, differing
+
+
+def _differing_groups(biomarkers: Iterable[Biomarker]) -> list[list[Biomarker]]:
+    """Each Biomarker and variant of a Cancer Diagnosis whose results differ, oldest result first."""
+    _, differing = _judge(biomarkers)
+    groups: dict[tuple[uuid.UUID, tuple[str, str]], list[Biomarker]] = defaultdict(list)
+    for biomarker in biomarkers:
+        if biomarker.id in differing:
+            groups[(biomarker.cancer_diagnosis_id, _key(biomarker))].append(biomarker)
+    # Results entered in one save share a time: then the later-collected counts as newer.
+    return [sorted(group, key=lambda b: (b.created_at, b.collected_on or date.min)) for group in groups.values()]
+
+
+def unseen_differing(db: Session, practice_id: uuid.UUID, diagnosis_ids: Iterable[uuid.UUID]) -> list[list[Biomarker]]:
+    """Differing results no clinician has marked Seen since the newest of them was entered."""
+    groups = _differing_groups(_all_of(db, practice_id, diagnosis_ids))
+    newest = [group[-1].id for group in groups]
+    seen = set(db.scalars(
+        select(Verification.subject_id).where(
+            Verification.practice_id == practice_id, Verification.subject_table == SUBJECT, Verification.action == SEEN_ACTION,
+            Verification.subject_id.in_(newest), Verification.after["seen"].astext == SEEN_MARK,
+        )
+    )) if newest else set()
+    return [group for group in groups if group[-1].id not in seen]
 
 
 def _all_of(db: Session, practice_id: uuid.UUID, diagnosis_ids: Iterable[uuid.UUID]) -> list[Biomarker]:
@@ -142,6 +178,21 @@ def move_biomarker(
         db.flush()
     rows = _rows(db, actor, _all_of(db, actor.practice_id, [target.id]))
     return next(row for row in rows if row.id == biomarker.id)
+
+
+def mark_seen(
+    db: Session, actor: Actor, patient_id: uuid.UUID, diagnosis_id: uuid.UUID, biomarker_id: uuid.UUID, note: str | None
+) -> None:
+    """A clinician has seen that this result differs from the others; recorded as a Verification, with the note."""
+    access.require_entry(db, actor, patient_id, SEEN_FACT_KIND)
+    diagnosis = access.diagnosis_of(db, actor, patient_id, diagnosis_id)
+    biomarker = _live(db, actor, diagnosis, biomarker_id)
+    _, differing = _judge(_all_of(db, actor.practice_id, [diagnosis.id]))
+    if biomarker.id not in differing:
+        raise NotDiffering("This result doesn't differ from the others.")
+    audit.record_verification(
+        db, actor, subject_table=SUBJECT, subject_id=biomarker.id, action=SEEN_ACTION, after={"seen": SEEN_MARK}, reason=note,
+    )
 
 
 def plain(chip: BiomarkerChip) -> str:

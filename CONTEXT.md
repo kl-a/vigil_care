@@ -181,7 +181,7 @@ _Avoid_: PASS/FAIL, Uncertain criterion
 ### Work
 
 **Open Item**:
-Anything about a Patient that needs a User to act: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step coming due, a Stale Match Run, Differing Biomarker Results, a Suspected Recurrence. Shown per Patient and practice-wide. It clears only when someone acts on what's behind it, never by dismissing it.
+Anything about a Patient that needs a User to act: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step coming due, a Stale Match Run, Differing Biomarker Results, an unattributed Response Assessment or new Finding, a Suspected Recurrence. Shown per Patient and practice-wide. It clears only when someone acts on what's behind it, never by dismissing it.
 _Avoid_: Task, alert, to-do
 
 ### Operations

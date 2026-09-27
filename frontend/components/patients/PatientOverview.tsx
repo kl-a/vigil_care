@@ -6,6 +6,7 @@ import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { SectionSlot } from "@/components/SectionSlot";
 import { Conditions } from "@/components/clinical/Conditions";
 import { InactiveModuleFacts } from "@/components/clinical/InactiveModuleFacts";
+import { PatientOpenItems } from "@/components/openItems/PatientOpenItems";
 import { TreatmentCourses } from "@/components/clinical/TreatmentCourses";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
@@ -30,6 +31,8 @@ export function PatientOverview() {
   const stage4 = isVisible({ stage: 4, built: true }, showUpcoming);
   // The Treatment Course timeline ships with 4b (#40).
   const part4b = stage4 && isPartShipped("4b", showUpcoming);
+  // Open Items ship with Stage 5 (#48).
+  const stage5 = isVisible({ stage: 5, built: true }, showUpcoming);
   const { state, update } = usePatient();
   const [editing, setEditing] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -60,6 +63,7 @@ export function PatientOverview() {
           Shown in full inside Vigil only. It never leaves the Practice; De-identified Exports use the Pseudonym {patient.pseudonym} instead.
         </p>
       </section>
+      {stage5 && <PatientOpenItems patientId={patient.id} />}
       {stage4 && <Conditions patientId={patient.id} />}
       <CareTeam />
       {part4b && <TreatmentCourses patientId={patient.id} compact />}

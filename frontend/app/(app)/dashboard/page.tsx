@@ -1,5 +1,7 @@
-import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
+"use client";
+
+import { Dashboard } from "@/components/dashboard/Dashboard";
 
 export default function Page() {
-  return <ScreenPlaceholder path="/dashboard" />;
+  return <Dashboard />;
 }

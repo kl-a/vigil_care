@@ -283,9 +283,10 @@ Vigil is a **Core** that applies to any specialty, plus **Specialty Modules** th
 | Patient Summary & Clinical Data | UI sections and tabs | Diagnosis block, Biomarkers tab |
 | Trial matching | Its criteria attribute vocabulary and evaluators | `required_biomarker`, `prior_systemic_lines` |
 | Treatment Options (optional) | A Treatment Option source | eviQ + PBS |
-| Open Items | Extra Open Item types | Differing Biomarker Results, Suspected Recurrences |
+| Open Items | Extra Open Item types, each with the actions that clear it; raised only while the module is active (#48) | Differing Biomarker Results, Suspected Recurrences |
 | API | Its own router, mounted for every installed module; its services refuse Practices where it isn't active (#37) | `/cancer-types`, `/patients/{id}/cancer-diagnoses` |
 | Read-only view | Its recorded facts in plain words, shown by the Core when it's inactive (ADR 0004, amended; #35) | "Breast cancer: Stage IIA (TNM) at diagnosis, 1 Mar 2024; metastatic" |
+| Demo data | Its records for the synthetic demo Practice (dev only), entered through its own services (#46) | Robin Sample's full Clinical Record |
 
 2. **Module registry.** The Core discovers modules only through the registry and **never imports a module**. Modules may import the Core's public service interfaces, never another module.
 3. **Strategy per extension point.** For example, the Treatment Options screen asks the registry "which source applies to this Condition?", and the owning module answers. *(Built with each extension point's first behaviour; the Treatment Options lookup in Stage 11. The contract, registry and Builder exist from Stage 1, #15.)*
@@ -721,7 +722,7 @@ Who may verify each kind of value. `extracted_fact.required_job_title` is set fr
 | Patient Identity, Care Team, Document Type, redaction review, holding a Document, **Next Steps** (add, mark done, correct or remove with a reason) | ✅ | ✅ | ✅ | ❌ |
 | Lab results, Medications, Conditions (non-cancer), Imaging studies, Findings, *(Oncology)* Performance status, CNS status, Clinical notes, Management Plan | ✅ | ✅ | ❌ | ❌ |
 | Treatment Courses, *(Oncology)* Biomarkers, recording a Suspected Recurrence | ✅ | ✅ | ❌ | ❌ |
-| *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution (confirm, new primary instead, rule out), Response Assessment overrides and attribution, Line of Therapy overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
+| Attributing a Finding to a Condition after it was entered; *(Oncology)* Cancer Diagnosis, Stage, Disease Extent, Recurrence attribution (confirm, new primary instead, rule out), Response Assessment overrides and attribution, Line of Therapy overrides | ✅ (re-authentication required) | ❌ | ❌ | ❌ |
 | *(Oncology)* Marking Differing Biomarker Results "Seen" (one click, optional note) | ✅ | ❌ | ❌ | ❌ |
 | Sign-off on an Identified Export | ✅ | ✅ | ✅ | ❌ |
 | Sign-off on a De-identified Export | ✅ | ✅ | ✅ | ❌ |
@@ -1233,9 +1234,12 @@ GET    /match-runs/{id}                     Results + Criterion Results
 GET    /match-runs/{id}/diff?vs={other_id}
 
 # Patient Summary & Open Items
-GET    /patients/{id}/summary               Full "At a Glance" payload
-GET    /patients/{id}/open-items
-GET    /open-items                          Practice-wide (filter by type, actionable-by Job Title)
+GET    /patients/{id}/summary               The Core's sections (Most Recent Results, Recent Treatment, Clinical Notes, Management, Medical History, Open Items), each with its "last updated" Verification
+GET    /patients/{id}/diagnosis-updated     (Oncology) The Diagnosis section's "last updated"
+GET    /patients/{id}/open-items            Derived, soonest first; each item carries the actions that clear it
+GET    /open-items                          Practice-wide, each with its Patient (?type=, ?who=staff|clinician)
+POST   /patients/{id}/cancer-diagnoses/{cd}/biomarkers/{b}/seen   (Oncology) Differing Biomarker Results "Seen", optional note (clinician)
+POST   /patients/{id}/imaging-studies/{s}/findings/{f}/attribute  Attribute a Finding to a Condition (clinician)
 
 # Reports & Exports
 POST   /patients/{id}/reports               Generate report (type + template)
