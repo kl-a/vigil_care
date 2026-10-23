@@ -1462,6 +1462,14 @@ vigil/
 
 > **Current status and ticket order:** [build-order.md](build-order.md).
 
+> **Re-planned 2026-10-23 (supersedes the Stage 6–13 order below).** The MVP is the core product only: a Patient's documents in, a **Trial Briefing** out (§11, CONTEXT.md). Work is agile: the thinnest end-to-end version first, then reinforced iteration by iteration.
+> - **MVP-1 · Briefing round trip:** a ClinicalTrials.gov Refresh Job stores trial snapshots; extraction and matching run in a Claude Project on synthetic documents following §11; Vigil imports the run JSON into the Clinical Record (provenance "imported", unverified) and a Match Run, and shows it on the Patient's Trials tab.
+> - **MVP-2 · In-app pipeline:** Document upload, a thin privacy gate (pseudonymised text through the LLM gateway and the `cloud_request` ledger, User-initiated; image masking later), in-app extraction, then the full §11 engine (parsing, deterministic pre-filters, adjudication), each step measured against the MVP-1 runs.
+> - **Then:** Briefing quality, OCR, per-fact Extraction Review, Treatment Options, more Cancer Types, GP referrals and other specialties' reports, ANZCTR and staleness, the full trust gate (Stage 7's content), polish, Exports and login hardening.
+> - On MVP code paths, Job Title checks, Verification reasons, audit wiring and grants are deferred; the privacy invariant (G2, §13) is not.
+>
+> The order in [build-order.md](build-order.md) is the live one. The stages below describe content that returns in that order.
+
 > **Principle (2026-09-25):** every stage ends with something a stakeholder can see and use. Each stage finishes with a **stage demo**: a short written script run from a laptop in dev against the synthetic demo Practice (`make demo-data`), shown to Dr De Souza, practice staff or anyone else we're presenting to. Nothing is hosted until the Azure move ([ADR 0003](adr/0003-local-mvp-with-cloud-seams.md)).
 >
 > **Rules:**

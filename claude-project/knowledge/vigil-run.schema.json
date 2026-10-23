@@ -1,0 +1,2173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vigil.local/schemas/vigil-run/1",
+  "title": "Vigil run",
+  "description": "One extraction + matching run for one Patient. The Trial Briefing is rendered from this JSON. Vigil imports it into the Clinical Record (unverified) and a Match Run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run",
+    "patient",
+    "documents",
+    "clinical_record",
+    "gaps",
+    "snapshot",
+    "trials",
+    "not_shown"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1"
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prompt_version",
+        "model",
+        "generated_on",
+        "trial_export_id",
+        "target_cancer_diagnosis_ref"
+      ],
+      "properties": {
+        "prompt_version": {
+          "const": "vigil-run-prompt@1"
+        },
+        "model": {
+          "type": "string"
+        },
+        "generated_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "trial_export_id": {
+          "type": "string",
+          "description": "The export_id from the trial export file used; every trial below must come from it"
+        },
+        "target_cancer_diagnosis_ref": {
+          "type": "string",
+          "description": "ref of the Cancer Diagnosis the trials are matched for (the target Condition)"
+        }
+      }
+    },
+    "patient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "given_name",
+        "family_name",
+        "dob",
+        "sex_at_birth",
+        "suburb",
+        "state",
+        "postcode"
+      ],
+      "properties": {
+        "given_name": {
+          "type": "string"
+        },
+        "family_name": {
+          "type": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "date"
+        },
+        "sex_at_birth": {
+          "enum": [
+            "female",
+            "male",
+            "intersex",
+            "not_stated"
+          ]
+        },
+        "suburb": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "postcode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "doc_id",
+          "document_type",
+          "document_date",
+          "title"
+        ],
+        "properties": {
+          "doc_id": {
+            "type": "string"
+          },
+          "document_type": {
+            "enum": [
+              "radiology_ct",
+              "radiology_mri",
+              "radiology_pet_ct",
+              "radiology_bone_scan",
+              "pathology_histology",
+              "pathology_molecular",
+              "labs_haematology",
+              "labs_chemistry",
+              "labs_tumour_markers",
+              "clinical_letter",
+              "medication_list",
+              "surgical_report",
+              "radiation_report",
+              "other"
+            ]
+          },
+          "document_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "clinical_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "conditions",
+        "cancer_diagnoses",
+        "biomarkers",
+        "recurrences",
+        "treatment_courses",
+        "medications",
+        "lab_results",
+        "imaging_studies",
+        "findings",
+        "response_assessments",
+        "performance_status",
+        "cns_status",
+        "management_plans",
+        "clinical_notes"
+      ],
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "description": "Comorbidities and other diagnoses that are not cancers (cancers go in cancer_diagnoses)",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "name",
+              "status"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "resolved"
+                ]
+              },
+              "onset_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "notes": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "cancer_diagnoses": {
+          "type": "array",
+          "description": "Every cancer, current or past (a past melanoma counts: it is an 'other malignancy' for trials)",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "cancer_type_key",
+              "name",
+              "disease_extent",
+              "cancer_status"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "cancer_type_key": {
+                "type": "string",
+                "description": "Vigil Cancer Type key, e.g. nsclc, sclc, breast, colorectal, melanoma; 'other' if none fits"
+              },
+              "name": {
+                "type": "string"
+              },
+              "histology": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "primary_site": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "laterality": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "left",
+                      "right",
+                      "bilateral",
+                      "midline"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "dx_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stage_system": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "stage": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "disease_extent": {
+                "enum": [
+                  "localised",
+                  "locally_advanced",
+                  "metastatic",
+                  "unknown"
+                ]
+              },
+              "disease_extent_as_of": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cancer_status": {
+                "enum": [
+                  "active",
+                  "no_evidence_of_disease",
+                  "unknown"
+                ]
+              }
+            }
+          }
+        },
+        "biomarkers": {
+          "type": "array",
+          "description": "One row per biomarker result (negatives matter: ALK negative is a result)",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "cancer_diagnosis_ref",
+              "name"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "cancer_diagnosis_ref": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "description": "Gene or marker, e.g. EGFR, ALK, ROS1, KRAS, MET, PD-L1, HER3"
+              },
+              "variant": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "result": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "description": "e.g. detected, not detected, amplified, positive, negative, equivocal"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "value_num": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "value_unit": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "method": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "NGS",
+                      "FISH",
+                      "IHC",
+                      "PCR",
+                      "ctDNA"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "specimen_site": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "specimen_kind": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "primary",
+                      "metastasis",
+                      "liquid_biopsy"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "collected_on": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reported_on": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "recurrences": {
+          "type": "array",
+          "description": "Recurrences of a cancer",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "cancer_diagnosis_ref",
+              "status"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "cancer_diagnosis_ref": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "suspected",
+                  "confirmed"
+                ]
+              },
+              "detected_on": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "extent": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "local",
+                      "regional",
+                      "distant"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "sites": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "treatment_courses": {
+          "type": "array",
+          "description": "Each systemic, surgical or radiation course, oldest first",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "cancer_diagnosis_ref",
+              "modality"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "cancer_diagnosis_ref": {
+                "type": "string"
+              },
+              "modality": {
+                "enum": [
+                  "systemic",
+                  "surgery",
+                  "radiation"
+                ]
+              },
+              "intent": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "curative",
+                      "neoadjuvant",
+                      "adjuvant",
+                      "palliative"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "regimen_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "drugs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "start_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "end_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason_stopped": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "line_of_therapy": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Only for palliative systemic courses"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "best_response": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "responding",
+                      "stable",
+                      "progressing"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "medications": {
+          "type": "array",
+          "description": "Current and recent medications",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "drug_name_raw",
+              "status"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "drug_name_raw": {
+                "type": "string"
+              },
+              "generic_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "dose_display": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "frequency": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "daily",
+                      "twice_daily",
+                      "three_times_daily",
+                      "weekly",
+                      "fortnightly",
+                      "monthly",
+                      "prn",
+                      "stat",
+                      "other"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "route": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "oral",
+                      "iv",
+                      "subcut",
+                      "im",
+                      "topical",
+                      "inhaled",
+                      "pr",
+                      "other"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "indication": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "category": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "cancer_treatment",
+                      "supportive_care",
+                      "comorbidity_management",
+                      "supplement",
+                      "other"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "discontinued",
+                  "on_hold",
+                  "completed",
+                  "unknown"
+                ]
+              },
+              "start_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "end_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "treatment_course_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "lab_results": {
+          "type": "array",
+          "description": "One row per analyte per collection",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "analyte",
+              "collected_at"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "analyte": {
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "value_text": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "unit": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ref_low": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ref_high": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "flag": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "low",
+                      "normal",
+                      "high",
+                      "critical"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "collected_at": {
+                "type": "string",
+                "description": "ISO date or date-time"
+              },
+              "panel": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "imaging_studies": {
+          "type": "array",
+          "description": "Each imaging report",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "modality",
+              "study_date"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "modality": {
+                "type": "string",
+                "description": "CT, MRI, PET-CT, bone scan, X-ray, ultrasound"
+              },
+              "body_region": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "study_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "impression": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "comparison_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "findings": {
+          "type": "array",
+          "description": "Lesions and other findings within an imaging study",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "imaging_study_ref",
+              "description"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "imaging_study_ref": {
+                "type": "string"
+              },
+              "cancer_diagnosis_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "site": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "laterality": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "size_mm": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "suv_max": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "is_new": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "is_measurable": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "response_assessments": {
+          "type": "array",
+          "description": "Response stated by a radiology report or a clinician",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "assessed_on",
+              "direction",
+              "source"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "enum": [
+                  "radiology_report",
+                  "clinician"
+                ]
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "cancer_diagnosis_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "assessed_on": {
+                "type": "string",
+                "format": "date"
+              },
+              "direction": {
+                "enum": [
+                  "responding",
+                  "stable",
+                  "progressing"
+                ]
+              },
+              "imaging_study_ref": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "performance_status": {
+          "type": "array",
+          "description": "ECOG (or KPS) only when a document states it; never infer",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "scale",
+              "value",
+              "assessed_on"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "scale": {
+                "enum": [
+                  "ECOG",
+                  "KPS"
+                ]
+              },
+              "value": {
+                "type": "integer"
+              },
+              "assessed_on": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "cns_status": {
+          "type": "array",
+          "description": "Brain / CNS disease status as of a date",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "assessed_on"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "present": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lesion_count": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "locations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "treated": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "treatment_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "symptomatic": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "on_steroids": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "steroid_dose_mg": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "leptomeningeal": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "assessed_on": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "management_plans": {
+          "type": "array",
+          "description": "The plan, verbatim from the letter",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "plan_text"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "plan_text": {
+                "type": "string"
+              },
+              "plan_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "author": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "clinical_notes": {
+          "type": "array",
+          "description": "One per letter: a short summary and key points",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "source",
+              "confidence",
+              "note_type",
+              "content_summary"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+[0-9]+$",
+                "description": "Run-local id, e.g. cd1, bm3; used to link facts"
+              },
+              "source": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "doc_id",
+                    "quote"
+                  ],
+                  "properties": {
+                    "doc_id": {
+                      "type": "string",
+                      "description": "File name of the input document, exactly as uploaded"
+                    },
+                    "quote": {
+                      "type": "string",
+                      "description": "Verbatim text from the document that supports the value (copy, do not paraphrase)"
+                    }
+                  }
+                }
+              },
+              "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              },
+              "note_type": {
+                "enum": [
+                  "clinical_note",
+                  "letter_to_referrer",
+                  "discharge_summary"
+                ]
+              },
+              "note_date": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "author": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "content_summary": {
+                "type": "string"
+              },
+              "key_points": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "description": "Facts trials commonly need that the documents do not give (e.g. ECOG not formally rated, MET amplification not tested)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "what",
+          "why_it_matters"
+        ],
+        "properties": {
+          "what": {
+            "type": "string"
+          },
+          "why_it_matters": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "description": "Page 1 of the Briefing: the condition snapshot, each paragraph built only from clinical_record facts",
+      "additionalProperties": false,
+      "required": [
+        "as_of",
+        "diagnosis",
+        "prior_therapy",
+        "disease_sites",
+        "cns",
+        "labs_organ_function",
+        "tissue_performance"
+      ],
+      "properties": {
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "diagnosis": {
+          "type": "string"
+        },
+        "prior_therapy": {
+          "type": "string"
+        },
+        "disease_sites": {
+          "type": "string"
+        },
+        "cns": {
+          "type": "string"
+        },
+        "labs_organ_function": {
+          "type": "string"
+        },
+        "tissue_performance": {
+          "type": "string"
+        },
+        "time_sensitive": {
+          "anyOf": [
+            {
+              "type": "string",
+              "description": "The most time-sensitive factor for trial eligibility, if any, stated as a fact plus the questions it raises for the treating team"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "trials": {
+      "type": "array",
+      "description": "Trials shown in full: POTENTIALLY_ELIGIBLE and NEEDS_INFORMATION only, at most 8, ordered by match_state, then site access, then fewest UNKNOWN",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nct_id",
+          "title",
+          "sponsor",
+          "phase",
+          "overall_status",
+          "mechanism",
+          "site_access",
+          "washout",
+          "cns_rule",
+          "criteria",
+          "match_state",
+          "summary"
+        ],
+        "properties": {
+          "nct_id": {
+            "type": "string",
+            "pattern": "^NCT[0-9]{8}$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "sponsor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "overall_status": {
+            "type": "string"
+          },
+          "mechanism": {
+            "type": "string",
+            "description": "What the intervention targets and how, from the trial record only (e.g. 'EGFR×cMET bispecific ADC; IV every 3 weeks'). Never rated against the Patient."
+          },
+          "site_access": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "facility",
+                "city",
+                "state",
+                "site_status",
+                "distance_km"
+              ],
+              "properties": {
+                "facility": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "city": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "site_status": {
+                  "type": "string"
+                },
+                "distance_km": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "description": "Copied from the trial export (straight-line from the Patient's suburb)"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "washout": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rule_text",
+              "last_therapy",
+              "last_therapy_end",
+              "result"
+            ],
+            "properties": {
+              "rule_text": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "description": "The trial's washout rule, quoted"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "last_therapy": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "description": "This Patient's most recent anticancer therapy"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "last_therapy_end": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "result": {
+                "enum": [
+                  "MET",
+                  "NOT_MET",
+                  "UNKNOWN"
+                ]
+              }
+            }
+          },
+          "cns_rule": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "The trial's brain-metastasis rule, quoted or closely summarised"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "criteria": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Every gating eligibility criterion, parsed from the trial text",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "raw_text",
+                "attribute",
+                "scope",
+                "result",
+                "rationale",
+                "patient_evidence"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "inclusion",
+                    "exclusion"
+                  ]
+                },
+                "raw_text": {
+                  "type": "string",
+                  "description": "The criterion verbatim from the trial export"
+                },
+                "attribute": {
+                  "enum": [
+                    "age",
+                    "sex",
+                    "ecog",
+                    "prior_systemic_lines",
+                    "required_biomarker",
+                    "pd_l1_tps",
+                    "brain_mets_status",
+                    "leptomeningeal_disease",
+                    "measurable_disease",
+                    "organ_function",
+                    "prior_immunotherapy",
+                    "prior_targeted_therapy",
+                    "hormone_receptor_status",
+                    "her2_status",
+                    "disease_extent_required",
+                    "stage_at_diagnosis",
+                    "histology_required",
+                    "other_malignancy_within_years",
+                    "condition_exclusion",
+                    "washout",
+                    "other"
+                  ]
+                },
+                "scope": {
+                  "enum": [
+                    "target_condition",
+                    "whole_person"
+                  ]
+                },
+                "result": {
+                  "enum": [
+                    "MET",
+                    "NOT_MET",
+                    "UNKNOWN"
+                  ],
+                  "description": "MET always means 'does not stand in the way': for an exclusion, MET means the exclusion does not apply"
+                },
+                "rationale": {
+                  "type": "string"
+                },
+                "patient_evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "refs of clinical_record facts relied on; empty when UNKNOWN for lack of data"
+                  }
+                }
+              }
+            }
+          },
+          "match_state": {
+            "enum": [
+              "POTENTIALLY_ELIGIBLE",
+              "NEEDS_INFORMATION"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "description": "Observations only (criteria, gating items, access). Never recommend, never 'pursue', never 'eligible'."
+          }
+        }
+      }
+    },
+    "not_shown": {
+      "type": "array",
+      "description": "Trials considered but not shown in full: every EXCLUDED trial with its deciding criterion, and any surplus beyond 8",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nct_id",
+          "title",
+          "match_state",
+          "reason"
+        ],
+        "properties": {
+          "nct_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "match_state": {
+            "enum": [
+              "POTENTIALLY_ELIGIBLE",
+              "NEEDS_INFORMATION",
+              "EXCLUDED"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

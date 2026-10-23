@@ -1,15 +1,17 @@
 # Build Order
 
-> **As of 2026-09-27.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
+> **As of 2026-10-23.** Where the build stands and what comes next. The plan and its rules are in [Vigil_Design_Document.md](Vigil_Design_Document.md) §15. Tickets live in [GitHub Issues](https://github.com/kl-a/vigil_care/issues), grouped into one milestone per stage. Update this file whenever a ticket finishes or the order changes.
 
 **Showing screens:** a screen appears for everyone once it's marked `built` in `frontend/lib/screens.ts` (or its Patient tab) and its stage has shipped. Raise `SHIPPED_STAGE` in `frontend/lib/stages.ts` when a stage's demo is ready, and mark it here.
 
-**How the build is ordered**
-- Every stage ends with a **stage demo**: a scripted walkthrough in dev, on synthetic data, for stakeholders ([docs/demos/](demos/)).
-- The **Clinical Record is entered by hand first**. The document pipeline fills the same record later.
-- Screens appear only once built, and grow section by section.
-- **Patients' Documents come straight after the Patient Summary** (Stages 6–9), so the Practice can track Patients and their Documents before any trial or treatment matching.
-- **Login hardening comes last** (Stage 13) and is required before prod or any real Patient data.
+**How the build is ordered (re-planned 2026-10-23)**
+- **The MVP is documents in, Trial Briefing out.** A Patient's documents go in; a Trial Briefing comes out listing the trials that surface, why, and what each matches to (Match State, Site Access, Mechanism, Washout, each Criterion Result with its reason). Everything else (Patient Summary, Open Items, polish, Exports, login hardening) is an addition on top of that core.
+- **Agile, not waterfall.** Build the thinnest version that works end to end, then reinforce it iteration by iteration. No stage builds a whole layer to production depth before the next layer exists.
+- **Milestones are named after what the demo can do** (MVP-1, MVP-2, …), not after a layer. Every ticket says which step of the MVP it moves.
+- **Batches, not stages.** Pick 2–4 tickets, build them on one branch (TDD, CI), one review per batch, a short demo at the end. Playwright screenshots only for UI-heavy tickets; design-doc updates only when a decision changes.
+- **No frontend polish or security ceremony on MVP code paths** until the Briefing works: no new Job Title checks, Verification reasons, audit wiring or grants; everything runs as the one dev User. **Kept:** the privacy invariant (nothing patient-derived leaves unpseudonymised; every cloud call is ledgered and User-initiated), synthetic data only, `.env` never committed, the host Postgres never touched.
+- **The trial engine is the design doc's, at full tier** (§11): refreshed trial snapshots, criteria parsed into the attribute vocabulary with scope, deterministic pre-filters, LLM adjudication of the rest, three Match States, Stale runs.
+- **Login hardening is still required before prod or any real Patient data.**
 
 ## Where we are
 
@@ -20,6 +22,7 @@
 | ⏭️ Ready | All blockers done, so it can start now |
 | ⏳ Blocked | Waiting on the tickets listed |
 | 📋 Outline | Stage planned; tickets written when we get close |
+| 🅿️ Parked | Deferred to the backlog |
 
 ### Foundation
 
@@ -114,74 +117,54 @@ The design language of the Claude Design MVP (`temp/Vigil Care UI design/`), ado
 | 3 | [#54](https://github.com/kl-a/vigil_care/issues/54) | Open Items as a table with popover actions; Dashboard rail and count badge | #51 | 🔨 Built (`stage-5`) |
 | 3 | [#57](https://github.com/kl-a/vigil_care/issues/57) | Tables, sub-tabs and row actions (Patients, Clinical Data, Medications); Labs trend view | #51 | 🔨 Built (`stage-5`) |
 | 4 | [#53](https://github.com/kl-a/vigil_care/issues/53) | Patient Summary redesign: glance strip, Open Items cards, flagged-first results | #51, #52, #54 | 🔨 Built (`stage-5`) |
-| 4 | [#55](https://github.com/kl-a/vigil_care/issues/55) | Patient Overview redesign: Diagnoses, Key labs, Care Team and Open Items cards | #52, #54 | ⏭️ Ready |
-| 4 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth on Patient Identity and the header band | #52 | ⏭️ Ready |
-| 5 | [#56](https://github.com/kl-a/vigil_care/issues/56) | Treatment Course timeline on the Overview | #55 | ⏳ Blocked |
+| 4 | [#55](https://github.com/kl-a/vigil_care/issues/55) | Patient Overview redesign: Diagnoses, Key labs, Care Team and Open Items cards | #52, #54 | 🅿️ Parked (backlog 9) |
+| 4 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth on Patient Identity and the header band | #52 | ➡️ Moved to MVP-1 |
+| 5 | [#56](https://github.com/kl-a/vigil_care/issues/56) | Treatment Course timeline on the Overview | #55 | 🅿️ Parked (backlog 9) |
 
 Later, not in 5b: [#59](https://github.com/kl-a/vigil_care/issues/59) Dashboard Recent activity feed (once Documents and extraction give it enough to show).
 
-### Stages 6–13 (outlines)
+### MVP-1 · Briefing round trip
 
-| Stage | Shows stakeholders | Depends on | Status |
-|---|---|---|---|
-| 6 · Document filing | Upload a Patient's Documents (Original encrypted), view them, set Type and date by hand, Hold, move; nothing leaves the Practice | 5 | 📋 Outline |
-| 7 · Redaction Jobs | De-identification trust gate: OCR, masking, Redaction QA, leak check | 6 | 📋 Outline |
-| 8 · Document pipeline | Processes filed Documents: OCR, VLM worker, classification, cloud ledger, Held Documents | 7, [#31](https://github.com/kl-a/vigil_care/issues/31) (long Jobs keep their claim) | 📋 Outline |
-| 9 · Extraction Review | Extracted Facts reviewed into the same Clinical Record | 8 | 📋 Outline |
-| 10 · Trials | 10a Trial Browser (public data; can start any time after Stage 3), 10b Match Board | 9 | 📋 Outline |
-| 11 · Treatment Options | eviQ + PBS Coverage. **Blocked on eviQ terms of use** ([revisit-later.md](revisit-later.md) #9) | 3, 4 | 📋 Outline |
-| 12 · Exports | Identified and De-identified Exports with sign-off | 5, 7, 9 (10 for trial reports) | 📋 Outline |
-| 13 · Login hardening & polish | 2FA, inactivity lock, re-authentication, bootstrap, onboarding, backup, polish. Tickets so far: [#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5), [#32](https://github.com/kl-a/vigil_care/issues/32) (runbook) | all | 📋 Outline |
+Extraction and matching run in a **Claude Project** (claude.ai chat) on synthetic documents, following the design doc's §11 method; Vigil stores the trials, imports the result and shows it. Vigil makes no LLM calls of its own yet, so the privacy gateway arrives in MVP-2.
 
-## Critical path
-
-```mermaid
-flowchart LR
-    T2[#2 schema ✅] --> T13[#13 dev login ✅]
-    T13 --> T6[#6 permissions + Users ✅]
-    T6 --> T14[#14 Practice details ✅]
-    T6 --> T15[#15 Specialty Modules ✅]
-    T14 --> T24[#24 Practice Memberships ✅]
-    T15 --> T24
-    T24 --> S1
-    T16[#16 built screens only ✅] --> S1((Stage 1 demo))
-    T14 --> S1
-    T15 --> S1
-    T24 --> T8[#8 Patients ✅] --> T17[#17 soft delete ✅]
-    T24 --> T7[#7 Providers ✅]
-    T24 --> T25[#25 Sites ✅] --> S2
-    T8 --> T9[#9 Care Team ✅]
-    T7 --> T9
-    T17 --> S2((Stage 2 demo))
-    T9 --> S2
-    T24 --> T18[#18 job queue ✅] --> T19[#19 PBS Refresh ✅] --> T20[#20 PBS Lookup ✅] --> T30[#30 whole PBS Schedule ✅]
-    T18 --> T10[#10 Support Views ✅]
-    T19 --> T31[#31 long Jobs keep their claim ✅]
-    T20 --> S3((Stage 3 demo))
-    S3 --> T35[#35 Clinical Record entry + Conditions 🔨] --> T37[#37 Cancer Diagnosis 🔨]
-    T19 --> T36[#36 drug reference 🔨]
-    T37 --> T38[#38 Biomarkers 🔨] & T39[#39 Recurrences 🔨] & T40[#40 Treatment Courses 🔨] & T44[#44 ECOG/CNS 🔨]
-    T39 --> S4a((4a demo))
-    T38 --> S4a
-    T40 --> T41[#41 Medication Manager] --> S4b((4b demo))
-    T36 --> T41
-    T35 --> T42[#42 labs 🔨] & T45[#45 plan and notes 🔨]
-    T40 --> T43[#43 imaging + Response]
-    T45 --> S4c((4c demo))
-    T42 --> S4c
-    T43 --> S4c
-    T44 --> S4c
-    S4a & S4b & S4c --> T46[#46 demo Patient] --> T47[#47 Patient Summary]
-    T43 --> T48[#48 Open Items + Dashboard]
-    T47 --> S5((Stage 5 demo))
-    T48 --> S5
-    T10 --> S3
+```
+Vigil: ClinicalTrials.gov Refresh → trial snapshot → per-Patient trial export
+Claude Project: documents + trial export + prompt → run JSON → Trial Briefing PDF (rendered from the JSON)
+Vigil: import run JSON → Clinical Record (imported, unverified) + Match Run → Trials tab (Briefing · Data · Raw JSON)
 ```
 
-**Next up:**
-1. Stage 4 is merged (PR #49). Stage 5 is built on `stage-5`; Stage 5b (visual refresh) lands on it too: #50–#54 and #57 are built; #55 and #58 are next, then #56. Then run both demos and merge `stage-5`.
-2. Then Stage 6.
+**Demo:** for each of the 3 synthetic lung Patients, run the Claude Project, import the JSON, and walk the Trials tab: the Briefing, the Clinical Record rows it wrote with their quotes, and the raw JSON.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 0 | `stage-5` merge | Merge Stage 5 and 5b to `main`; park #55, #56, #59 | none | ⏭️ Ready (needs GitHub access) |
+| 1 | MVP-1.1 | ClinicalTrials.gov Refresh Job: trial snapshots (`trial`, `trial_site`, `trial_snapshot`), Australian sites, and a per-Patient trial export | none | ⏭️ Ready |
+| 1 | MVP-1.2 | Claude Project kit: run schema, Project instructions, prompt, 3 synthetic lung Patients' documents, expected outcomes ([claude-project/](../claude-project/)) | none (trial exports come from MVP-1.1) | 🔨 Drafted |
+| 2 | MVP-1.3 | Import a run: JSON → the 14 Clinical Record fact kinds (provenance "imported from run", unverified; re-import replaces only imported rows) + Match Run, results, parsed criteria and evaluations; refuses on an identity mismatch | MVP-1.1, MVP-1.2 | ⏳ Blocked |
+| 3 | MVP-1.4 | Trials tab on the Patient: Import run; Briefing, Data and Raw JSON views; earlier runs | MVP-1.3 | ⏳ Blocked |
+| 1 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth (moved from 5b: trial criteria use it) | none | ⏭️ Ready |
+
+### MVP-2 · In-app pipeline (outline)
+
+Vigil does what the Claude Project did, step by step, each measured against the Claude Project's runs on the same 3 Patients (the baseline):
+1. Upload a Patient's Documents (text PDFs and pasted text); Originals encrypted.
+2. The thin privacy gate: Presidio + AU recognisers → pseudonymised text; an LLM gateway that refuses anything else; the `cloud_request` ledger written before sending; pre-flight view; every call authorised by a User action ("Process", "Find trials").
+3. In-app extraction into the same Clinical Record.
+4. The in-app engine: criteria parsing (public text), deterministic pre-filters, LLM adjudication through the gate.
+5. The Briefing rendered by Vigil.
+
+### Backlog, in order (reinforcement after MVP-2)
+
+1. Briefing quality to the example's depth for lung, from Dr De Souza's feedback.
+2. Scans, photos and faxes: local OCR into the same pseudonymiser.
+3. Per-fact Extraction Review (the web review screen) turning imported rows into verified ones.
+4. Treatment Options (eviQ terms permitting, [revisit-later.md](revisit-later.md) #9).
+5. More Cancer Types: breast, colorectal, melanoma.
+6. GP referral letters and medication reconciliation; then other specialties' reports (surgical, radiation oncology, discharge summaries, research and other lab reports, allied health).
+7. ANZCTR, staleness and Unknown criteria as Open Items.
+8. The full trust gate: image burn-in, leak checks, Redaction QA, Redaction Jobs, cloud VLM, Held Documents.
+9. Parked: Stage 5b polish ([#55](https://github.com/kl-a/vigil_care/issues/55), [#56](https://github.com/kl-a/vigil_care/issues/56), [#59](https://github.com/kl-a/vigil_care/issues/59)), Exports, login hardening ([#4](https://github.com/kl-a/vigil_care/issues/4), [#5](https://github.com/kl-a/vigil_care/issues/5), [#32](https://github.com/kl-a/vigil_care/issues/32)).
+
+The old Stage 6–13 outlines (filing → Redaction Jobs → pipeline → Extraction Review → Trials → …) are superseded by this order; their content returns in the items above.
 
 **Provisional decisions:** [docs/revisit-later.md](revisit-later.md) lists them with their triggers; working through them is tracked in [#33](https://github.com/kl-a/vigil_care/issues/33).
-
-**After Stage 5:** Stages 6 → 7 → 8 → 9 in order, then Trials, Treatment Options (once eviQ is cleared), Exports and Login hardening.
