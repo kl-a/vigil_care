@@ -138,10 +138,10 @@ Vigil: import run JSON → Clinical Record (imported, unverified) + Match Run �
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
 | 0 | `stage-5` merge | Merge Stage 5 and 5b to `main`; park #55, #56, #59 | none | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
-| 1 | MVP-1.1 | ClinicalTrials.gov Refresh Job: trial snapshots (`trial`, `trial_site`, `trial_snapshot`), Australian sites, and a per-Patient trial export | none | ⏭️ Ready |
-| 1 | MVP-1.2 | Claude Project kit: run schema, Project instructions, prompt, 3 synthetic lung Patients' documents, expected outcomes ([claude-project/](../claude-project/)) | none (trial exports come from MVP-1.1) | 🔨 Drafted |
-| 2 | MVP-1.3 | Import a run: JSON → the 14 Clinical Record fact kinds (provenance "imported from run", unverified; re-import replaces only imported rows) + Match Run, results, parsed criteria and evaluations; refuses on an identity mismatch | MVP-1.1, MVP-1.2 | ⏳ Blocked |
-| 3 | MVP-1.4 | Trials tab on the Patient: Import run; Briefing, Data and Raw JSON views; earlier runs | MVP-1.3 | ⏳ Blocked |
+| 1 | [#61](https://github.com/kl-a/vigil_care/issues/61) | ClinicalTrials.gov Refresh Job: trial snapshots (`trial`, `trial_site`, `trial_snapshot`), Australian sites, and a per-Patient trial export | none | ⏭️ Ready |
+| 1 | [#62](https://github.com/kl-a/vigil_care/issues/62) | Claude Project kit: run schema, Project instructions, prompt, 3 synthetic lung Patients' documents, expected outcomes ([claude-project/](../claude-project/)) | none (trial exports come from #61) | 🔨 Drafted |
+| 2 | [#63](https://github.com/kl-a/vigil_care/issues/63) | Import a run: JSON → the 14 Clinical Record fact kinds (provenance "imported from run", unverified; re-import replaces only imported rows) + Match Run, results, parsed criteria and evaluations; refuses on an identity mismatch | #61, #62 | ⏳ Blocked |
+| 3 | [#64](https://github.com/kl-a/vigil_care/issues/64) | Trials tab on the Patient: Import run; Briefing, Data and Raw JSON views; earlier runs | [#63](https://github.com/kl-a/vigil_care/issues/63) | ⏳ Blocked |
 | 1 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth (moved from 5b: trial criteria use it) | none | ⏭️ Ready |
 
 ### MVP-2 · In-app pipeline (outline)
