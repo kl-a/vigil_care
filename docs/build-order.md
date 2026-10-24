@@ -89,15 +89,15 @@ This stage can run alongside Stage 2.
 | 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c); ships 4c if #43 is in | #37 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
 | 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes (4c). 4c ships with the last of #43 and #44, which its demo needs | #35 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
 
-### Stage 5 · Patient Summary (shipped: `SHIPPED_STAGE = 5`)
+### Stage 5 · Patient Summary (shipped: `SHIPPED_STAGE = 5`, merged in PR #60)
 
 **Demo:** open the fully recorded demo Patient's Summary as it would look in a consultation, follow a value back to who entered it, then work the Open Items on the Dashboard. Plan: design doc §15 Stage 5. Script: [docs/demos/stage-5.md](demos/stage-5.md).
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient (Robin Sample) | #38, #39, #41, #42, #43, #44, #45 | 🔨 Built (`stage-5`) |
-| 2 | [#47](https://github.com/kl-a/vigil_care/issues/47) | Patient Summary v1 | #46 | 🔨 Built (`stage-5`) |
-| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | 🔨 Built (`stage-5`) |
+| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient (Robin Sample) | #38, #39, #41, #42, #43, #44, #45 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 2 | [#47](https://github.com/kl-a/vigil_care/issues/47) | Patient Summary v1 | #46 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
 
 After each stage ships, Dr De Souza tries it hands-on in dev ([revisit-later.md](revisit-later.md), "For Dr De Souza").
 
@@ -111,12 +111,12 @@ The design language of the Claude Design MVP (`temp/Vigil Care UI design/`), ado
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#50](https://github.com/kl-a/vigil_care/issues/50) | Visual bug fixes: sidebar height, breadcrumb, dates, ranges and units, sub-tab links | none | 🔨 Built (`stage-5`) |
-| 2 | [#51](https://github.com/kl-a/vigil_care/issues/51) | Design primitives: formats, section card, table toolbar, sub-tabs, Verified icon, value states | #50 | 🔨 Built (`stage-5`) |
-| 3 | [#52](https://github.com/kl-a/vigil_care/issues/52) | Patient header band | #51 | 🔨 Built (`stage-5`) |
-| 3 | [#54](https://github.com/kl-a/vigil_care/issues/54) | Open Items as a table with popover actions; Dashboard rail and count badge | #51 | 🔨 Built (`stage-5`) |
-| 3 | [#57](https://github.com/kl-a/vigil_care/issues/57) | Tables, sub-tabs and row actions (Patients, Clinical Data, Medications); Labs trend view | #51 | 🔨 Built (`stage-5`) |
-| 4 | [#53](https://github.com/kl-a/vigil_care/issues/53) | Patient Summary redesign: glance strip, Open Items cards, flagged-first results | #51, #52, #54 | 🔨 Built (`stage-5`) |
+| 1 | [#50](https://github.com/kl-a/vigil_care/issues/50) | Visual bug fixes: sidebar height, breadcrumb, dates, ranges and units, sub-tab links | none | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 2 | [#51](https://github.com/kl-a/vigil_care/issues/51) | Design primitives: formats, section card, table toolbar, sub-tabs, Verified icon, value states | #50 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 3 | [#52](https://github.com/kl-a/vigil_care/issues/52) | Patient header band | #51 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 3 | [#54](https://github.com/kl-a/vigil_care/issues/54) | Open Items as a table with popover actions; Dashboard rail and count badge | #51 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 3 | [#57](https://github.com/kl-a/vigil_care/issues/57) | Tables, sub-tabs and row actions (Patients, Clinical Data, Medications); Labs trend view | #51 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
+| 4 | [#53](https://github.com/kl-a/vigil_care/issues/53) | Patient Summary redesign: glance strip, Open Items cards, flagged-first results | #51, #52, #54 | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
 | 4 | [#55](https://github.com/kl-a/vigil_care/issues/55) | Patient Overview redesign: Diagnoses, Key labs, Care Team and Open Items cards | #52, #54 | 🅿️ Parked (backlog 9) |
 | 4 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth on Patient Identity and the header band | #52 | ➡️ Moved to MVP-1 |
 | 5 | [#56](https://github.com/kl-a/vigil_care/issues/56) | Treatment Course timeline on the Overview | #55 | 🅿️ Parked (backlog 9) |
@@ -137,7 +137,7 @@ Vigil: import run JSON → Clinical Record (imported, unverified) + Match Run �
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 0 | `stage-5` merge | Merge Stage 5 and 5b to `main`; park #55, #56, #59 | none | ⏭️ Ready (needs GitHub access) |
+| 0 | `stage-5` merge | Merge Stage 5 and 5b to `main`; park #55, #56, #59 | none | ✅ Done ([PR #60](https://github.com/kl-a/vigil_care/pull/60)) |
 | 1 | MVP-1.1 | ClinicalTrials.gov Refresh Job: trial snapshots (`trial`, `trial_site`, `trial_snapshot`), Australian sites, and a per-Patient trial export | none | ⏭️ Ready |
 | 1 | MVP-1.2 | Claude Project kit: run schema, Project instructions, prompt, 3 synthetic lung Patients' documents, expected outcomes ([claude-project/](../claude-project/)) | none (trial exports come from MVP-1.1) | 🔨 Drafted |
 | 2 | MVP-1.3 | Import a run: JSON → the 14 Clinical Record fact kinds (provenance "imported from run", unverified; re-import replaces only imported rows) + Match Run, results, parsed criteria and evaluations; refuses on an identity mismatch | MVP-1.1, MVP-1.2 | ⏳ Blocked |
