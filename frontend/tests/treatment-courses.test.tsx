@@ -44,7 +44,7 @@ describe("Treatment Courses", () => {
     renderCourses();
     const course = (await screen.findByText("Paclitaxel", { selector: "span.font-medium" })).closest("li")!;
     expect(course).toHaveTextContent("Systemic · Palliative");
-    expect(course).toHaveTextContent("For Breast cancer · 12/03/2025 – ongoing");
+    expect(course).toHaveTextContent("For Breast cancer · 12 Mar 2025 – ongoing");
     expect(course).toHaveTextContent("Paclitaxel 80 mg/m2");
     expect(await within(course).findByText("1st line")).toBeInTheDocument();
     expect(course).toHaveTextContent("1st line: 1st palliative systemic course of Breast cancer");

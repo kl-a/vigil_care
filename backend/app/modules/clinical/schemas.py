@@ -1,6 +1,6 @@
 import datetime as dt
 import uuid
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from decimal import Decimal
 
@@ -20,6 +20,29 @@ class Entered(BaseModel):
     by: str
     job_title: JobTitle
     at: dt.datetime
+
+
+class LastUpdated(BaseModel):
+    """The Verification of a section's newest value: who, their Job Title then, when, what they did, and to what."""
+
+    by: str
+    job_title: JobTitle
+    at: dt.datetime
+    action: str
+    subject_table: str
+    subject_id: uuid.UUID
+
+
+class ValueHistoryEntry(BaseModel):
+    """One Verification of a value: who (name, Job Title then), what they did, when, why, and what changed."""
+
+    by: str
+    job_title: JobTitle
+    at: dt.datetime
+    action: str
+    reason: str | None
+    before: dict[str, Any] | None
+    after: dict[str, Any] | None
 
 
 class NewCondition(BaseModel):
@@ -337,3 +360,7 @@ class ImagingStudyRow(ImagingStudyFields):
     id: uuid.UUID
     findings: list[FindingRow]
     entered: Entered | None
+
+
+class FindingAttribution(BaseModel):
+    condition_id: uuid.UUID

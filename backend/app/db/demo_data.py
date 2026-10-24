@@ -9,7 +9,7 @@ Patients. Northside Oncology is a second Practice where Dr Alex Rivera also work
 Practice Memberships is demoable.
 
 Loading is idempotent: rows have fixed ids; existing rows are kept (User names and a migrated primary Site
-are brought up to date). Later stages add Care Teams and Clinical Records here.
+are brought up to date). Specialty Modules add Clinical Records through the registry: Oncology fills in Robin Sample's.
 """
 
 import uuid
@@ -30,7 +30,9 @@ from app.modules.accounts.models import PracticeMembership, User
 from app.modules.patients.models import Patient, PatientIdentity
 from app.modules.patients.service import ENCRYPTED, field_context
 from app.modules.practice.models import CareTeamMember, CareTeamRole, Practice, Provider, ProviderSpecialty, Site
+from app.modules.registry.contract import DemoPractice
 from app.modules.registry.models import PracticeModule
+from app.modules.registry.registry import installed_modules
 
 NAMESPACE = uuid.UUID("5b0f3c1e-0d6a-4a5e-9c1b-7a1d2c3e4f50")
 PRACTICE_ID = uuid.uuid5(NAMESPACE, "practice")  # Harbourside, the main demo Practice
@@ -138,6 +140,8 @@ class DemoCareTeamMember:
 
 
 JANE = PATIENTS[0]
+# The fully recorded demo Patient (#46): the Patient Summary and Open Items are shown on Robin.
+ROBIN = PATIENTS[2]
 REFERRING_GP = PROVIDERS[1]
 # Jane Citizen: diagnosed 2024 (frontend brief §10), referred by her GP, treated by Dr Rivera.
 CARE_TEAM = (
@@ -168,6 +172,15 @@ def load(settings: Settings) -> None:
         for member in CARE_TEAM:
             _care_team_member(db, member)
         _activate_oncology(db)
+        db.flush()
+        # Clinical Records come from the modules, through the registry (the Core never imports a module).
+        demo = DemoPractice(
+            practice_id=PRACTICE_ID, users={user.job_title: user.id for user in USERS}, patients={p.pseudonym: p.id for p in PATIENTS},
+            providers={"treating_oncologist": TREATING_ONCOLOGIST.id, "referring_gp": REFERRING_GP.id},
+        )
+        for module in installed_modules().values():
+            if module.demo_data is not None:
+                module.demo_data(db, demo)
 
 
 # Frontend brief §10. 02 5550 xxxx is reserved for fiction, example.com never resolves, and an ABN of all
@@ -358,6 +371,7 @@ def main() -> None:
         print(f"  {user.display_name:<28} {user.job_title}")
     print(f"  {CLINICIAN.display_name:<28} also clinician at {NORTHSIDE['name']}")
     print("Patients: " + ", ".join(f"{p.given_name} {p.family_name} ({p.pseudonym})" for p in PATIENTS))
+    print(f"  {ROBIN.given_name} {ROBIN.family_name} has a full Clinical Record: open their Summary.")
 
 
 if __name__ == "__main__":

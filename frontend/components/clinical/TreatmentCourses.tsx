@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
@@ -8,7 +10,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import {
-  addTreatmentCourse, changeTreatmentCourse, fetchConditions, fetchEntryRights, fetchTreatmentCourses, INTENT_LABEL, MODALITY_LABEL,
+  addTreatmentCourse, changeTreatmentCourse, courseTitle, fetchConditions, fetchEntryRights, fetchTreatmentCourses, INTENT_LABEL, MODALITY_LABEL,
   removeTreatmentCourse, type ConditionRow, type Intent, type Modality, type NewTreatmentCourse, type TreatmentCourseRow,
 } from "@/lib/clinical";
 import { formatDate, todayIso } from "@/lib/dates";
@@ -62,8 +64,9 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
             <li key={course.id} className="flex flex-col gap-1 py-2 text-[13px]">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{course.regimen_name ?? course.details?.procedure ?? course.details?.site ?? MODALITY_LABEL[course.modality]}</span>
+                  <span className="font-medium">{courseTitle(course)}</span>
                   <StatusPill tone="neu">{MODALITY_LABEL[course.modality]}{course.intent && ` · ${INTENT_LABEL[course.intent]}`}</StatusPill>
+                  {!compact && <VerifiedMark subjectTable="treatment_course" subjectId={course.id} entered={course.entered} />}
                   {extensions.map((extension, index) => {
                     const annotation = annotations[index]?.[course.id];
                     return annotation && (annotation.badge ? <span key={index} title={annotation.detail}>{annotation.badge}</span> : (
@@ -73,14 +76,14 @@ export function TreatmentCourses({ patientId, compact = false }: { patientId: st
                     ));
                   })}
                 </span>
-                <span className="inline-flex gap-2">
+                <span className="inline-flex items-center gap-2">
                   {!compact && extensions.map(({ edit }, index) => edit && rights[edit.factKind] && annotations[index]?.[course.id] && (
                     <button key={index} onClick={() => setEditing({ edit, course, annotation: annotations[index]?.[course.id] })} className="text-xs font-medium text-primary">
                       {edit.label}
                     </button>
                   ))}
                   {canEnter && course.ongoing && <button onClick={() => setEnding(course)} className="text-xs font-medium text-primary">End course</button>}
-                  {canEnter && <button onClick={() => setRemoving(course)} className="text-xs font-medium text-neg">Remove</button>}
+                  {canEnter && <RowMenu label={course.regimen_name ?? MODALITY_LABEL[course.modality]} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(course) }]} />}
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">

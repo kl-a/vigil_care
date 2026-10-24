@@ -6,12 +6,13 @@ from fastapi import APIRouter, HTTPException, Response, status
 
 from app.audit.schemas import Removal
 from app.modules.accounts.dependencies import Db, SignedIn
-from app.modules.clinical import conditions, entry, imaging, labs, plan_and_notes, treatment_courses
+from app.modules.clinical import conditions, counts, entry, imaging, labs, plan_and_notes, treatment_courses
 from app.modules.clinical.schemas import (
-    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, FindingChange, FindingRow, ImagingStudyChange,
+    ClinicalNoteChange, ClinicalNoteRow, ConditionChange, ConditionRow, FindingAttribution, FindingChange, FindingRow, ImagingStudyChange,
     ImagingStudyRow, LabPanelRow, LabResultChange, LabResultRow,
     ManagementPlanChange, ManagementPlanRow, ModuleFacts, NewClinicalNote, NewCondition, NewFinding, NewImagingStudy, NewLabPanel, NewManagementPlan,
     NewNextStep, NewTreatmentCourse, NextStepChange, NextStepRow, TreatmentCourseChange, TreatmentCourseRow,
+    ValueHistoryEntry,
 )
 
 router = APIRouter(tags=["clinical record"])
@@ -31,6 +32,24 @@ def _missing(error: LookupError) -> HTTPException:
 def entry_rights(actor: SignedIn, db: Db) -> dict[str, bool]:
     """Which kinds of Clinical Record value the signed-in User may enter by hand."""
     return entry.entry_rights(db, actor)
+
+
+@router.get("/verifications/{subject_table}/{subject_id}")
+def value_history(subject_table: str, subject_id: uuid.UUID, actor: SignedIn, db: Db) -> list[ValueHistoryEntry]:
+    """A value's history: every Verification of it in this Practice, newest first. Clinical Record values only."""
+    try:
+        return entry.value_history(db, actor, subject_table, subject_id)
+    except entry.NotClinical:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not a value of the Clinical Record.") from None
+
+
+@router.get("/patients/{patient_id}/clinical-counts")
+def clinical_counts(patient_id: uuid.UUID, actor: SignedIn, db: Db) -> dict[str, int]:
+    """How many of each Clinical Record kind the Patient has, by Clinical Data sub-tab."""
+    try:
+        return counts.clinical_counts(db, actor, patient_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
 
 
 @router.get("/patients/{patient_id}/inactive-module-facts")
@@ -352,3 +371,18 @@ def remove_finding(patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.
     except tuple(_MISSING) as error:
         raise _missing(error) from None
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(STUDY_PATH + "/findings/{finding_id}/attribute")
+def attribute_finding(
+    patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.UUID, attribution: FindingAttribution, actor: SignedIn, db: Db
+) -> FindingRow:
+    """Clinicians only: which Condition an unattributed Finding belongs to."""
+    try:
+        return imaging.attribute_finding(db, actor, patient_id, study_id, finding_id, attribution.condition_id)
+    except tuple(_MISSING) as error:
+        raise _missing(error) from None
+    except imaging.NoSuchCondition as error:
+        raise _invalid(error) from None
+    except imaging.AlreadyAttributed as error:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(error)) from None

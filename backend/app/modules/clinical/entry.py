@@ -8,23 +8,23 @@
 """
 
 import uuid
-from collections.abc import Collection, Iterable
+from collections.abc import Collection, Iterable, Mapping
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.audit import service as audit
 from app.audit.models import Verification
 from app.audit.service import Actor
-from app.core.base_model import Entity, PracticeEntity
+from app.core.base_model import Base, Entity, PracticeEntity, Provenance
 from app.core.changes import blank_to_none, changed_fields
 from app.core.permissions import NotAllowed, VerificationRights, require
 from app.modules.accounts.service import display_names
-from app.modules.clinical.schemas import Entered, ModuleFacts
+from app.modules.clinical.schemas import Entered, LastUpdated, ModuleFacts, ValueHistoryEntry
 from app.modules.patients.service import patient_names
 from app.modules.registry.registry import installed_modules
 from app.modules.registry.service import active_module_keys, configuration
@@ -148,6 +148,57 @@ def entered(db: Session, practice_id: uuid.UUID, subject_table: str, ids: Iterab
         subject: Entered(by=names.get(row.user_id, "Unknown User"), job_title=row.job_title_at_time, at=row.created_at)
         for subject, row in first.items()
     }
+
+
+def last_updated(db: Session, practice_id: uuid.UUID, subjects: Mapping[str, Iterable[uuid.UUID]]) -> LastUpdated | None:
+    """The newest Verification that changed any of these rows (by table), e.g. for a Patient Summary section's "last
+    updated"."""
+    wanted = {table: found for table, ids in subjects.items() if (found := set(ids))}
+    if not wanted:
+        return None
+    row = db.execute(
+        select(Verification.subject_table, Verification.subject_id, Verification.user_id, Verification.job_title_at_time,
+               Verification.created_at, Verification.action)
+        .where(Verification.practice_id == practice_id,
+               or_(*(and_(Verification.subject_table == table, Verification.subject_id.in_(ids)) for table, ids in wanted.items())),
+               # An acknowledgement (e.g. Differing Biomarker Results "Seen") changes no value.
+               or_(Verification.after.is_(None), ~Verification.after.has_key("seen")))
+        .order_by(Verification.created_at.desc(), Verification.id.desc())
+        .limit(1)
+    ).first()
+    if row is None:
+        return None
+    names = display_names(db, {row.user_id})
+    return LastUpdated(
+        by=names.get(row.user_id, "Unknown User"), job_title=row.job_title_at_time, at=row.created_at, action=row.action,
+        subject_table=row.subject_table, subject_id=row.subject_id,
+    )
+
+
+class NotClinical(LookupError):
+    """Not a table of the Clinical Record: its history isn't a value's."""
+
+
+def clinical_subjects() -> frozenset[str]:
+    """The tables whose rows are Clinical Record values (every table with provenance, the Core's or a Specialty
+    Module's, found through the shared metadata), and the other subjects their Verifications use."""
+    tables = {str(getattr(mapper.class_, "__tablename__")) for mapper in Base.registry.mappers if issubclass(mapper.class_, Provenance)}
+    return frozenset(tables | {"lab_panel", "next_step"})
+
+
+def value_history(db: Session, actor: Actor, subject_table: str, subject_id: uuid.UUID) -> list[ValueHistoryEntry]:
+    """A value's Verifications in the actor's Practice, newest first (the ✓ Verified icon's history). Only Clinical
+    Record values: the audit trail of Users, Memberships or settings isn't reachable here."""
+    require_patient_data(actor)
+    if subject_table not in clinical_subjects():
+        raise NotClinical()
+    entries = audit.history(db, actor.practice_id, subject_table, subject_id)
+    names = display_names(db, {e.user_id for e in entries})
+    return [
+        ValueHistoryEntry(by=names.get(e.user_id, "Unknown User"), job_title=e.job_title_at_time, at=e.at, action=e.action, reason=e.reason,
+                     before=e.before, after=e.after)
+        for e in entries
+    ]
 
 
 def inactive_module_facts(db: Session, actor: Actor, patient_id: uuid.UUID) -> list[ModuleFacts]:

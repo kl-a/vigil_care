@@ -21,7 +21,7 @@ A clinical practice using Vigil; the organisation that holds its Patients' recor
 _Avoid_: Tenant, clinic, customer (in domain language)
 
 **Site**:
-A place where a Practice sees Patients (e.g. its rooms in Kogarah and a hospital clinic). Every Site belongs to one Practice and shares its Patients and records; one is the primary Site. Distances to trial sites are measured from each Site.
+A place where a Practice sees Patients (e.g. its rooms in Kogarah and a hospital clinic). Every Site belongs to one Practice and shares its Patients and records; one is the primary Site. Used as the fallback for distances to trial sites when a Patient has no address.
 _Avoid_: Location (unqualified), branch, clinic, Practice (for a second address of the same Practice)
 
 **Patient**:
@@ -31,6 +31,10 @@ _Avoid_: Pseudonymous profile, subject, case
 **Patient Identity**:
 The details that identify a Patient (name, DOB, Medicare number, MRN, address, contact details). Never leaves the Practice Boundary; shown freely inside it.
 _Avoid_: PII record, demographics
+
+**Sex at birth**:
+The sex recorded for a Patient at birth, part of Patient Identity: male, female, another term, or not stated (the ABS Standard for Sex and Gender). Gender is a separate concept, not recorded yet.
+_Avoid_: Gender (for this), sex (unqualified)
 
 **Pseudonym**:
 The stable reference for a Patient printed on de-identified exports (e.g. "VG-0042"), so a receiving centre can quote it back. Not used inside Vigil, where the real name is shown.
@@ -178,10 +182,25 @@ _Avoid_: Eligible, Ineligible, Uncertain, Eligible-looking
 The outcome of one eligibility criterion for a Patient: **Met**, **Not Met** or **Unknown**.
 _Avoid_: PASS/FAIL, Uncertain criterion
 
+**Trial Briefing**:
+The output of a Match Run for the clinician to read: a snapshot of the Patient's condition (including what's missing), the trials side by side, then each trial with its Mechanism, Site Access, Washout, each Criterion Result with its reason, and a Summary. Describes, never recommends.
+_Avoid_: Trial report, recommendation, verdict
+
+**Site Access**:
+Where a trial can be reached by this Patient: its nearest sites, each with recruiting status and approximate distance from the Patient's suburb. A fact about the trial's sites, separate from Match State.
+_Avoid_: Fit, accessibility score
+
+**Mechanism**:
+What a trial's intervention targets and how (e.g. "EGFR×cMET bispecific ADC"), as stated in the trial record. Never rated against the Patient.
+_Avoid_: Fit, biological match
+
+**Washout**:
+A trial's required gap between the Patient's last anticancer therapy and the first trial dose, as written in that trial's criteria. Evaluated against the Patient's own most recent Treatment Course.
+
 ### Work
 
 **Open Item**:
-Anything about a Patient that needs a User to act: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step coming due, a Stale Match Run, Differing Biomarker Results, a Suspected Recurrence. Shown per Patient and practice-wide. It clears only when someone acts on what's behind it, never by dismissing it.
+Anything about a Patient that needs a User to act: a Held Document, an Extracted Fact awaiting review, a Needs Information criterion, a Next Step coming due, a Stale Match Run, Differing Biomarker Results, an unattributed Response Assessment or new Finding, a Suspected Recurrence. Shown per Patient and practice-wide. It clears only when someone acts on what's behind it, never by dismissing it.
 _Avoid_: Task, alert, to-do
 
 ### Operations

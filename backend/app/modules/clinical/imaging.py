@@ -4,6 +4,7 @@ Condition only when the report says so. Specialty Modules read studies through `
 """
 
 import uuid
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
@@ -21,6 +22,8 @@ from app.modules.clinical.schemas import (
 
 STUDY_FACT_KIND = "imaging_study"
 FINDING_FACT_KIND = "finding"
+# Attributing a Finding to a Condition after the fact is a clinical judgement: clinicians only (§6.4 row 4).
+ATTRIBUTION_FACT_KIND = "finding_attribution"
 STUDY = "imaging_study"
 FINDING = "finding"
 _FINDING_FIELDS = ("site", "laterality", "description", "size_mm", "suv_max", "is_new", "is_measurable", "condition_id")
@@ -29,6 +32,10 @@ _STUDY_FIELDS = ("modality", "body_region", "study_date", "impression", "compari
 
 class NoSuchCondition(ValueError):
     """A Finding's Condition isn't one of this Patient's."""
+
+
+class AlreadyAttributed(ValueError):
+    """The Finding is already attributed to a Condition."""
 
 
 def _fields(row: ImagingStudy | Finding, names: tuple[str, ...]) -> dict[str, Any]:
@@ -122,6 +129,35 @@ def study_summaries(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID) 
     return {study_id: StudySummary(study_id, modality, study_date) for study_id, modality, study_date in rows}
 
 
+@dataclass(frozen=True)
+class NewFindingSummary:
+    """A new, unattributed Finding, as Specialty Modules see it (their own access checked first)."""
+
+    id: uuid.UUID
+    imaging_study_id: uuid.UUID
+    patient_id: uuid.UUID
+    description: str
+    site: str | None
+    laterality: str | None
+    modality: str
+    study_date: date
+
+
+def new_unattributed_findings(db: Session, practice_id: uuid.UUID, patient_ids: Collection[uuid.UUID] | None) -> list[NewFindingSummary]:
+    """For Specialty Modules: Findings the report calls new and that no one has attributed to a Condition."""
+    query = (
+        select(Finding, ImagingStudy.modality, ImagingStudy.study_date)
+        .join(ImagingStudy, ImagingStudy.id == Finding.imaging_study_id)
+        .where(Finding.practice_id == practice_id, Finding.is_new.is_(True), Finding.condition_id.is_(None))
+    )
+    if patient_ids is not None:
+        query = query.where(Finding.patient_id.in_(patient_ids))
+    return [
+        NewFindingSummary(f.id, f.imaging_study_id, f.patient_id, f.description, f.site, f.laterality, modality, study_date)
+        for f, modality, study_date in db.execute(query)
+    ]
+
+
 def add_study(db: Session, actor: Actor, patient_id: uuid.UUID, new: NewImagingStudy) -> ImagingStudyRow:
     """The study and its Findings: one Verification each, in one save."""
     entry.require_entry(db, actor, patient_id, STUDY_FACT_KIND)
@@ -175,3 +211,22 @@ def remove_finding(db: Session, actor: Actor, patient_id: uuid.UUID, study_id: u
     entry.require_entry(db, actor, patient_id, FINDING_FACT_KIND)
     finding = _finding(db, actor, patient_id, study_id, finding_id)
     audit.soft_delete(db, actor, finding, subject_table=FINDING, reason=reason, before=_fields(finding, _FINDING_FIELDS))
+
+
+def attribute_finding(
+    db: Session, actor: Actor, patient_id: uuid.UUID, study_id: uuid.UUID, finding_id: uuid.UUID, condition_id: uuid.UUID
+) -> FindingRow:
+    """A clinician says which Condition an unattributed Finding belongs to."""
+    entry.require_entry(db, actor, patient_id, ATTRIBUTION_FACT_KIND)
+    finding = _finding(db, actor, patient_id, study_id, finding_id)
+    if finding.condition_id is not None:
+        raise AlreadyAttributed("This Finding is already attributed.")
+    _check_condition(db, actor, patient_id, condition_id)
+    audit.record_verification(
+        db, actor, subject_table=FINDING, subject_id=finding.id, action="attribute",
+        before={"condition_id": None}, after={"condition_id": str(condition_id)},
+    )
+    finding.condition_id = condition_id
+    db.flush()
+    [row] = _finding_rows(db, actor, [finding])
+    return row

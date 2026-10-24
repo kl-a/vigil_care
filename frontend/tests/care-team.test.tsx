@@ -12,7 +12,8 @@ vi.mock("@/lib/providers", async (importOriginal) => ({ ...(await importOriginal
 
 import ProviderPage from "@/app/(app)/providers/[id]/page";
 import { CareTeam } from "@/components/patients/CareTeam";
-import { PatientHeader, PatientProvider } from "@/components/patients/PatientContext";
+import { PatientProvider } from "@/components/patients/PatientContext";
+import { PatientHeader } from "@/components/patients/PatientHeader";
 import { ViewerProvider } from "@/components/shell/ViewerProvider";
 import type { CareTeamRow } from "@/lib/careTeam";
 import type { ProviderRow } from "@/lib/providers";
@@ -51,7 +52,7 @@ describe("Care Team", () => {
   it("puts the primary member in the Patient header", async () => {
     renderPatient();
     const header = await screen.findByRole("region", { name: "Patient" });
-    await waitFor(() => expect(header).toHaveTextContent("Treating oncologist: Dr Alex Rivera"));
+    await waitFor(() => expect(header).toHaveTextContent("Primary: Dr Alex Rivera"));
   });
 
   it("shows current members with role and dates, and ended ones as past", async () => {
@@ -62,10 +63,10 @@ describe("Care Team", () => {
       expect.stringContaining("Dr Morgan Grey"),
     ]);
     expect(within(current).getByText("Dr Alex Rivera").closest("li")).toHaveTextContent("Primary");
-    expect(within(current).getByText("Dr Alex Rivera").closest("li")).toHaveTextContent("since 01/03/2024");
+    expect(within(current).getByText("Dr Alex Rivera").closest("li")).toHaveTextContent("since 1 Mar 2024");
     const past = screen.getByRole("list", { name: "Past Care Team" });
     expect(past).toHaveTextContent("Dr Taylor Quinn");
-    expect(past).toHaveTextContent("until 30/06/2024");
+    expect(past).toHaveTextContent("until 30 Jun 2024");
   });
 
   it("adds a Provider in a role", async () => {

@@ -3,6 +3,7 @@
 import { notFound } from "next/navigation";
 import { ClinicalData } from "@/components/clinical/ClinicalData";
 import { MedicationManager } from "@/components/medications/MedicationManager";
+import { PatientSummary } from "@/components/summary/PatientSummary";
 import { PatientOverview } from "@/components/patients/PatientOverview";
 import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
 import { SectionSlot } from "@/components/SectionSlot";
@@ -18,6 +19,7 @@ export default function PatientTabPage({ params }: { params: { tab: string } }) 
   if (tab.segment === "overview") return <PatientOverview />;
   if (tab.segment === "clinical-data") return <ClinicalData />;
   if (tab.segment === "medications") return <MedicationManager />;
+  if (tab.segment === "summary") return <PatientSummary />;
   return (
     <ScreenPlaceholder path={`/patients/[id]/${tab.segment}`}>
       {tab.slot && <SectionSlot slot={tab.slot} />}

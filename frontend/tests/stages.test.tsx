@@ -27,10 +27,10 @@ const showUpcoming = () => fireEvent.click(screen.getByLabelText("Show upcoming 
 describe("build stages (design doc §15)", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("is at Stage 4: Stages 1 to 4 have shipped (4a with #39)", () => {
-    expect(SHIPPED_STAGE).toBe(4);
-    expect(isShipped(4)).toBe(true);
-    expect(isShipped(5)).toBe(false);
+  it("is at Stage 5: Stages 1 to 5 have shipped (with #48)", () => {
+    expect(SHIPPED_STAGE).toBe(5);
+    expect(isShipped(5)).toBe(true);
+    expect(isShipped(6)).toBe(false);
   });
 
   it("gives every screen and Patient tab a stage", () => {
@@ -44,15 +44,15 @@ describe("build stages (design doc §15)", () => {
 
   it("shows only built screens of shipped stages in the navigation", async () => {
     await renderAt("/system");
-    for (const released of ["Patients", "PBS lookup", "Providers", "Users", "Settings", "System status"]) {
+    for (const released of ["Dashboard", "Patients", "PBS lookup", "Providers", "Users", "Settings", "System status"]) {
       expect(mainNav().getByRole("link", { name: released })).toBeInTheDocument();
     }
-    for (const upcoming of ["Dashboard", "Trials", "Review queue", "Documents"]) {
+    for (const upcoming of ["Trials", "Review queue", "Documents"]) {
       expect(mainNav().queryByRole("link", { name: upcoming })).not.toBeInTheDocument();
     }
   });
 
-  it.each(["/review", "/dashboard"])("shows a friendly page, not a placeholder, at %s", async (path) => {
+  it.each(["/review", "/documents"])("shows a friendly page, not a placeholder, at %s", async (path) => {
     await renderAt(path);
     expect(screen.getByRole("heading", { name: "Not available yet" })).toBeInTheDocument();
     expect(screen.queryByText("placeholder content")).not.toBeInTheDocument();
@@ -87,6 +87,6 @@ describe("build stages (design doc §15)", () => {
       </ViewerProvider>,
     );
     const tabs = within(await screen.findByRole("navigation", { name: "Patient" }));
-    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview", "Clinical Data", "Medications"]);
+    expect(tabs.getAllByRole("link").map((link) => link.textContent)).toEqual(["Overview", "Summary", "Clinical Data", "Medications"]);
   });
 });

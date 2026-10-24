@@ -12,6 +12,9 @@ export const CONDITION_STATUS_LABEL: Record<ConditionStatus, string> = { active:
 /** Which Clinical Record kinds the signed-in User may enter by hand (Verification Rights, design doc §6.4). */
 export const fetchEntryRights = () => request<Record<string, boolean>>("/clinical/entry-rights");
 
+/** How many of each Clinical Record kind, by Clinical Data sub-tab (#57). */
+export const fetchClinicalCounts = (patientId: string) => request<Record<string, number>>(`/patients/${patientId}/clinical-counts`);
+
 export const fetchConditions = (patientId: string) => request<ConditionRow[]>(`/patients/${patientId}/conditions`);
 export const addCondition = (patientId: string, condition: NewCondition) =>
   request<ConditionRow>(`/patients/${patientId}/conditions`, { method: "POST", body: JSON.stringify(condition) });
@@ -61,6 +64,9 @@ export const COMMON_PANELS: Record<string, { analyte: string; unit: string }[]> 
     { analyte: "ALP", unit: "U/L" }, { analyte: "GGT", unit: "U/L" }, { analyte: "Albumin", unit: "g/L" },
   ],
 };
+
+/** Outside the report's reference range (a normal result, or one without a range, isn't). */
+export const isFlagged = (flag: LabFlag | null | undefined) => flag === "low" || flag === "high" || flag === "critical";
 
 /** Each analyte's results, oldest first: a trend. Only numbers can be charted. */
 export function trendsOf(results: LabResultRow[]): Map<string, LabResultRow[]> {
@@ -115,6 +121,10 @@ export type Intent = NonNullable<TreatmentCourseRow["intent"]>;
 
 export const MODALITY_LABEL: Record<Modality, string> = { systemic: "Systemic", surgery: "Surgery", radiation: "Radiation" };
 export const INTENT_LABEL: Record<Intent, string> = { curative: "Curative", neoadjuvant: "Neoadjuvant", adjuvant: "Adjuvant", palliative: "Palliative" };
+
+/** A course by its Regimen, procedure, site, or else its modality. */
+export const courseTitle = (course: Pick<TreatmentCourseRow, "regimen_name" | "details" | "modality">) =>
+  course.regimen_name ?? course.details?.procedure ?? course.details?.site ?? MODALITY_LABEL[course.modality];
 
 export const fetchTreatmentCourses = (patientId: string) => request<TreatmentCourseRow[]>(`/patients/${patientId}/treatment-courses`);
 export const addTreatmentCourse = (patientId: string, course: NewTreatmentCourse) =>

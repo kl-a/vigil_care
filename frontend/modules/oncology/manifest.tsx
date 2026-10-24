@@ -1,13 +1,13 @@
 import type { ModuleManifest } from "@/lib/modules/types";
 import { BiomarkersTab } from "./Biomarkers";
 import { CancerDiagnosesTab, CancerDiagnosisBlocks, NewPrimaryCancer } from "./CancerDiagnoses";
+import { CancerChip } from "./CancerChip";
+import { DiagnosisSummary } from "./DiagnosisSummary";
 import { lineOfTherapyExtension } from "./LinesOfTherapy";
+import { fetchOncologyCounts, oncologyPatientListColumns } from "./overview";
+import { oncologySummaryGlance } from "./SummaryGlance";
 import { CnsTab, PerformanceStatusTab } from "./Observations";
 import { bestResponseExtension, ResponseAssessmentsTab, responseBadgeExtension } from "./ResponseAssessments";
-
-function SectionNote({ text }: { text: string }) {
-  return <p className="text-sm text-muted-foreground">{text}</p>;
-}
 
 /**
  * Oncology's frontend: renderers for the sections and tabs its backend module declares
@@ -24,10 +24,14 @@ export const oncologyManifest: ModuleManifest = {
   conditionExtension: { factKind: "cancer_diagnosis", label: "This is a primary cancer", Form: NewPrimaryCancer },
   treatmentCourseExtensions: [lineOfTherapyExtension, bestResponseExtension],
   imagingStudyExtension: responseBadgeExtension,
+  patientHeaderChip: CancerChip,
+  summaryGlance: oncologySummaryGlance,
+  clinicalDataCounts: fetchOncologyCounts,
+  patientListColumns: oncologyPatientListColumns,
   sections: {
     "cancer-diagnoses": () => <CancerDiagnosisBlocks />,
     "cancer-diagnosis": () => <CancerDiagnosesTab />,
-    diagnosis: () => <SectionNote text="One block per Cancer Diagnosis: Stage (at diagnosis), Disease Extent (now), Biomarkers, Recurrences." />,
+    diagnosis: () => <DiagnosisSummary />,
     "response-assessments": () => <ResponseAssessmentsTab />,
     biomarkers: () => <BiomarkersTab />,
     "performance-status": () => <PerformanceStatusTab />,

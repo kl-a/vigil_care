@@ -6,9 +6,11 @@ import psycopg
 import pytest
 
 from app.core.crypto import FieldCipher
+from app.core.database import session_factory
 from app.core.seams.keys import LocalKeystore
 from app.db import demo_data
 from app.db.provision import APP_ROLE, DatabaseSettings
+from app.modules.summary.open_items import derive
 from tests.conftest import make_settings
 
 MEMBERS = (
@@ -106,3 +108,57 @@ def test_demo_patient_identity_is_encrypted_with_the_configured_key(database: Da
     assert row is not None and b"0491" not in bytes(row[1])
     cipher = FieldCipher(LocalKeystore.from_secrets(settings.encryption_key))
     assert cipher.decrypt(bytes(row[1]), context=f"patient_identity.mobile:{row[0]}") == "0491 570 156"
+
+
+# Robin Sample's Clinical Record (#46): the tables it fills, each with provenance.
+CLINICAL_TABLES = (
+    "condition", "cancer_diagnosis", "biomarker", "recurrence", "treatment_course", "medication", "lab_result", "imaging_study",
+    "finding", "response_assessment", "performance_status", "management_plan", "clinical_note",
+)
+
+
+def _record_counts(database: DatabaseSettings) -> dict[str, int]:
+    robin = demo_data.ROBIN.id
+    counts = {}
+    with psycopg.connect(database.role_url(APP_ROLE)) as conn:
+        for table in CLINICAL_TABLES:
+            if table in ("cancer_diagnosis", "treatment_course"):
+                where = "condition_id IN (SELECT id FROM condition WHERE patient_id = %s)"
+            elif table in ("biomarker", "recurrence"):
+                where = "cancer_diagnosis_id IN (SELECT d.id FROM cancer_diagnosis d JOIN condition c ON c.id = d.condition_id WHERE c.patient_id = %s)"
+            else:
+                where = "patient_id = %s"
+            [count] = conn.execute(f"SELECT count(*) FROM {table} WHERE {where}", [robin]).fetchone() or [0]  # noqa: S608 (fixed names)
+            counts[table] = count
+        [steps] = conn.execute("SELECT count(*) FROM next_step WHERE patient_id = %s", [robin]).fetchone() or [0]
+        counts["next_step"] = steps
+    return counts
+
+
+def test_demo_data_records_a_full_clinical_record_through_the_services(database: DatabaseSettings) -> None:
+    settings = make_settings(environment="dev", database_url=database.role_url(APP_ROLE))
+    demo_data.load(settings)
+    counts = _record_counts(database)
+    assert all(counts[table] > 0 for table in CLINICAL_TABLES), counts
+    assert counts["imaging_study"] == 2 and counts["condition"] >= 2
+    with psycopg.connect(database.role_url(APP_ROLE)) as conn:
+        demo_users = [str(user.id) for user in demo_data.USERS]
+        for table in CLINICAL_TABLES:
+            # A panel of lab results is verified once, as a panel.
+            subject = "t.panel_id" if table == "lab_result" else "t.id"
+            subject_table = "lab_panel" if table == "lab_result" else table
+            # Entered by hand by a synthetic demo User, and verified by one with a permitted Job Title.
+            unverified = conn.execute(
+                f"SELECT count(*) FROM {table} t WHERE t.practice_id = %s AND (t.entered_by_user_id IS NULL"  # noqa: S608
+                " OR NOT t.entered_by_user_id::text = ANY(%s)"
+                f" OR NOT EXISTS (SELECT 1 FROM verification v WHERE v.subject_table = %s AND v.subject_id = {subject}"
+                "   AND v.job_title_at_time <> 'developer_admin'))",
+                [demo_data.PRACTICE_ID, demo_users, subject_table],
+            ).fetchone()
+            assert unverified == (0,), table
+    with session_factory(settings.database_url).begin() as db:
+        types = {item.type for item in derive(db, demo_data.PRACTICE_ID, {demo_data.ROBIN.id})}
+    assert types == {"next_step", "differing_biomarker_results", "unattributed_response_assessment", "unattributed_finding", "suspected_recurrence"}
+
+    demo_data.load(settings)
+    assert _record_counts(database) == counts

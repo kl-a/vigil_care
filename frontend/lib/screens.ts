@@ -9,7 +9,7 @@ export interface Screen extends ScreenInfo {
 /** Core screens outside a Patient. Patient screens come from the Patient tabs (Core and modules). */
 export const CORE_SCREENS: readonly Screen[] = [
   { number: 1, title: "Login", path: "/login", purpose: "Individual sign-in with 2FA.", stage: 1, built: true },
-  { number: 2, title: "Dashboard", path: "/dashboard", purpose: "Practice-wide Open Items.", stage: 5 },
+  { number: 2, title: "Dashboard", path: "/dashboard", purpose: "Practice-wide Open Items.", stage: 5, built: true },
   { number: 3, title: "Patient List", path: "/patients", purpose: "Browse, search and create Patients.", stage: 2, built: true },
   { number: 5, title: "Document Upload", path: "/documents", purpose: "Ingest Documents and follow their status.", stage: 6 },
   { number: 6, title: "Extraction Review", path: "/review", purpose: "Review Extracted Facts one by one.", stage: 9 },

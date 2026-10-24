@@ -4,7 +4,10 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
+import { RowMenu } from "@/components/ui/RowMenu";
+import { TableCard } from "@/components/ui/TableCard";
 import { StatusPill } from "@/components/ui/StatusPill";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import { formatDate } from "@/lib/dates";
@@ -96,14 +99,14 @@ export function Conditions({ patientId }: { patientId: string }) {
       {rows === null && !error && <p role="status" className="m-0 text-[13px] text-muted-foreground">Loading Conditions…</p>}
       {rows?.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">None recorded.</p>}
       {rows && rows.length > 0 && (
-        <div className="overflow-x-auto rounded-md border border-border">
+        <TableCard label="Conditions" count={`${rows.length} ${rows.length === 1 ? "Condition" : "Conditions"}`}>
           <table aria-label="Conditions" className="w-full border-collapse text-[13px]">
             <thead className="bg-muted text-left text-xs text-muted-foreground">
               <tr>
                 <th className="px-3 py-2 font-medium">Condition</th>
                 <th className="px-3 py-2 font-medium">Status</th>
                 <th className="px-3 py-2 font-medium">Onset</th>
-                <th className="px-3 py-2 font-medium">Entered by</th>
+                <th className="px-3 py-2 font-medium">Verified</th>
                 {canEnter && <th className="px-3 py-2 font-medium"><span className="sr-only">Actions</span></th>}
               </tr>
             </thead>
@@ -116,7 +119,7 @@ export function Conditions({ patientId }: { patientId: string }) {
                   </td>
                   <td className="px-3 py-2"><StatusPill tone={row.status === "active" ? "cau" : "neu"}>{CONDITION_STATUS_LABEL[row.status]}</StatusPill></td>
                   <td className="whitespace-nowrap px-3 py-2 tabular-nums">{formatDate(row.onset_date)}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground"><EnteredBy entered={row.entered} /></td>
+                  <td className="px-3 py-2"><VerifiedMark subjectTable="condition" subjectId={row.id} entered={row.entered} /></td>
                   {canEnter && row.extended_by_module && (
                     <td className="px-3 py-2 text-right text-xs text-muted-foreground">
                       {modules.active_modules.includes(row.extended_by_module) ? "Changed in its own sub-tab" : "Read-only: its module isn't active"}
@@ -124,9 +127,9 @@ export function Conditions({ patientId }: { patientId: string }) {
                   )}
                   {canEnter && !row.extended_by_module && (
                     <td className="whitespace-nowrap px-3 py-2 text-right">
-                      <span className="inline-flex gap-2">
+                      <span className="inline-flex items-center gap-2">
                         <button onClick={() => { setEditing(row); setAdding(false); }} className="text-xs font-medium text-primary">Edit</button>
-                        <button onClick={() => setRemoving(row)} className="text-xs font-medium text-neg">Remove</button>
+                        <RowMenu label={row.name} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(row) }]} />
                       </span>
                     </td>
                   )}
@@ -134,7 +137,7 @@ export function Conditions({ patientId }: { patientId: string }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableCard>
       )}
       {saving && (
         <ReasonDialog title={`Save changes to ${saving.row.name}`} actor={signOffName(me)} confirmLabel="Save"
@@ -158,12 +161,6 @@ export function Conditions({ patientId }: { patientId: string }) {
   );
 }
 
-/** Who entered a value, their Job Title then, and when. */
-export function EnteredBy({ entered }: { entered: Entered | null }) {
-  if (!entered) return <>—</>;
-  const jobTitle = isKnownJobTitle(entered.job_title) ? JOB_TITLE_LABEL[entered.job_title] : entered.job_title;
-  return <>{entered.by} ({jobTitle}), {formatWhen(entered.at)}</>;
-}
 
 function ConditionForm({ label, submitLabel, initial, onCancel, onSubmit }: {
   label: string;

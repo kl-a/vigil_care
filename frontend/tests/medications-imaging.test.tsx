@@ -64,18 +64,19 @@ describe("Medication Manager", () => {
     renderIn(<MedicationManager />);
     const table = await screen.findByRole("table", { name: "Active medications" });
     const dex = within(table).getByText("Dexamfetamine").closest("tr")!;
-    expect(dex).toHaveTextContent("5 mg · Oral · Twice daily");
-    expect(within(dex).getByRole("link", { name: "PBS Drug Lookup" })).toHaveAttribute("href", "/pbs/1165H");
+    expect([...dex.querySelectorAll("td")].slice(1, 6).map((td) => td.textContent)).toEqual(["5 mg", "Twice daily", "Oral", "Fatigue", "Supportive care"]);
+    expect(within(dex).getByRole("button", { name: /^Verified/ })).toBeInTheDocument();
+    expect(within(dex).getByRole("link", { name: "Dexamfetamine" })).toHaveAttribute("href", "/pbs/1165H");
     const turmeric = within(table).getByText("Turmeric capsules").closest("tr")!;
     expect(turmeric).toHaveTextContent("Not in the drug reference");
     expect(within(table).queryByText("Dexamethasone")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Discontinued (1)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Discontinued 1" })).toBeInTheDocument();
   });
 
   it("shows discontinued Medications with why, and the change log with who and why", async () => {
     respond(MEDICATION_ROUTES);
     renderIn(<MedicationManager />);
-    fireEvent.click(await screen.findByRole("button", { name: "Discontinued (1)" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Discontinued 1" }));
     expect(screen.getByRole("table", { name: "Discontinued medications" })).toHaveTextContent("Course of steroids finished");
     fireEvent.click(screen.getByRole("button", { name: "Change log" }));
     const change = within(screen.getByRole("table", { name: "Change log" })).getByText("Dose changed").closest("tr")!;
@@ -131,7 +132,7 @@ describe("Imaging & Findings", () => {
   it("shows a scan's impression verbatim, its Findings, and Oncology's Response Assessment badge", async () => {
     respond({ "/clinical/entry-rights": { imaging_study: true, finding: true }, "/patients/pt-1/imaging-studies": [CT], "/patients/pt-1/response-assessments": [RESPONDING] });
     renderIn(<Imaging patientId="pt-1" />);
-    const scan = await screen.findByRole("article", { name: "CT chest, abdomen and pelvis, 14/08/2026" });
+    const scan = await screen.findByRole("article", { name: "CT chest, abdomen and pelvis, 14 Aug 2026" });
     expect(within(scan).getByText(/Interval decrease/).textContent).toBe("Interval decrease in hepatic metastases.\n  No new lesions.");
     expect(within(scan).getByRole("table", { name: "Findings" })).toHaveTextContent("Liver segment VII");
     expect(await within(scan).findByText("Responding")).toBeInTheDocument();
@@ -141,7 +142,7 @@ describe("Imaging & Findings", () => {
   it("corrects a scan with one reason per save, and asks for none when nothing changed", async () => {
     respond({ "/clinical/entry-rights": { imaging_study: true, finding: true }, "/patients/pt-1/imaging-studies": [CT] });
     renderIn(<Imaging patientId="pt-1" />);
-    const scan = await screen.findByRole("article", { name: "CT chest, abdomen and pelvis, 14/08/2026" });
+    const scan = await screen.findByRole("article", { name: "CT chest, abdomen and pelvis, 14 Aug 2026" });
     fireEvent.click(within(scan).getByRole("button", { name: "Correct" }));
     fireEvent.click(within(await screen.findByRole("form", { name: "Correct CT chest, abdomen and pelvis" })).getByRole("button", { name: "Save" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -160,7 +161,7 @@ describe("Imaging & Findings", () => {
   it("adds a Finding to a scan already recorded", async () => {
     respond({ "/clinical/entry-rights": { imaging_study: true, finding: true }, "/patients/pt-1/imaging-studies": [CT] });
     renderIn(<Imaging patientId="pt-1" />);
-    const scan = await screen.findByRole("article", { name: "CT chest, abdomen and pelvis, 14/08/2026" });
+    const scan = await screen.findByRole("article", { name: "CT chest, abdomen and pelvis, 14 Aug 2026" });
     fireEvent.click(within(scan).getByRole("button", { name: "Add finding" }));
     const form = within(scan).getByRole("form", { name: "New Finding" });
     fireEvent.change(within(form).getByLabelText("Finding 1"), { target: { value: "Sclerotic lesion" } });
@@ -191,7 +192,7 @@ describe("Response Assessments", () => {
       method: "POST", body: JSON.stringify({ cancer_diagnosis_id: "cd-1" }),
     }));
     const reported = within(screen.getByRole("list", { name: "Response Assessments" })).getAllByRole("listitem")[1]!;
-    expect(reported).toHaveTextContent("Radiology report · CT chest, abdomen and pelvis, 14/08/2026");
+    expect(reported).toHaveTextContent("Radiology report · CT chest, abdomen and pelvis, 14 Aug 2026");
     fireEvent.click(within(reported).getByRole("button", { name: "Override" }));
     expect(await screen.findByRole("dialog", { name: "Override this Response Assessment" })).toBeInTheDocument();
   });

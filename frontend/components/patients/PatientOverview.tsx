@@ -6,13 +6,14 @@ import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
 import { SectionSlot } from "@/components/SectionSlot";
 import { Conditions } from "@/components/clinical/Conditions";
 import { InactiveModuleFacts } from "@/components/clinical/InactiveModuleFacts";
+import { PatientOpenItems } from "@/components/openItems/PatientOpenItems";
 import { TreatmentCourses } from "@/components/clinical/TreatmentCourses";
 import { useSignedInUser, useViewer } from "@/components/shell/ViewerProvider";
 import { FIELD } from "@/components/ui/styles";
 import { messageOf } from "@/lib/api";
 import { JOB_TITLE_LABEL, isKnownJobTitle, signOffName } from "@/lib/jobTitles";
 import {
-  changeIdentity, IDENTITY_FIELDS, IDENTITY_LABEL, removePatient, type IdentityChange, type IdentityField, type IdentityHistoryEntry,
+  changeIdentity, formatDob, IDENTITY_FIELDS, IDENTITY_LABEL, removePatient, type IdentityChange, type IdentityField, type IdentityHistoryEntry,
   type PatientDetail,
 } from "@/lib/patients";
 import { isPartShipped, isVisible } from "@/lib/stages";
@@ -30,6 +31,8 @@ export function PatientOverview() {
   const stage4 = isVisible({ stage: 4, built: true }, showUpcoming);
   // The Treatment Course timeline ships with 4b (#40).
   const part4b = stage4 && isPartShipped("4b", showUpcoming);
+  // Open Items ship with Stage 5 (#48).
+  const stage5 = isVisible({ stage: 5, built: true }, showUpcoming);
   const { state, update } = usePatient();
   const [editing, setEditing] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -51,7 +54,7 @@ export function PatientOverview() {
             {IDENTITY_FIELDS.map(({ key, label, mono }) => (
               <div key={key} className="contents">
                 <dt className="text-muted-foreground">{label}</dt>
-                <dd className={`m-0 ${mono ? "font-mono text-xs" : ""}`}>{patient.identity[key] ?? "—"}</dd>
+                <dd className={`m-0 ${mono ? "font-mono text-xs" : ""}`}>{key === "dob" ? formatDob(patient.identity.dob) : patient.identity[key] ?? "—"}</dd>
               </div>
             ))}
           </dl>
@@ -60,17 +63,18 @@ export function PatientOverview() {
           Shown in full inside Vigil only. It never leaves the Practice; De-identified Exports use the Pseudonym {patient.pseudonym} instead.
         </p>
       </section>
+      {stage5 && <PatientOpenItems patientId={patient.id} />}
       {stage4 && <Conditions patientId={patient.id} />}
       <CareTeam />
       {part4b && <TreatmentCourses patientId={patient.id} compact />}
       <SectionSlot slot="patient-overview" />
       {stage4 && <InactiveModuleFacts patientId={patient.id} />}
-      <section aria-labelledby="identity-trail" className="flex flex-col gap-2">
+      {patient.history.length > 0 && <section aria-labelledby="identity-trail" className="flex flex-col gap-2">
         <h2 id="identity-trail" className="m-0 text-sm font-semibold">Audit trail</h2>
         <ol aria-label="Identity audit trail" className="m-0 flex list-none flex-col gap-2 p-0">
           {patient.history.map((entry, index) => <TrailEntry key={index} entry={entry} />)}
         </ol>
-      </section>
+      </section>}
       <div>
         <button onClick={() => setRemoving(true)} className="h-8 rounded-md border border-border px-3 text-[13px] text-neg hover:bg-muted">Remove Patient</button>
       </div>

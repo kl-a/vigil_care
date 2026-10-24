@@ -3,8 +3,9 @@
 import { sectionsFor } from "@/lib/modules/registry";
 import type { SectionSlotName } from "@/lib/modules/types";
 import { useViewer } from "./shell/ViewerProvider";
+import { SectionCard } from "./ui/SectionCard";
 
-/** Renders the sections that the Practice's active Specialty Modules register for a slot. */
+/** Renders the sections that the Practice's active Specialty Modules register for a slot, each in a SectionCard. */
 export function SectionSlot({ slot }: { slot: SectionSlotName }) {
   const { modules } = useViewer();
   const sections = sectionsFor(slot, modules);
@@ -12,10 +13,7 @@ export function SectionSlot({ slot }: { slot: SectionSlotName }) {
   return (
     <>
       {sections.map((section) => (
-        <section key={section.id} aria-label={section.title} className="rounded-md border border-border bg-card p-4">
-          <h2 className="mb-1 text-sm font-semibold">{section.title}</h2>
-          {section.render()}
-        </section>
+        <SectionCard key={section.id} id={`section-${section.id}`} title={section.title}>{section.render()}</SectionCard>
       ))}
     </>
   );

@@ -12,3 +12,6 @@ frontend/.next/
 *.egg-info/
 temp/
 .run/
+
+# Real Patient example briefing: never commit
+docs/Alice_Zhu_Trial_Briefing.pdf

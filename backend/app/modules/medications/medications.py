@@ -36,6 +36,11 @@ STOPPED = ("discontinued", "completed")
 ENTERED_CONFIDENCE = "high"
 
 
+def is_stopped(status: str) -> bool:
+    """Discontinued or completed: no longer a current Medication."""
+    return status in STOPPED
+
+
 class InvalidMedication(ValueError):
     """Links to another Patient's course or another Practice's Provider, or dates out of order."""
 
@@ -179,7 +184,7 @@ def stop_medication(db: Session, actor: Actor, patient_id: uuid.UUID, medication
     """Discontinued from `end_date`, and why. Its Treatment Course, if any, carries on."""
     entry.require_entry(db, actor, patient_id, FACT_KIND)
     med = _live(db, actor, patient_id, medication_id)
-    if med.status in STOPPED:
+    if is_stopped(med.status):
         raise WrongStatus("This Medication is already stopped.")
     _set_status(db, actor, med, "discontinued", {"status": "discontinued", "end_date": stop.end_date, "reason_discontinued": stop.reason}, stop.reason)
     return _one(db, actor, patient_id, med)

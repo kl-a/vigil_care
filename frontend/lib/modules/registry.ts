@@ -1,11 +1,12 @@
+import type { ComponentType } from "react";
 import { INSTALLED_MODULES } from "@/modules";
 import type {
-  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, PatientTab, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
+  ConditionExtension, ImagingStudyExtension, ModuleConfiguration, ModuleManifest, PatientListColumns, PatientTab, SummaryGlanceExtension, SectionDefinition, SectionSlotName, TreatmentCourseExtension,
 } from "./types";
 
 const CORE_PATIENT_TABS: readonly PatientTab[] = [
   { segment: "overview", label: "Overview", slot: "patient-overview", screen: { number: 4, title: "Patient Overview", purpose: "Clinical profile for one Patient.", stage: 2, built: true } },
-  { segment: "summary", label: "Summary", slot: "patient-summary", screen: { number: 15, title: "Patient Summary", purpose: "The consultation-ready “At a Glance” page.", stage: 5 } },
+  { segment: "summary", label: "Summary", slot: "patient-summary", screen: { number: 15, title: "Patient Summary", purpose: "The consultation-ready “At a Glance” page.", stage: 5, built: true } },
   { segment: "clinical-data", label: "Clinical Data", slot: "clinical-data-tabs", screen: { number: 9, title: "Clinical Data Viewer", purpose: "Longitudinal Clinical Record.", stage: 4, built: true } },
   { segment: "documents", label: "Documents", screen: { title: "Patient Documents", purpose: "This Patient's Documents.", stage: 6 } },
   { segment: "medications", label: "Medications", screen: { number: 10, title: "Medication Manager", purpose: "Medication list with reconciliation.", stage: 4, built: true } },
@@ -51,12 +52,17 @@ export function clinicalDataTabsFor(config: ModuleConfiguration): (SectionDefini
   });
 }
 
+/** One kind of extension from each of the Practice's active modules that has it. */
+function extensionsOf<K extends keyof ModuleManifest>(config: ModuleConfiguration, kind: K): NonNullable<ModuleManifest[K]>[] {
+  return config.active_modules.flatMap((key) => {
+    const extension = manifest(key)?.[kind];
+    return extension ? [extension as NonNullable<ModuleManifest[K]>] : [];
+  });
+}
+
 /** The Condition extensions of the Practice's active modules (e.g. "This is a primary cancer"). */
 export function conditionExtensionsFor(config: ModuleConfiguration): ConditionExtension[] {
-  return config.active_modules.flatMap((key) => {
-    const extension = manifest(key)?.conditionExtension;
-    return extension ? [extension] : [];
-  });
+  return extensionsOf(config, "conditionExtension");
 }
 
 /** The Treatment Course extensions of the Practice's active modules (e.g. Line of Therapy, best response). */
@@ -64,10 +70,27 @@ export function treatmentCourseExtensionsFor(config: ModuleConfiguration): Treat
   return config.active_modules.flatMap((key) => manifest(key)?.treatmentCourseExtensions ?? []);
 }
 
+/** Each active module's Clinical Data counts loader. */
+export function clinicalDataCountsFor(config: ModuleConfiguration): ((patientId: string) => Promise<Record<string, number>>)[] {
+  return extensionsOf(config, "clinicalDataCounts");
+}
+
+/** The Patient List columns of the Practice's active modules. */
+export function patientListColumnsFor(config: ModuleConfiguration): PatientListColumns[] {
+  return extensionsOf(config, "patientListColumns");
+}
+
+/** The at-a-glance tiles of the Practice's active modules (the Patient Summary). */
+export function summaryGlanceFor(config: ModuleConfiguration): SummaryGlanceExtension[] {
+  return extensionsOf(config, "summaryGlance");
+}
+
+/** The Patient header chips of the Practice's active modules (e.g. the primary cancer). */
+export function patientHeaderChipsFor(config: ModuleConfiguration): ComponentType<{ patientId: string }>[] {
+  return extensionsOf(config, "patientHeaderChip");
+}
+
 /** The Imaging Study badges of the Practice's active modules (e.g. Response Assessment). */
 export function imagingStudyExtensionsFor(config: ModuleConfiguration): ImagingStudyExtension[] {
-  return config.active_modules.flatMap((key) => {
-    const extension = manifest(key)?.imagingStudyExtension;
-    return extension ? [extension] : [];
-  });
+  return extensionsOf(config, "imagingStudyExtension");
 }

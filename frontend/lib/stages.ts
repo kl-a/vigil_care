@@ -7,7 +7,7 @@ import type { ScreenInfo } from "./modules/types";
  * Raise SHIPPED_STAGE when a stage's demo is ready (docs/build-order.md). Mark a screen `built` when
  * it stops being a placeholder.
  */
-export const SHIPPED_STAGE = 4;
+export const SHIPPED_STAGE = 5;
 
 /**
  * A stage shipped in parts (Stage 4: 4a, 4b, 4c) shows only the parts shipped so far; a stage's other parts

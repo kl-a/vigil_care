@@ -60,7 +60,7 @@ def test_choosing_another_primary_moves_it_signing_off_both(sign_in: SignIn, com
     assert primary == {rooms["id"]: False, clinic["id"]: True}
     moves = committed.conn.execute(
         "SELECT subject_id, before, after FROM verification WHERE practice_id = %s AND subject_table = 'site'"
-        " AND after ? 'is_primary' AND before IS NOT NULL",
+        " AND after ? 'is_primary' AND jsonb_typeof(before) = 'object'",
         [ids["practice"]],
     ).fetchall()
     assert {str(s): (b, a) for s, b, a in moves} == {

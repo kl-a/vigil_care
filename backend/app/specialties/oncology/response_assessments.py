@@ -74,7 +74,7 @@ def _overridden_by(assessments: list[ResponseAssessment]) -> dict[uuid.UUID, uui
     return {a.overrides_id: a.id for a in assessments if a.overrides_id}
 
 
-def _counted(assessments: list[ResponseAssessment]) -> list[ResponseAssessment]:
+def counted(assessments: list[ResponseAssessment]) -> list[ResponseAssessment]:
     """The ones that count: not overridden."""
     overridden = _overridden_by(assessments)
     return [a for a in assessments if a.id not in overridden]
@@ -187,13 +187,13 @@ def derive_best(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID) -> l
     """Each course of a Cancer Diagnosis with an assessment during it (access checked by the caller)."""
     names = conditions.extended_conditions(db, practice_id, patient_id, MODULE_KEY)
     diagnoses = {d.condition_id: d.id for d in db.scalars(select(CancerDiagnosis).where(CancerDiagnosis.condition_id.in_(names)))}
-    counted = _counted(_all(db, practice_id, patient_id))
+    counting = counted(_all(db, practice_id, patient_id))
     studies = study_summaries(db, practice_id, patient_id)
     found = []
     for course in course_summaries(db, practice_id, patient_id):
         if course.condition_id not in diagnoses or course.modality == "surgery":
             continue
-        during = [a for a in counted if a.cancer_diagnosis_id == diagnoses[course.condition_id] and _during(course, a.assessed_on)]
+        during = [a for a in counting if a.cancer_diagnosis_id == diagnoses[course.condition_id] and _during(course, a.assessed_on)]
         if not during:
             continue
         best = min(during, key=lambda a: (RANK[a.direction], a.assessed_on))
@@ -218,7 +218,7 @@ def plain_lines(db: Session, practice_id: uuid.UUID, patient_id: uuid.UUID, when
     names = _diagnosis_names(db, practice_id, patient_id)
     studies = study_summaries(db, practice_id, patient_id)
     lines = []
-    for a in _counted(_all(db, practice_id, patient_id)):
+    for a in counted(_all(db, practice_id, patient_id)):
         study = studies.get(a.imaging_study_id) if a.imaging_study_id else None
         how = SOURCE_WORDS[a.source] + (f", {_scan(study)}" if study else "")
         of = names.get(a.cancer_diagnosis_id, "") if a.cancer_diagnosis_id else "Cancer Diagnosis not yet attributed"

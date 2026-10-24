@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
@@ -94,8 +96,9 @@ export function PerformanceStatusTab() {
         <ul aria-label="Performance status" className="m-0 flex list-none flex-col divide-y divide-border p-0 text-[13px]">
           {rows.map((row, index) => (
             <li key={row.id} className="flex items-center justify-between gap-2 py-1.5">
-              <span><EcogBadge row={row} />{index === 0 && <span className="ml-2 text-xs text-muted-foreground">current</span>}</span>
-              {canEnter && <button onClick={() => setRemoving(row)} className="text-xs font-medium text-neg">Remove</button>}
+              <span className="inline-flex items-center gap-2"><EcogBadge row={row} />{index === 0 && <span className="text-xs text-muted-foreground">current</span>}
+                <VerifiedMark subjectTable="performance_status" subjectId={row.id} entered={row.entered} /></span>
+              {canEnter && <RowMenu label={`${row.scale} ${row.value}`} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(row) }]} />}
             </li>
           ))}
         </ul>
@@ -142,7 +145,10 @@ export function CnsTab() {
                     row.leptomeningeal && "leptomeningeal"].filter(Boolean).join(" · ")}
                 </span>
               </span>
-              {canEnter && <button onClick={() => setRemoving(row)} className="text-xs font-medium text-neg">Remove</button>}
+              <span className="inline-flex items-center gap-2">
+                <VerifiedMark subjectTable="cns_status" subjectId={row.id} entered={row.entered} />
+                {canEnter && <RowMenu label={cnsLine(row)} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(row) }]} />}
+              </span>
             </li>
           ))}
         </ul>

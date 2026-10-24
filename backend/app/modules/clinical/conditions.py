@@ -5,6 +5,8 @@ may extend a Condition (Oncology: a Cancer Diagnosis); the Condition itself is C
 """
 
 import uuid
+from collections.abc import Collection
+from dataclasses import dataclass
 from typing import Any, cast
 
 from sqlalchemy import select
@@ -53,6 +55,24 @@ def extended_conditions(db: Session, practice_id: uuid.UUID, patient_id: uuid.UU
         )
     )
     return {condition_id: name for condition_id, name in rows}
+
+
+@dataclass(frozen=True)
+class ConditionSummary:
+    """A Condition as Specialty Modules see it (their own access checked first)."""
+
+    id: uuid.UUID
+    patient_id: uuid.UUID
+    name: str
+    extended_by_module: str | None
+
+
+def condition_summaries(db: Session, practice_id: uuid.UUID, patient_ids: Collection[uuid.UUID] | None) -> list[ConditionSummary]:
+    """For Specialty Modules: the live Conditions of some Patients, or (None) of every Patient in the Practice."""
+    query = select(Condition.id, Condition.patient_id, Condition.name, Condition.extended_by_module).where(Condition.practice_id == practice_id)
+    if patient_ids is not None:
+        query = query.where(Condition.patient_id.in_(patient_ids))
+    return [ConditionSummary(*row) for row in db.execute(query.order_by(Condition.created_at))]
 
 
 def conditions(db: Session, actor: Actor, patient_id: uuid.UUID) -> list[ConditionRow]:

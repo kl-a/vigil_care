@@ -68,35 +68,57 @@ This stage can run alongside Stage 2.
 | 3 | [#30](https://github.com/kl-a/vigil_care/issues/30) | PBS Drug Lookup: the whole PBS Schedule, browsable and clearer | #20 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 | 4 | [#31](https://github.com/kl-a/vigil_care/issues/31) | Long-running Jobs keep their claim; PBS Refresh logs each API request. Doesn't block the Stage 3 merge; must land before Stage 8 | #18, #19 | ✅ Done ([PR #34](https://github.com/kl-a/vigil_care/pull/34)) |
 
-### Stage 4 · Clinical Record by hand (4a, 4b and 4c shipped: `SHIPPED_STAGE = 4`)
+### Stage 4 · Clinical Record by hand (shipped)
 
 **Demo** (in three parts, each shipped as it's built): build Jane Citizen's record by hand. 4a: breast cancer with Stage, HER2 3+ and ER+ history, a Recurrence. 4b: adjuvant then palliative first-line courses (Line of Therapy derived) and current Medications with PBS links. 4c: the latest bloods, a CT with its Response Assessment, the Management Plan and a Next Step. Show that a secretary can't record a Stage, and that with Oncology switched off the cancer details stay visible read-only. Plan: design doc §15 Stage 4. Script: [docs/demos/stage-4.md](demos/stage-4.md).
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#35](https://github.com/kl-a/vigil_care/issues/35) | Entering the Clinical Record by hand (provenance, Verification, reason once per save), and Conditions | none | 🔨 Built (`stage-4`) |
-| 1 | [#36](https://github.com/kl-a/vigil_care/issues/36) | Drug reference built from the PBS Schedule (4b) | none | 🔨 Built (`stage-4`) |
-| 2 | [#37](https://github.com/kl-a/vigil_care/issues/37) | Cancer Types (MeSH) and Cancer Diagnosis (4a) | #35 | 🔨 Built (`stage-4`) |
-| 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | 🔨 Built (`stage-4`) |
-| 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | 🔨 Built (`stage-4`) |
-| 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | 🔨 Built (`stage-4`) |
-| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | 🔨 Built (`stage-4`) |
-| 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | 🔨 Built (`stage-4`) |
-| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments, and **ship 4c** (4c) | #37, #40 | 🔨 Built (`stage-4`) |
-| 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c); ships 4c if #43 is in | #37 | 🔨 Built (`stage-4`) |
-| 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes (4c). 4c ships with the last of #43 and #44, which its demo needs | #35 | 🔨 Built (`stage-4`) |
+| 1 | [#35](https://github.com/kl-a/vigil_care/issues/35) | Entering the Clinical Record by hand (provenance, Verification, reason once per save), and Conditions | none | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 1 | [#36](https://github.com/kl-a/vigil_care/issues/36) | Drug reference built from the PBS Schedule (4b) | none | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 2 | [#37](https://github.com/kl-a/vigil_care/issues/37) | Cancer Types (MeSH) and Cancer Diagnosis (4a) | #35 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 3 | [#38](https://github.com/kl-a/vigil_care/issues/38) | Biomarkers and Differing Biomarker Results (4a) | #37 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 3 | [#39](https://github.com/kl-a/vigil_care/issues/39) | Recurrences, and **ship 4a** (4a) | #37 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 3 | [#40](https://github.com/kl-a/vigil_care/issues/40) | Treatment Courses and Line of Therapy (4b) | #37 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 4 | [#41](https://github.com/kl-a/vigil_care/issues/41) | Medication Manager, and **ship 4b** (4b) | #40, #36 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 2 | [#42](https://github.com/kl-a/vigil_care/issues/42) | Bloods and other labs (4c) | #35 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 4 | [#43](https://github.com/kl-a/vigil_care/issues/43) | Imaging, Findings and Response Assessments, and **ship 4c** (4c) | #37, #40 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 3 | [#44](https://github.com/kl-a/vigil_care/issues/44) | ECOG and CNS status (4c); ships 4c if #43 is in | #37 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
+| 2 | [#45](https://github.com/kl-a/vigil_care/issues/45) | Plan and notes (4c). 4c ships with the last of #43 and #44, which its demo needs | #35 | ✅ Done ([PR #49](https://github.com/kl-a/vigil_care/pull/49)) |
 
-### Stage 5 · Patient Summary
+### Stage 5 · Patient Summary (shipped: `SHIPPED_STAGE = 5`)
 
-**Demo:** open the fully recorded demo Patient's Summary as it would look in a consultation, follow a value back to who entered it, then work the Open Items on the Dashboard. Plan: design doc §15 Stage 5.
+**Demo:** open the fully recorded demo Patient's Summary as it would look in a consultation, follow a value back to who entered it, then work the Open Items on the Dashboard. Plan: design doc §15 Stage 5. Script: [docs/demos/stage-5.md](demos/stage-5.md).
 
 | Order | Ticket | What | Blocked by | Status |
 |---|---|---|---|---|
-| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient | #38, #39, #41, #42, #43, #44, #45 | ⏭️ Ready |
-| 2 | [#47](https://github.com/kl-a/vigil_care/issues/47) | Patient Summary v1 | #46 | ⏳ Blocked |
-| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | ⏭️ Ready |
+| 1 | [#46](https://github.com/kl-a/vigil_care/issues/46) | A fully recorded demo Patient (Robin Sample) | #38, #39, #41, #42, #43, #44, #45 | 🔨 Built (`stage-5`) |
+| 2 | [#47](https://github.com/kl-a/vigil_care/issues/47) | Patient Summary v1 | #46 | 🔨 Built (`stage-5`) |
+| 1 | [#48](https://github.com/kl-a/vigil_care/issues/48) | Open Items and the Dashboard, and **ship Stage 5** | #38, #39, #43, #45 | 🔨 Built (`stage-5`) |
 
 After each stage ships, Dr De Souza tries it hands-on in dev ([revisit-later.md](revisit-later.md), "For Dr De Souza").
+
+### Stage 5b · Visual refresh
+
+The design language of the Claude Design MVP (`temp/Vigil Care UI design/`), adopted where it reads better, not copied screen for screen: a Patient header band, an at-a-glance Summary, quiet provenance (a ✓ Verified icon with the latest Verification on hover), dense tables and segmented sub-tabs, and a clinical Overview with a Treatment Course timeline. Planned in the visual-refresh grilling of 2026-09-27, comparing screenshots of both apps (Playwright, 1440×900).
+
+**Branches:** each ticket is its own branch cut from `stage-5` and merged back into `stage-5`; `stage-5` goes to `main` as one PR once 5b is done.
+
+**Demo:** open Robin Sample's Overview, Summary and the Dashboard, side by side with the MVP's; show that the Summary's key facts sit above the fold and that each value's ✓ shows who verified it.
+
+| Order | Ticket | What | Blocked by | Status |
+|---|---|---|---|---|
+| 1 | [#50](https://github.com/kl-a/vigil_care/issues/50) | Visual bug fixes: sidebar height, breadcrumb, dates, ranges and units, sub-tab links | none | 🔨 Built (`stage-5`) |
+| 2 | [#51](https://github.com/kl-a/vigil_care/issues/51) | Design primitives: formats, section card, table toolbar, sub-tabs, Verified icon, value states | #50 | 🔨 Built (`stage-5`) |
+| 3 | [#52](https://github.com/kl-a/vigil_care/issues/52) | Patient header band | #51 | 🔨 Built (`stage-5`) |
+| 3 | [#54](https://github.com/kl-a/vigil_care/issues/54) | Open Items as a table with popover actions; Dashboard rail and count badge | #51 | 🔨 Built (`stage-5`) |
+| 3 | [#57](https://github.com/kl-a/vigil_care/issues/57) | Tables, sub-tabs and row actions (Patients, Clinical Data, Medications); Labs trend view | #51 | 🔨 Built (`stage-5`) |
+| 4 | [#53](https://github.com/kl-a/vigil_care/issues/53) | Patient Summary redesign: glance strip, Open Items cards, flagged-first results | #51, #52, #54 | 🔨 Built (`stage-5`) |
+| 4 | [#55](https://github.com/kl-a/vigil_care/issues/55) | Patient Overview redesign: Diagnoses, Key labs, Care Team and Open Items cards | #52, #54 | ⏭️ Ready |
+| 4 | [#58](https://github.com/kl-a/vigil_care/issues/58) | Sex at birth on Patient Identity and the header band | #52 | ⏭️ Ready |
+| 5 | [#56](https://github.com/kl-a/vigil_care/issues/56) | Treatment Course timeline on the Overview | #55 | ⏳ Blocked |
+
+Later, not in 5b: [#59](https://github.com/kl-a/vigil_care/issues/59) Dashboard Recent activity feed (once Documents and extraction give it enough to show).
 
 ### Stages 6–13 (outlines)
 
@@ -157,8 +179,8 @@ flowchart LR
 ```
 
 **Next up:**
-1. Stage 4: all of it is built on `stage-4` (4a, 4b, 4c shipped); run the demo, then merge.
-2. Stage 5 once Stage 4's parts are in: #46 → #47, and #48.
+1. Stage 4 is merged (PR #49). Stage 5 is built on `stage-5`; Stage 5b (visual refresh) lands on it too: #50–#54 and #57 are built; #55 and #58 are next, then #56. Then run both demos and merge `stage-5`.
+2. Then Stage 6.
 
 **Provisional decisions:** [docs/revisit-later.md](revisit-later.md) lists them with their triggers; working through them is tracked in [#33](https://github.com/kl-a/vigil_care/issues/33).
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { RowMenu } from "@/components/ui/RowMenu";
+import { VerifiedMark } from "@/components/ui/Verified";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { EntryLock } from "@/components/clinical/EntryLock";
 import { ReasonDialog } from "@/components/dialogs/ReasonDialog";
@@ -33,6 +35,13 @@ export const removeCancerDiagnosis = (patientId: string, id: string, reason: str
 export const DISEASE_EXTENT_LABEL: Record<DiseaseExtent, string> = {
   localised: "Localised", locally_advanced: "Locally advanced", metastatic: "Metastatic", unknown: "Unknown",
 };
+/** The primaries still active (those with no evidence of disease stay in the record, not at a glance), or all
+ * when none are. */
+export function activePrimaries(diagnoses: CancerDiagnosisRow[]): CancerDiagnosisRow[] {
+  const active = diagnoses.filter((d) => d.cancer_status !== "no_evidence_of_disease");
+  return active.length > 0 ? active : diagnoses;
+}
+
 export const CANCER_STATUS_LABEL: Record<CancerStatus, string> = {
   active: "Active", no_evidence_of_disease: "No evidence of disease", unknown: "Unknown",
 };
@@ -207,11 +216,11 @@ export function CancerDiagnosesTab() {
       {rows?.map((d) => (
         <article key={d.id} aria-label={d.name} className="flex flex-col gap-1 rounded-md border border-border p-3 text-[13px]">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="m-0 text-sm font-semibold">{d.name}</h3>
+            <h3 className="m-0 inline-flex items-center gap-1.5 text-sm font-semibold">{d.name}<VerifiedMark subjectTable="cancer_diagnosis" subjectId={d.id} entered={d.entered} /></h3>
             {canEnter && (
-              <span className="inline-flex gap-2">
+              <span className="inline-flex items-center gap-2">
                 <button onClick={() => { setEditing(d); setAdding(false); }} className="text-xs font-medium text-primary">Correct</button>
-                <button onClick={() => setRemoving(d)} className="text-xs font-medium text-neg">Remove</button>
+                <RowMenu label={d.name} items={[{ label: "Remove", danger: true, onSelect: () => setRemoving(d) }]} />
               </span>
             )}
           </div>
@@ -250,7 +259,7 @@ export function CancerDiagnosesTab() {
 }
 
 /** The Patient Overview's section: one block per Cancer Diagnosis (arrives with Stage 4). */
-export function CancerDiagnosisBlocks() {
+export function CancerDiagnosisBlocks({ stacked = false }: { stacked?: boolean } = {}) {
   const { state } = usePatient();
   const { showUpcoming } = useViewer();
   const patientId = state.status === "ready" ? state.patient.id : null;
@@ -282,7 +291,7 @@ export function CancerDiagnosisBlocks() {
         </div>
       )}
       {rows.length === 0 && <p className="m-0 text-[13px] text-muted-foreground">None recorded.</p>}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className={`grid grid-cols-1 gap-3 ${stacked ? "" : "sm:grid-cols-2"}`}>
       {rows.map((d) => (
         <div key={d.id} className="flex flex-col gap-1 rounded-md border border-border p-3 text-[13px]">
           <span className="font-semibold">{d.name}</span>

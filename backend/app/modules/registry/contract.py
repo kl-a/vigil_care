@@ -6,7 +6,7 @@ self-contained unit so a concept can move between modules, or into the Core (por
 """
 
 import uuid
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 
 from fastapi import APIRouter
@@ -14,6 +14,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.permissions import FactRight
+from app.core.vocabulary import JobTitle
+from app.modules.summary.schemas import OpenItem
 
 
 @dataclass(frozen=True)
@@ -46,6 +48,22 @@ class DocumentTypeDefinition:
 # A module's recorded facts for one Patient in plain words, e.g. "Breast cancer: Stage IIA (TNM) at diagnosis".
 # Called with (session, practice_id, patient_id).
 ReadOnlyView = Callable[[Session, uuid.UUID, uuid.UUID], list[str]]
+@dataclass(frozen=True)
+class DemoPractice:
+    """The synthetic demo Practice (dev only), for a module to add its demo records to: its Users by Job Title,
+    Patients by Pseudonym and Providers by role."""
+
+    practice_id: uuid.UUID
+    users: Mapping[JobTitle, uuid.UUID]
+    patients: Mapping[str, uuid.UUID]
+    providers: Mapping[str, uuid.UUID]
+
+
+# Adds the module's demo records (dev only), entered through its services; loading twice changes nothing.
+DemoData = Callable[[Session, DemoPractice], None]
+# A module's Open Items in a Practice, for some Patients or (None) all of them. Called with (session,
+# practice_id, patient_ids), only while the module is active there.
+OpenItemsProvider = Callable[[Session, uuid.UUID, Collection[uuid.UUID] | None], list[OpenItem]]
 
 
 @dataclass(frozen=True)
@@ -68,6 +86,9 @@ class SpecialtyModule:
     # "which source applies to this Condition?" is built with Treatment Options (Stage 11).
     treatment_option_source: str | None = None
     open_item_types: Sequence[str] = ()
+    open_items: OpenItemsProvider | None = None
+    # Its demo records for `make demo-data` (dev only), e.g. a fully recorded demo Patient.
+    demo_data: DemoData | None = None
     # A module owns tools, not visibility (ADR 0004, amended): when it's inactive for a Practice, the Core
     # shows its recorded facts read-only through this view, so no clinician loses sight of them.
     read_only_view: ReadOnlyView | None = None

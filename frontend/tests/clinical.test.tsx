@@ -39,9 +39,10 @@ describe("Conditions", () => {
     renderConditions();
     const row = (await screen.findByText("Type 2 diabetes")).closest("tr")!;
     expect(row).toHaveTextContent("Active");
-    expect(row).toHaveTextContent("01/06/2015");
+    expect(row).toHaveTextContent("1 Jun 2015");
     expect(row).toHaveTextContent("Diet controlled");
-    expect(row).toHaveTextContent("Dr Alex Rivera (synthetic) (Clinician)");
+    // Who entered it is behind the ✓ (hover for the latest Verification, click for the history).
+    expect(within(row).getByRole("button", { name: /^Verified by Dr Alex Rivera \(synthetic\) \(Clinician\)/ })).toBeInTheDocument();
     expect(screen.getByText("COPD").closest("tr")).toHaveTextContent("Resolved");
   });
 
@@ -80,7 +81,8 @@ describe("Conditions", () => {
 
   it("removes a Condition only with a reason", async () => {
     renderConditions();
-    fireEvent.click((await screen.findAllByRole("button", { name: "Remove" }))[1]!);
+    fireEvent.click(await screen.findByRole("button", { name: "More actions: COPD" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Remove" }));
     const dialog = await screen.findByRole("dialog", { name: "Remove COPD" });
     fireEvent.change(within(dialog).getByLabelText("Reason (required)"), { target: { value: "Wrong Patient" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove Condition" }));

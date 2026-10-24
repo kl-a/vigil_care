@@ -81,6 +81,29 @@ export interface TreatmentCourseExtension {
   };
 }
 
+/** A module's columns on the Patient List: `load` gives each Patient's values by column key (lists, shown joined). */
+export interface PatientListColumns {
+  load: () => Promise<Record<string, Record<string, string[]>>>;
+  columns: { key: string; label: string }[];
+  /** The column the list can be filtered by, if any. */
+  filter?: { key: string; label: string };
+}
+
+/** One tile of the Patient Summary's at-a-glance strip: a label, the value (or nothing: "Not recorded") and one
+ * line of context. `order` places it among the Core's tiles (Treatment 20, Next step 50). */
+export interface GlanceTile {
+  key: string;
+  order: number;
+  label: string;
+  value: ReactNode | null;
+  detail?: string | null;
+}
+
+/** A module's tiles on the Patient Summary's at-a-glance strip, e.g. Oncology's Diagnosis, Latest response, ECOG. */
+export interface SummaryGlanceExtension {
+  load: (patientId: string) => Promise<GlanceTile[]>;
+}
+
 /** A module's badge on the Core's Imaging Studies (by study id), e.g. Oncology's Response Assessment. */
 export interface ImagingStudyExtension {
   load: (patientId: string) => Promise<Record<string, ReactNode>>;
@@ -97,4 +120,12 @@ export interface ModuleManifest {
   conditionExtension?: ConditionExtension;
   treatmentCourseExtensions?: readonly TreatmentCourseExtension[];
   imagingStudyExtension?: ImagingStudyExtension;
+  /** How many it has of each of its Clinical Data sub-tabs (by section id), for their counts. */
+  clinicalDataCounts?: (patientId: string) => Promise<Record<string, number>>;
+  /** Columns it adds to the Patient List, one of them perhaps a filter (e.g. Oncology's Cancer Type). */
+  patientListColumns?: PatientListColumns;
+  /** Its tiles on the Patient Summary's at-a-glance strip. */
+  summaryGlance?: SummaryGlanceExtension;
+  /** Its chip in the Patient header band, e.g. Oncology's "Colorectal cancer · Stage IIIB (dx)". */
+  patientHeaderChip?: ComponentType<{ patientId: string }>;
 }
